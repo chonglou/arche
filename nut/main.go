@@ -8,6 +8,7 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
+	"github.com/astaxie/beego/toolbox"
 	"github.com/urfave/cli"
 )
 
@@ -39,6 +40,9 @@ func Main(args ...string) error {
 	app.EnableBashCompletion = true
 	app.Commands = commands
 	app.Action = func(_ *cli.Context) error {
+		// tasks
+		toolbox.StartTask()
+		defer toolbox.StopTask()
 		beego.Run()
 		return nil
 	}
