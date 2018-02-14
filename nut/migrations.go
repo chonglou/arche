@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"time"
 
@@ -37,8 +36,12 @@ func (p *Migration) Down() {
 	p.SQL(p.down)
 }
 
+func migrationsDir(driver string) string {
+	return filepath.Join("db", driver, "migrations")
+}
+
 func loadMigrations(driver string) error {
-	return filepath.Walk(path.Join("db", driver, "migrations"), func(path string, info os.FileInfo, err error) error {
+	return filepath.Walk(migrationsDir(driver), func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
