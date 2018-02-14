@@ -1,0 +1,17 @@
+# Build
+/dist*
+
+# Bee
+/arche*
+/lastupdate.tmp
+/routers/commentsRouter*.go
+
+# Javascript
+/node_modules/
+
+# Vim
+.*.swp
+.*.un~
+
+# Test
+/tmp
