@@ -3,7 +3,7 @@
 
 # Bee
 /arche*
-/lastupdate.tmp
+lastupdate.tmp
 /routers/commentsRouter*.go
 
 # Javascript
