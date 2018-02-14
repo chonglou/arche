@@ -11,38 +11,26 @@ import (
 	"github.com/google/uuid"
 )
 
-const (
-	// RoleAdmin admin role
-	RoleAdmin = "admin"
-	// RoleRoot root role
-	RoleRoot = "root"
-	// UserTypeEmail email user
-	UserTypeEmail = "email"
-
-	// DefaultResourceType default resource type
-	DefaultResourceType = ""
-	// DefaultResourceID default resourc id
-	DefaultResourceID = 0
-)
-
 // Locale locale
 type Locale struct {
 	ID        uint      `json:"id" orm:"column(id)"`
 	Lang      string    `json:"lang"`
 	Code      string    `json:"code"`
 	Message   string    `json:"message"`
-	UpdatedAt time.Time `json:"updatedAt" orm:"auto_now_add;type(datetime)"`
-	CreatedAt time.Time `json:"createdAt" orm:"auto_now;type(datetime)"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedAt time.Time `json:"createdAt"`
 }
 
 // TableName table name
-func (p Locale) TableName() string {
+func (p *Locale) TableName() string {
 	return "locales"
 }
 
+// -----------------------------------------------------------------------------
+
 // Setting setting model
 type Setting struct {
-	ID        uint
+	ID        uint `orm:"column(id)"`
 	Key       string
 	Value     string
 	Encode    bool
@@ -51,30 +39,50 @@ type Setting struct {
 }
 
 // TableName table name
-func (p Setting) TableName() string {
+func (p *Setting) TableName() string {
 	return "settings"
+}
+
+// -----------------------------------------------------------------------------
+
+// Domain domain
+type Domain struct {
+	ID        uint      `json:"id" orm:"column(id)"`
+	Name      string    `json:"name"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
+//SetName set name
+func (p *Domain) SetName(n string) {
+	p.Name = strings.ToLower(n)
+}
+
+// TableName table name
+func (p *Domain) TableName() string {
+	return "domains"
 }
 
 // User user
 type User struct {
-	ID              uint       `json:"id"`
+	ID              uint       `json:"id" orm:"column(id)"`
 	Name            string     `json:"name"`
 	Email           string     `json:"email"`
-	UID             string     `json:"uid" gorm:"column:uid"`
-	Password        []byte     `json:"-"`
-	ProviderID      string     `json:"providerId"`
-	ProviderType    string     `json:"providerType"`
+	UID             string     `json:"uid" orm:"column(uid)"`
+	Password        string     `json:"-"`
 	Logo            string     `json:"logo"`
 	SignInCount     uint       `json:"signInCount"`
 	LastSignInAt    *time.Time `json:"lastSignInAt"`
-	LastSignInIP    string     `json:"lastSignInIp"`
+	LastSignInIP    string     `json:"lastSignInIp" orm:"column(last_sign_in_ip)"`
 	CurrentSignInAt *time.Time `json:"currentSignInAt"`
-	CurrentSignInIP string     `json:"currentSignInIp"`
+	CurrentSignInIP string     `json:"currentSignInIp" orm:"column(current_sign_in_ip)"`
 	ConfirmedAt     *time.Time `json:"confirmedAt"`
 	LockedAt        *time.Time `json:"lockAt"`
-	Logs            []Log      `json:"logs"`
 	UpdatedAt       time.Time  `json:"updatedAt"`
 	CreatedAt       time.Time  `json:"createdAt"`
+
+	Logs   []*Log  `orm:"reverse(many)"`
+	Domain *Domain `orm:"rel(fk)"`
 }
 
 // IsConfirm is confirm?
@@ -99,68 +107,72 @@ func (p *User) SetUID() {
 	p.UID = uuid.New().String()
 }
 
+//SetEmail set email
+func (p *User) SetEmail(e string) {
+	p.Email = strings.ToLower(e)
+}
+
 func (p User) String() string {
 	return fmt.Sprintf("%s<%s>", p.Name, p.Email)
 }
 
 // TableName table name
-func (p User) TableName() string {
+func (p *User) TableName() string {
 	return "users"
 }
 
-// Attachment attachment
-type Attachment struct {
-	ID           uint      `json:"id" gorm:"primary_key"`
-	Title        string    `json:"title"`
-	URL          string    `json:"url"`
-	Length       int64     `json:"length"`
-	MediaType    string    `json:"mediaType"`
-	ResourceID   uint      `json:"resourceId" sql:",notnull"`
-	ResourceType string    `json:"resourceType" sql:",notnull"`
-	User         User      `json:"user"`
-	UserID       uint      `json:"userId"`
-	UpdatedAt    time.Time `json:"updatedAt"`
-	CreatedAt    time.Time `json:"crateAt"`
+// Alias alias
+type Alias struct {
+	ID          uint      `json:"id" orm:"column(id)"`
+	Source      string    `json:"source"`
+	Destination string    `json:"destination"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+	CreatedAt   time.Time `json:"createdAt"`
+
+	Domain *Domain `orm:"rel(fk)"`
 }
 
-// IsPicture is picture?
-func (p *Attachment) IsPicture() bool {
-	return strings.HasPrefix(p.MediaType, "image/")
+// SetSource set source
+func (p *Alias) SetSource(s string) {
+	p.Source = strings.ToLower(s)
+}
+
+// SetDestination set destination
+func (p *Alias) SetDestination(d string) {
+	p.Destination = strings.ToLower(d)
 }
 
 // TableName table name
-func (p Attachment) TableName() string {
-	return "attachments"
+func (p *Alias) TableName() string {
+	return "aliases"
 }
 
 // Log log
 type Log struct {
-	ID        uint      `json:"id" gorm:"primary_key"`
+	ID        uint      `json:"id" orm:"column(id)"`
 	Message   string    `json:"message"`
 	IP        string    `json:"ip"`
-	User      User      `json:"user"`
-	UserID    uint      `json:"userId"`
 	CreatedAt time.Time `json:"createdAt"`
+
+	User *User `orm:"rel(fk)"`
 }
 
-func (p Log) String() string {
+func (p *Log) String() string {
 	return fmt.Sprintf("%s: [%s]\t %s", p.CreatedAt.Format(time.ANSIC), p.IP, p.Message)
 }
 
 // TableName table name
-func (p Log) TableName() string {
+func (p *Log) TableName() string {
 	return "logs"
 }
 
 // Policy policy
 type Policy struct {
-	ID        uint `gorm:"primary_key"`
+	ID        uint ` orm:"column(id)"`
 	StartUp   time.Time
 	ShutDown  time.Time
-	User      User
-	UserID    uint
-	Role      Role
-	RoleID    uint
+	User      *User `orm:"reverse(one)"`
+	Role      *Role `orm:"reverse(one)"`
 	UpdatedAt time.Time
 	CreatedAt time.Time
 }
@@ -172,13 +184,13 @@ func (p *Policy) Enable() bool {
 }
 
 // TableName table name
-func (p Policy) TableName() string {
+func (p *Policy) TableName() string {
 	return "policies"
 }
 
 // Role role
 type Role struct {
-	ID           uint `gorm:"primary_key"`
+	ID           uint `orm:"column(id)"`
 	Name         string
 	ResourceID   uint
 	ResourceType string
@@ -186,97 +198,20 @@ type Role struct {
 	CreatedAt    time.Time
 }
 
-func (p Role) String() string {
+func (p *Role) String() string {
 	return fmt.Sprintf("%s@%s://%d", p.Name, p.ResourceType, p.ResourceID)
 }
 
 // TableName table name
-func (p Role) TableName() string {
+func (p *Role) TableName() string {
 	return "roles"
 }
 
-// Vote vote
-type Vote struct {
-	ID           uint `gorm:"primary_key"`
-	Point        int
-	ResourceID   uint
-	ResourceType string
-	UpdatedAt    time.Time
-	CreatedAt    time.Time
-}
-
-// TableName table name
-func (p Vote) TableName() string {
-	return "votes"
-}
-
-// LeaveWord leave-word
-type LeaveWord struct {
-	ID        uint      `json:"id" gorm:"primary_key"`
-	Body      string    `json:"body"`
-	Type      string    `json:"type"`
-	CreatedAt time.Time `json:"createdAt"`
-}
-
-// TableName table name
-func (p LeaveWord) TableName() string {
-	return "leave_words"
-}
-
-// Link link
-type Link struct {
-	ID        uint      `json:"id" gorm:"primary_key"`
-	Lang      string    `json:"lang"`
-	Loc       string    `json:"loc"`
-	Href      string    `json:"href"`
-	Label     string    `json:"label"`
-	SortOrder int       `json:"sortOrder"`
-	UpdatedAt time.Time `json:"updatedAt"`
-	CreatedAt time.Time `json:"createdAt"`
-}
-
-// TableName table name
-func (p Link) TableName() string {
-	return "links"
-}
-
-// Card card
-type Card struct {
-	ID        uint      `json:"id" gorm:"primary_key"`
-	Lang      string    `json:"lang"`
-	Loc       string    `json:"loc"`
-	Title     string    `json:"title"`
-	Summary   string    `json:"summary"`
-	Type      string    `json:"type"`
-	Href      string    `json:"href"`
-	Logo      string    `json:"logo"`
-	SortOrder int       `json:"sortOrder" sql:",notnull"`
-	Action    string    `json:"action"`
-	UpdatedAt time.Time `json:"updatedAt"`
-	CreatedAt time.Time `json:"createdAt"`
-}
-
-// TableName table name
-func (p Card) TableName() string {
-	return "cards"
-}
-
-// FriendLink friend_links
-type FriendLink struct {
-	ID        uint      `json:"id" gorm:"primary_key"`
-	Title     string    `json:"title"`
-	Home      string    `json:"home"`
-	Logo      string    `json:"logo"`
-	SortOrder int       `json:"sortOrder"`
-	UpdatedAt time.Time `json:"updatedAt"`
-	CreatedAt time.Time `json:"createdAt"`
-}
-
-// TableName table name
-func (p FriendLink) TableName() string {
-	return "friend_links"
-}
+// -----------------------------------------------------------------------------
 
 func init() {
-	orm.RegisterModel(new(Locale), new(Setting))
+	orm.RegisterModel(
+		new(Locale), new(Setting),
+		new(Domain), new(User), new(Alias), new(Log), new(Role), new(Policy),
+	)
 }

@@ -7,6 +7,18 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
+const (
+	// RoleAdmin admin role
+	RoleAdmin = "admin"
+	// RoleRoot root role
+	RoleRoot = "root"
+
+	// DefaultResourceType default resource type
+	DefaultResourceType = ""
+	// DefaultResourceID default resourc id
+	DefaultResourceID = 0
+)
+
 // AllLocales locale map by lang
 func AllLocales(o orm.Ormer, lang string) (map[string]string, error) {
 	rst := make(map[string]string)
