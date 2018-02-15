@@ -1,8 +1,10 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import registerServiceWorker from './registerServiceWorker';
+import '@babel/polyfill';
+import 'url-polyfill';
+import FastClick from 'fastclick';
 
-ReactDOM.render(<App />, document.getElementById('root'));
-registerServiceWorker();
+import registerServiceWorker from './registerServiceWorker'
+import main from './main'
+
+main('root')
+FastClick.attach(document.body);
+registerServiceWorker()
