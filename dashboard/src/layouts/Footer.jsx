@@ -25,7 +25,7 @@ class Widget extends Component {
       }
     }
     if (site.languages.length === 0) {
-      get('/layout').then((rst) => refresh(rst)).catch(message.error)
+      get('/api/layout').then((rst) => refresh(rst)).catch(message.error)
     }
   }
   render() {
@@ -34,11 +34,6 @@ class Widget extends Component {
     return (<Footer style={{
         textAlign: 'center'
       }}>
-      {
-        site.footer.map((it, id) => (<a style={{
-            paddingRight: '8px'
-          }} key={id} target="_blank" href={it.href}>{it.label}</a>))
-      }
       &copy;{site.copyright}
       {
         site.languages.map((l, i) => (<a style={{

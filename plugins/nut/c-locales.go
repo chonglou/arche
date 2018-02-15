@@ -3,9 +3,10 @@ package nut
 import "github.com/astaxie/beego/orm"
 
 // IndexLocales list all locales
-// @router /locales [get]
+// @router /locales/:lang [get]
 func (p *API) IndexLocales() {
-	items, err := AllLocales(orm.NewOrm(), p.Lang)
-	p.Check(err)
-	p.JSON(items)
+	p.JSON(func() (interface{}, error) {
+		items, err := AllLocales(orm.NewOrm(), p.Ctx.Input.Param(":lang"))
+		return items, err
+	})
 }

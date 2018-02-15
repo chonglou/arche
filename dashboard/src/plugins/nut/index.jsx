@@ -11,8 +11,8 @@ export default {
       path: "/",
       component: import ('./Home')
     }, {
-      path: "/donate",
-      component: import ('./Donate')
+      path: "/install",
+      component: import ('./Install')
     }, {
       path: "/users/sign-in",
       component: import ('./users/SignIn')

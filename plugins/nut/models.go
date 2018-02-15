@@ -2,6 +2,7 @@ package nut
 
 import (
 	"crypto/md5"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"strings"
@@ -9,7 +10,11 @@ import (
 
 	"github.com/astaxie/beego/orm"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
+
+// H hash
+type H map[string]interface{}
 
 // Locale locale
 type Locale struct {
@@ -17,8 +22,8 @@ type Locale struct {
 	Lang      string    `json:"lang"`
 	Code      string    `json:"code"`
 	Message   string    `json:"message"`
-	UpdatedAt time.Time `json:"updatedAt"`
-	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt" orm:"auto_now"`
+	CreatedAt time.Time `json:"createdAt" orm:"auto_now_add"`
 }
 
 // TableName table name
@@ -34,8 +39,8 @@ type Setting struct {
 	Key       string
 	Value     string
 	Encode    bool
-	UpdatedAt time.Time
-	CreatedAt time.Time
+	UpdatedAt time.Time `json:"updatedAt" orm:"auto_now"`
+	CreatedAt time.Time `json:"createdAt" orm:"auto_now_add"`
 }
 
 // TableName table name
@@ -45,24 +50,6 @@ func (p *Setting) TableName() string {
 
 // -----------------------------------------------------------------------------
 
-// Domain domain
-type Domain struct {
-	ID        uint      `json:"id" orm:"column(id)"`
-	Name      string    `json:"name"`
-	UpdatedAt time.Time `json:"updatedAt"`
-	CreatedAt time.Time `json:"createdAt"`
-}
-
-//SetName set name
-func (p *Domain) SetName(n string) {
-	p.Name = strings.ToLower(n)
-}
-
-// TableName table name
-func (p *Domain) TableName() string {
-	return "domains"
-}
-
 // User user
 type User struct {
 	ID              uint       `json:"id" orm:"column(id)"`
@@ -70,6 +57,8 @@ type User struct {
 	Email           string     `json:"email"`
 	UID             string     `json:"uid" orm:"column(uid)"`
 	Password        string     `json:"-"`
+	ProviderID      string     `json:"providerId" orm:"column(provider_id)"`
+	ProviderType    string     `json:"providerType"`
 	Logo            string     `json:"logo"`
 	SignInCount     uint       `json:"signInCount"`
 	LastSignInAt    *time.Time `json:"lastSignInAt"`
@@ -77,12 +66,32 @@ type User struct {
 	CurrentSignInAt *time.Time `json:"currentSignInAt"`
 	CurrentSignInIP string     `json:"currentSignInIp" orm:"column(current_sign_in_ip)"`
 	ConfirmedAt     *time.Time `json:"confirmedAt"`
-	LockedAt        *time.Time `json:"lockAt"`
-	UpdatedAt       time.Time  `json:"updatedAt"`
-	CreatedAt       time.Time  `json:"createdAt"`
+	LockedAt        *time.Time `json:"lockedAt"`
+	UpdatedAt       time.Time  `json:"updatedAt" orm:"auto_now"`
+	CreatedAt       time.Time  `json:"createdAt" orm:"auto_now_add"`
 
-	Logs   []*Log  `orm:"reverse(many)"`
-	Domain *Domain `orm:"rel(fk)"`
+	Logs []*Log `json:"logs" orm:"reverse(many)"`
+}
+
+// SetEmail set email
+func (p *User) SetEmail(s string) {
+	p.Email = strings.ToLower(s)
+}
+
+// SetPassword set password
+func (p *User) SetPassword(s string) error {
+	buf, err := bcrypt.GenerateFromPassword([]byte(s), 16)
+	if err != nil {
+		return err
+	}
+	p.Password = base64.StdEncoding.EncodeToString(buf)
+	return nil
+}
+
+// Auth check email & password
+func (p *User) Auth(email, password string) bool {
+	buf, err := base64.StdEncoding.DecodeString(p.Password)
+	return err == nil && bcrypt.CompareHashAndPassword(buf, []byte(password)) == nil
 }
 
 // IsConfirm is confirm?
@@ -107,11 +116,6 @@ func (p *User) SetUID() {
 	p.UID = uuid.New().String()
 }
 
-//SetEmail set email
-func (p *User) SetEmail(e string) {
-	p.Email = strings.ToLower(e)
-}
-
 func (p User) String() string {
 	return fmt.Sprintf("%s<%s>", p.Name, p.Email)
 }
@@ -121,43 +125,40 @@ func (p *User) TableName() string {
 	return "users"
 }
 
-// Alias alias
-type Alias struct {
-	ID          uint      `json:"id" orm:"column(id)"`
-	Source      string    `json:"source"`
-	Destination string    `json:"destination"`
-	UpdatedAt   time.Time `json:"updatedAt"`
-	CreatedAt   time.Time `json:"createdAt"`
-
-	Domain *Domain `orm:"rel(fk)"`
+// Attachment attachment
+type Attachment struct {
+	ID           uint      `json:"id" orm:"column(id)"`
+	Title        string    `json:"title"`
+	URL          string    `json:"url"`
+	Length       int64     `json:"length"`
+	MediaType    string    `json:"mediaType"`
+	ResourceID   uint      `json:"resourceId" orm:"column(resource_id)"`
+	ResourceType string    `json:"resourceType"`
+	User         *User     `json:"user" orm:"rel(fk)"`
+	UpdatedAt    time.Time `json:"updatedAt" orm:"auto_now"`
+	CreatedAt    time.Time `json:"createdAt" orm:"auto_now_add"`
 }
 
-// SetSource set source
-func (p *Alias) SetSource(s string) {
-	p.Source = strings.ToLower(s)
-}
-
-// SetDestination set destination
-func (p *Alias) SetDestination(d string) {
-	p.Destination = strings.ToLower(d)
+// IsPicture is picture?
+func (p *Attachment) IsPicture() bool {
+	return strings.HasPrefix(p.MediaType, "image/")
 }
 
 // TableName table name
-func (p *Alias) TableName() string {
-	return "aliases"
+func (p *Attachment) TableName() string {
+	return "attachments"
 }
 
 // Log log
 type Log struct {
 	ID        uint      `json:"id" orm:"column(id)"`
 	Message   string    `json:"message"`
-	IP        string    `json:"ip"`
-	CreatedAt time.Time `json:"createdAt"`
-
-	User *User `orm:"rel(fk)"`
+	IP        string    `json:"ip" orm:"column(ip)"`
+	User      *User     `json:"user" orm:"rel(fk)"`
+	CreatedAt time.Time `json:"createdAt" orm:"auto_now_add"`
 }
 
-func (p *Log) String() string {
+func (p Log) String() string {
 	return fmt.Sprintf("%s: [%s]\t %s", p.CreatedAt.Format(time.ANSIC), p.IP, p.Message)
 }
 
@@ -168,19 +169,19 @@ func (p *Log) TableName() string {
 
 // Policy policy
 type Policy struct {
-	ID        uint ` orm:"column(id)"`
-	StartUp   time.Time
-	ShutDown  time.Time
-	User      *User `orm:"rel(fk)"`
-	Role      *Role `orm:"rel(fk)"`
-	UpdatedAt time.Time
-	CreatedAt time.Time
+	ID        uint `orm:"column(id)"`
+	Nbf       time.Time
+	Exp       time.Time
+	User      *User     `orm:"rel(fk)"`
+	Role      *Role     `orm:"rel(fk)"`
+	UpdatedAt time.Time `json:"updatedAt" orm:"auto_now"`
+	CreatedAt time.Time `json:"createdAt" orm:"auto_now_add"`
 }
 
 //Enable is enable?
 func (p *Policy) Enable() bool {
 	now := time.Now()
-	return now.After(p.StartUp) && now.Before(p.ShutDown)
+	return now.After(p.Nbf) && now.Before(p.Exp)
 }
 
 // TableName table name
@@ -192,13 +193,13 @@ func (p *Policy) TableName() string {
 type Role struct {
 	ID           uint `orm:"column(id)"`
 	Name         string
-	ResourceID   uint
+	ResourceID   uint `orm:"column(resource_id)"`
 	ResourceType string
-	UpdatedAt    time.Time
-	CreatedAt    time.Time
+	UpdatedAt    time.Time `json:"updatedAt" orm:"auto_now"`
+	CreatedAt    time.Time `json:"createdAt" orm:"auto_now_add"`
 }
 
-func (p *Role) String() string {
+func (p Role) String() string {
 	return fmt.Sprintf("%s@%s://%d", p.Name, p.ResourceType, p.ResourceID)
 }
 
@@ -209,9 +210,97 @@ func (p *Role) TableName() string {
 
 // -----------------------------------------------------------------------------
 
+// Vote vote
+type Vote struct {
+	ID           uint `orm:"column(id)"`
+	Point        int
+	ResourceID   uint `orm:"column(resource_id)"`
+	ResourceType string
+	UpdatedAt    time.Time `json:"updatedAt" orm:"auto_now"`
+	CreatedAt    time.Time `json:"createdAt" orm:"auto_now_add"`
+}
+
+// TableName table name
+func (p Vote) TableName() string {
+	return "votes"
+}
+
+// LeaveWord leave-word
+type LeaveWord struct {
+	ID        uint      `json:"id" orm:"column(id)"`
+	Body      string    `json:"body"`
+	Type      string    `json:"type"`
+	CreatedAt time.Time `json:"createdAt" orm:"auto_now_add"`
+}
+
+// TableName table name
+func (p LeaveWord) TableName() string {
+	return "leave_words"
+}
+
+// Link link
+type Link struct {
+	ID        uint      `json:"id" orm:"column(id)"`
+	Lang      string    `json:"lang"`
+	X         int       `json:"x"`
+	Y         int       `json:"x"`
+	Href      string    `json:"href"`
+	Label     string    `json:"label"`
+	Loc       string    `json:"loc"`
+	UpdatedAt time.Time `json:"updatedAt" orm:"auto_now"`
+	CreatedAt time.Time `json:"createdAt" orm:"auto_now_add"`
+}
+
+// TableName table name
+func (p *Link) TableName() string {
+	return "links"
+}
+
+// Card card
+type Card struct {
+	ID        uint      `json:"id" orm:"column(id)"`
+	Lang      string    `json:"lang"`
+	Loc       string    `json:"loc"`
+	Title     string    `json:"title"`
+	Summary   string    `json:"summary"`
+	Type      string    `json:"type"`
+	Href      string    `json:"href"`
+	Logo      string    `json:"logo"`
+	Sort      int       `json:"sort"`
+	Action    string    `json:"action"`
+	UpdatedAt time.Time `json:"updatedAt" orm:"auto_now"`
+	CreatedAt time.Time `json:"createdAt" orm:"auto_now_add"`
+}
+
+// TableName table name
+func (p *Card) TableName() string {
+	return "cards"
+}
+
+// FriendLink friend_links
+type FriendLink struct {
+	ID        uint      `json:"id" orm:"column(id)"`
+	Title     string    `json:"title"`
+	Home      string    `json:"home"`
+	Logo      string    `json:"logo"`
+	Order     int       `json:"sort"`
+	UpdatedAt time.Time `json:"updatedAt" orm:"auto_now"`
+	CreatedAt time.Time `json:"createdAt" orm:"auto_now_add"`
+}
+
+// TableName table name
+func (p *FriendLink) TableName() string {
+	return "friend_links"
+}
+
+// -----------------------------------------------------------------------------
+
 func init() {
 	orm.RegisterModel(
 		new(Locale), new(Setting),
-		new(Domain), new(User), new(Alias), new(Log), new(Role), new(Policy),
+		new(User), new(Log), new(Role), new(Policy),
+		new(Card), new(Link),
+		new(LeaveWord), new(Attachment),
+		new(FriendLink), new(Vote),
 	)
 }

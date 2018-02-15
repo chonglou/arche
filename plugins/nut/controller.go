@@ -1,10 +1,14 @@
 package nut
 
 import (
+	"encoding/json"
+	"errors"
 	"math"
 	"net/http"
+	"strings"
 
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/validation"
 	"github.com/beego/i18n"
 	"golang.org/x/text/language"
 )
@@ -16,22 +20,54 @@ type Controller struct {
 	Lang string
 }
 
-// Check check error
-func (p *Controller) Check(err error) {
-	if err != nil {
-		p.CustomAbort(http.StatusInternalServerError, err.Error())
-	}
-}
-
 // Prepare runs after Init before request function execution.
 func (p *Controller) Prepare() {
 	p.setLocale()
 }
 
+func (p *Controller) valid(v interface{}) error {
+	var valid validation.Validation
+	ok, err := valid.Valid(v)
+	if ok {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+
+	var msg []string
+	for _, it := range valid.Errors {
+		msg = append(msg, it.Message)
+	}
+	return errors.New(strings.Join(msg, "\n"))
+}
+
+// BindJson bind to json data
+func (p *Controller) BindJSON(v interface{}) error {
+	if err := json.NewDecoder(p.Ctx.Request.Body).Decode(v); err != nil {
+		return err
+	}
+	return p.valid(v)
+}
+
+// BindForm bind to form data
+func (p *Controller) BindForm(v interface{}) error {
+
+	if err := p.ParseForm(v); err != nil {
+		return err
+	}
+	return p.valid(v)
+}
+
 // JSON render json
-func (p *Controller) JSON(v interface{}) {
-	p.Data["json"] = v
-	p.ServeJSON()
+func (p *Controller) JSON(f func() (interface{}, error)) {
+	if v, e := f(); e == nil {
+		p.Data["json"] = v
+		p.ServeJSON()
+	} else {
+		beego.Error(e)
+		p.CustomAbort(http.StatusInternalServerError, e.Error())
+	}
 }
 
 func (p *Controller) setLocale() {

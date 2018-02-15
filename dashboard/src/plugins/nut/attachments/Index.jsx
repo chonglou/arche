@@ -15,7 +15,7 @@ import {push} from 'react-router-redux'
 import {CopyToClipboard} from 'react-copy-to-clipboard'
 
 import Layout from '../../../layouts/dashboard'
-import {get, _delete, backend} from '../../../ajax'
+import {get, _delete} from '../../../ajax'
 import {getToken, USER, ADMIN} from '../../../auth'
 
 class Widget extends Component {
@@ -46,7 +46,7 @@ class Widget extends Component {
       ]} title={title} roles={[USER, ADMIN]}>
       <Row>
         <Col>
-          <Upload multiple={true} withCredentials={true} name="file" action={backend("/attachments")} headers={{
+          <Upload multiple={true} withCredentials={true} name="file" action={"/attachments"} headers={{
               'Authorization' : `BEARER ${getToken()}`
             }}>
             <Button>

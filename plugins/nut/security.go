@@ -1,9 +1,70 @@
 package nut
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
 	"crypto/sha512"
 	"encoding/base64"
+	"sync"
+
+	"github.com/astaxie/beego"
 )
+
+var (
+	_aes     *Aes
+	_aesOnce sync.Once
+)
+
+// GetAes get aes instance.
+func GetAes() *Aes {
+	_aesOnce.Do(func() {
+		key, err := base64.StdEncoding.DecodeString(beego.AppConfig.String("secrets"))
+		if err != nil {
+			beego.Error(err)
+			return
+		}
+		cip, err := aes.NewCipher(key)
+		if err != nil {
+			beego.Error(err)
+			return
+		}
+		_aes = &Aes{cip: cip}
+	})
+
+	return _aes
+}
+
+// Aes aes helper
+type Aes struct {
+	cip cipher.Block
+}
+
+// Encrypt aes encrypt
+func (p *Aes) Encrypt(buf []byte) ([]byte, error) {
+	iv := make([]byte, aes.BlockSize)
+	if _, err := rand.Read(iv); err != nil {
+		return nil, err
+	}
+	cfb := cipher.NewCFBEncrypter(p.cip, iv)
+	val := make([]byte, len(buf))
+	cfb.XORKeyStream(val, buf)
+
+	return append(val, iv...), nil
+}
+
+//  Decrypt aes decrypt
+func (p *Aes) Decrypt(buf []byte) ([]byte, error) {
+	bln := len(buf)
+	cln := bln - aes.BlockSize
+	ct := buf[0:cln]
+	iv := buf[cln:bln]
+
+	cfb := cipher.NewCFBDecrypter(p.cip, iv)
+	val := make([]byte, cln)
+	cfb.XORKeyStream(val, ct)
+	return val, nil
+}
 
 // SumSsha512 sum ssha512
 func SumSsha512(plain string, sl int) (string, error) {

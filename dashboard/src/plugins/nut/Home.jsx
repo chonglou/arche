@@ -2,41 +2,22 @@ import React, {Component} from 'react'
 import PropTypes from 'prop-types'
 import {connect} from 'react-redux'
 import {push} from 'react-router-redux'
-import {Col, Row, message} from 'antd'
 
-import Layout from '../../layouts/application'
-import Quill from '../../components/Quill'
-import {get} from '../../ajax'
+import SignIn from '../../plugins/nut/users/SignIn'
+import Logs from '../../plugins/nut/users/Logs'
 
 class Widget extends Component {
-  state = {
-    body: ''
-  }
-  componentDidMount() {
-    get('/home').then((rst) => {
-      this.setState(rst)
-    }).catch(message.error);
-  }
   render() {
-    return (<Layout breads={[]} title={{
-        id: "nut.home.title"
-      }}>
-      <Row>
-        <Col md={{
-            span: 18,
-            offset: 3
-          }}>
-          <Quill body={this.state.body}/>
-        </Col>
-      </Row>
-    </Layout>);
+    const {user} = this.props
+    return user.uid
+      ? <Logs/>
+      : <SignIn/>
   }
 }
 
 Widget.propTypes = {
   push: PropTypes.func.isRequired,
-  user: PropTypes.object.isRequired,
-  site: PropTypes.object.isRequired
+  user: PropTypes.object.isRequired
 }
 
-export default connect(state => ({user: state.currentUser, site: state.siteInfo}), {push})(Widget)
+export default connect(state => ({user: state.currentUser}), {push})(Widget)

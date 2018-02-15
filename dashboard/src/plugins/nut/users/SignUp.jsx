@@ -30,7 +30,7 @@ class Widget extends Component {
     const {formatMessage} = this.props.intl
     const {getFieldValue} = this.props.form
     if (value && value !== getFieldValue('password')) {
-      callback(formatMessage({id: "errors.passwords-not-match"}));
+      callback(formatMessage({id: "validator.password-confirmation"}));
     } else {
       callback();
     }
@@ -58,7 +58,7 @@ class Widget extends Component {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({id: "errors.empty"})
+                      message: formatMessage({id: "validator.required"})
                     }
                   ]
                 })(<Input/>)
@@ -70,10 +70,10 @@ class Widget extends Component {
                   rules: [
                     {
                       type: 'email',
-                      message: formatMessage({id: "errors.not-valid-email"})
+                      message: formatMessage({id: "validator.email"})
                     }, {
                       required: true,
-                      message: formatMessage({id: "errors.empty-email"})
+                      message: formatMessage({id: "validator.required"})
                     }
                   ]
                 })(<Input/>)
@@ -85,19 +85,21 @@ class Widget extends Component {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({id: "errors.empty-password"})
+                      min: 6,
+                      max: 32,
+                      message: formatMessage({id: "validator.password"})
                     }
                   ]
                 })(<Input type="password"/>)
               }
             </FormItem>
-            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.passwordConfirmation" />} hasFeedback={true}>
+            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.password-confirmation" />} hasFeedback={true}>
               {
                 getFieldDecorator('passwordConfirmation', {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({id: "errors.empty"})
+                      message: formatMessage({id: "validator.required"})
                     }, {
                       validator: this.checkPassword
                     }

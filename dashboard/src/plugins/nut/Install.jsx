@@ -5,44 +5,72 @@ import {injectIntl, intlShape, FormattedMessage} from 'react-intl'
 import {connect} from 'react-redux'
 import {push} from 'react-router-redux'
 
-import Layout from '../../../layouts/application'
-import {post} from '../../../ajax'
-import {Submit, formItemLayout} from '../../../components/form'
-import {signIn} from '../../../actions'
-import SharedLinks from './SharedLinks'
+import Layout from '../../layouts/application'
+import {post} from '../../ajax'
+import {Submit, formItemLayout} from '../../components/form'
 
 const FormItem = Form.Item
 
 class Widget extends Component {
   handleSubmit = (e) => {
-    const {push, signIn} = this.props
+    const {push} = this.props
+    const {formatMessage} = this.props.intl
     e.preventDefault();
     this.props.form.validateFields((err, values) => {
       if (!err) {
-        post('/users/sign-in', values).then((rst) => {
-          signIn(rst.token)
-          push('/users/logs')
+        post('/api/install', values).then(() => {
+          message.info(formatMessage({id: "flash.success"}))
+          push('/users/sign-in')
         }).catch(message.error);
       }
     });
+  }
+  checkPassword = (rule, value, callback) => {
+    const {formatMessage} = this.props.intl
+    const {getFieldValue} = this.props.form
+    if (value && value !== getFieldValue('password')) {
+      callback(formatMessage({id: "validator.password-confirmation"}));
+    } else {
+      callback();
+    }
   }
   render() {
     const {formatMessage} = this.props.intl
     const {getFieldDecorator} = this.props.form
     const title = {
-      id: "nut.users.sign-in.title"
+      id: "nut.install.title"
     }
     return (<Layout breads={[{
-          href: "/users/sign-in",
+          href: "/install",
           label: title
         }
       ]} title={title}>
       <Row>
         <Col md={{
             span: 12,
+            offset: 4
+          }}>
+          <FormattedMessage tagName="h2" id="nut.install.manager"/>
+        </Col>
+      </Row>
+      <Row>
+        <Col md={{
+            span: 12,
             offset: 2
           }}>
           <Form onSubmit={this.handleSubmit}>
+            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.username" />} hasFeedback={true}>
+              {
+                getFieldDecorator('name', {
+                  rules: [
+                    {
+                      required: true,
+                      message: formatMessage({id: "validator.required"})
+                    }
+                  ]
+                })(<Input/>)
+              }
+            </FormItem>
             <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.email" />} hasFeedback={true}>
               {
                 getFieldDecorator('email', {
@@ -64,7 +92,23 @@ class Widget extends Component {
                   rules: [
                     {
                       required: true,
+                      min: 6,
+                      max: 32,
+                      message: formatMessage({id: "validator.password"})
+                    }
+                  ]
+                })(<Input type="password"/>)
+              }
+            </FormItem>
+            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.password-confirmation" />} hasFeedback={true}>
+              {
+                getFieldDecorator('passwordConfirmation', {
+                  rules: [
+                    {
+                      required: true,
                       message: formatMessage({id: "validator.required"})
+                    }, {
+                      validator: this.checkPassword
                     }
                   ]
                 })(<Input type="password"/>)
@@ -73,7 +117,6 @@ class Widget extends Component {
             <Submit/>
           </Form>
         </Col>
-        <SharedLinks/>
       </Row>
     </Layout>);
   }
@@ -81,13 +124,11 @@ class Widget extends Component {
 
 Widget.propTypes = {
   intl: intlShape.isRequired,
-  push: PropTypes.func.isRequired,
-  signIn: PropTypes.func.isRequired
+  push: PropTypes.func.isRequired
 }
 
 const WidgetF = Form.create()(injectIntl(Widget))
 
 export default connect(state => ({}), {
-  push,
-  signIn
+  push
 },)(WidgetF)

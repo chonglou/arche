@@ -1,6 +1,7 @@
 package nut
 
 import (
+	"errors"
 	"fmt"
 	"path"
 	"time"
@@ -22,6 +23,11 @@ func loadLocales() error {
 		}
 	}
 	return nil
+}
+
+// Te translate content to target language.
+func Te(lang, code string, args ...interface{}) error {
+	return errors.New(Tr(lang, code, args...))
 }
 
 // Tr translate content to target language.

@@ -25,7 +25,7 @@ const main = (id) => {
     router: routerReducer
   }), applyMiddleware(middleware))
 
-  get(`/locales/${user.locale}`).then((rst) => {
+  get(`/api/locales/${user.locale}`).then((rst) => {
     user.messages = {
       ...rst
     }

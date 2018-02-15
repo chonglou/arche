@@ -7,7 +7,7 @@
 </head>
 
 <body>
-  <h1>{{t .locale "buttons.submit"}}</h1>
+  <h1>{{t .locale "nut.home.title"}}</h1>
 
 </body>
 </html>
