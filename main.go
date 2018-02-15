@@ -5,7 +5,7 @@ import (
 	"os"
 
 	_ "github.com/astaxie/beego/cache/redis"
-	"github.com/chonglou/arche/nut"
+	"github.com/chonglou/arche/plugins/nut"
 	_ "github.com/chonglou/arche/routers"
 	_ "github.com/lib/pq"
 )

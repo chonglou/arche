@@ -2,7 +2,7 @@ package routers
 
 import (
 	"github.com/astaxie/beego"
-	"github.com/chonglou/arche/nut"
+	"github.com/chonglou/arche/plugins/nut"
 )
 
 func init() {

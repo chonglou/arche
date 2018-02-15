@@ -7,9 +7,8 @@ import (
 	"runtime"
 	"testing"
 
-	_ "github.com/chonglou/arche/routers"
-
 	"github.com/astaxie/beego"
+	_ "github.com/chonglou/arche/routers"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

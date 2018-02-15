@@ -171,8 +171,8 @@ type Policy struct {
 	ID        uint ` orm:"column(id)"`
 	StartUp   time.Time
 	ShutDown  time.Time
-	User      *User `orm:"reverse(one)"`
-	Role      *Role `orm:"reverse(one)"`
+	User      *User `orm:"rel(fk)"`
+	Role      *Role `orm:"rel(fk)"`
 	UpdatedAt time.Time
 	CreatedAt time.Time
 }

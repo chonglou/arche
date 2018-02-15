@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	"github.com/chonglou/arche/nut"
+	"github.com/chonglou/arche/plugins/nut"
 )
 
 // TestSsha512 test dovecot SSHA512
