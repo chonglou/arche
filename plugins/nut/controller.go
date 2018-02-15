@@ -22,6 +22,7 @@ type Controller struct {
 
 // Prepare runs after Init before request function execution.
 func (p *Controller) Prepare() {
+	p.Layout = "layouts/application/index.html"
 	p.setLocale()
 }
 
@@ -42,7 +43,7 @@ func (p *Controller) valid(v interface{}) error {
 	return errors.New(strings.Join(msg, "\n"))
 }
 
-// BindJson bind to json data
+// BindJSON bind to json data
 func (p *Controller) BindJSON(v interface{}) error {
 	if err := json.NewDecoder(p.Ctx.Request.Body).Decode(v); err != nil {
 		return err
@@ -52,11 +53,30 @@ func (p *Controller) BindJSON(v interface{}) error {
 
 // BindForm bind to form data
 func (p *Controller) BindForm(v interface{}) error {
-
 	if err := p.ParseForm(v); err != nil {
 		return err
 	}
 	return p.valid(v)
+}
+
+// HTML render html
+func (p *Controller) HTML(tpl string, f func() error) {
+	if err := f(); err != nil {
+		beego.Error(err)
+		p.TplName = "nut/error.html"
+		p.Data["reason"] = err.Error()
+	}
+}
+
+// Redirect redirect
+func (p *Controller) Redirect(u string, f func() error) {
+	if e := f(); e == nil {
+		p.Controller.Redirect(u, http.StatusFound)
+	} else {
+		beego.Error(e)
+		p.TplName = "nut/error.html"
+		p.Data["reason"] = e.Error()
+	}
 }
 
 // JSON render json

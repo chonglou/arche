@@ -5,7 +5,7 @@ import "github.com/astaxie/beego"
 // Home home
 // @router / [get]
 func (p *HTML) Home() {
-	p.TplName = "index.tpl"
+	p.TplName = "nut/index.html"
 }
 
 // GetLayout layout

@@ -19,7 +19,7 @@ class Widget extends Component {
     e.preventDefault();
     this.props.form.validateFields((err, values) => {
       if (!err) {
-        post(`/users/${action}`, values).then(() => {
+        post(`/api/users/${action}`, values).then(() => {
           message.info(formatMessage({id: `nut.users.${action}.success`}))
           push('/users/sign-in')
         }).catch(message.error);
@@ -50,10 +50,10 @@ class Widget extends Component {
                   rules: [
                     {
                       type: 'email',
-                      message: formatMessage({id: "errors.not-valid-email"})
+                      message: formatMessage({id: "validator.email"})
                     }, {
                       required: true,
-                      message: formatMessage({id: "errors.empty-email"})
+                      message: formatMessage({id: "validator.required"})
                     }
                   ]
                 })(<Input/>)

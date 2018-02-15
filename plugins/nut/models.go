@@ -2,7 +2,6 @@ package nut
 
 import (
 	"crypto/md5"
-	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"strings"
@@ -84,14 +83,15 @@ func (p *User) SetPassword(s string) error {
 	if err != nil {
 		return err
 	}
-	p.Password = base64.StdEncoding.EncodeToString(buf)
+	p.Password = string(buf)
 	return nil
 }
 
 // Auth check email & password
 func (p *User) Auth(email, password string) bool {
-	buf, err := base64.StdEncoding.DecodeString(p.Password)
-	return err == nil && bcrypt.CompareHashAndPassword(buf, []byte(password)) == nil
+	return p.ProviderType == UserTypeEmail &&
+		email == p.Email &&
+		bcrypt.CompareHashAndPassword([]byte(p.Password), []byte(password)) == nil
 }
 
 // IsConfirm is confirm?

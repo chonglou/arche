@@ -22,8 +22,8 @@ func backup() error {
 	return nil
 }
 
-// RegisterTask register tasks
-func RegisterTask(args map[string]toolbox.TaskFunc) {
+// RegisterCrontabTask register crontab tasks
+func RegisterCrontabTask(args map[string]toolbox.TaskFunc) {
 	for s, f := range args {
 		name := GetFunctionName(f)
 		toolbox.AddTask(name, toolbox.NewTask(name, s, f))
@@ -63,7 +63,7 @@ func RegisterTask(args map[string]toolbox.TaskFunc) {
 //  0 2 8-20/3 * * *　　　　　　             8:02,11:02,14:02,17:02,20:02 执行
 //  0 30 5 1,15 * *　　　　　　              1 日 和 15 日的 5:30 执行
 func init() {
-	RegisterTask(map[string]toolbox.TaskFunc{
+	RegisterCrontabTask(map[string]toolbox.TaskFunc{
 		"0 0 0 1 * *":    statistics,
 		"0 0 1 * * *":    seo,
 		"0 0 3 * * *":    backup,

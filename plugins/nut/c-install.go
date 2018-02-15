@@ -5,9 +5,9 @@ import (
 )
 
 type fmInstall struct {
-	Name     string `form:"name" valid:"Required"`
-	Email    string `form:"email" valid:"Email;MaxSize(255)"`
-	Password string `form:"password" valid:"Required;MinSize(6);MaxSize(32)"`
+	Name     string `json:"name" valid:"Required"`
+	Email    string `json:"email" valid:"Email;MaxSize(255)"`
+	Password string `json:"password" valid:"Required;MinSize(6);MaxSize(32)"`
 }
 
 // PostInstall install

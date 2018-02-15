@@ -1,6 +1,7 @@
 package nut
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/Unknwon/goconfig"
@@ -21,6 +22,48 @@ const (
 	// DefaultResourceID default resourc id
 	DefaultResourceID = 0
 )
+
+// Set settings set
+func Set(o orm.Ormer, k string, v interface{}, f bool) error {
+	buf, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	var it Setting
+	err = o.QueryTable(new(Setting)).Filter("key", k).One(&it, "id")
+	it.Encode = f
+	if f {
+		buf, err = AES().Encrypt(buf)
+		if err != nil {
+			return err
+		}
+	}
+	it.Value = string(buf)
+
+	if err == nil {
+		_, err = o.Update(&it, "encode", "value")
+	} else {
+		it.Key = k
+		_, err = o.Insert(&it)
+	}
+	return err
+}
+
+// Get settings get
+func Get(o orm.Ormer, k string, v interface{}) error {
+	var it Setting
+	err := o.QueryTable(new(Setting)).Filter("key", k).One(&it, "id")
+	if err != nil {
+		return err
+	}
+	buf := []byte(it.Value)
+	if it.Encode {
+		if buf, err = AES().Decrypt(buf); err != nil {
+			return err
+		}
+	}
+	return json.Unmarshal(buf, v)
+}
 
 //Is is role ?
 func Is(o orm.Ormer, user uint, names ...string) bool {

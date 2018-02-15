@@ -16,8 +16,8 @@ var (
 	_aesOnce sync.Once
 )
 
-// GetAes get aes instance.
-func GetAes() *Aes {
+// AES get aes instance.
+func AES() *Aes {
 	_aesOnce.Do(func() {
 		key, err := base64.StdEncoding.DecodeString(beego.AppConfig.String("secrets"))
 		if err != nil {
@@ -53,7 +53,7 @@ func (p *Aes) Encrypt(buf []byte) ([]byte, error) {
 	return append(val, iv...), nil
 }
 
-//  Decrypt aes decrypt
+// Decrypt aes decrypt
 func (p *Aes) Decrypt(buf []byte) ([]byte, error) {
 	bln := len(buf)
 	cln := bln - aes.BlockSize

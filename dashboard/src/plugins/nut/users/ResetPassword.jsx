@@ -20,8 +20,8 @@ class Widget extends Component {
     this.props.form.validateFields((err, values) => {
       if (!err) {
         values.token = match.params.token
-        post('/users/reset-password', values).then(() => {
-          message.info(formatMessage({id: "nut.emails.user.reset-password.success"}))
+        post('/api/users/reset-password', values).then(() => {
+          message.info(formatMessage({id: "nut.users.reset-password.success"}))
           push('/users/sign-in')
         }).catch(message.error);
       }
@@ -31,7 +31,7 @@ class Widget extends Component {
     const {formatMessage} = this.props.intl
     const {getFieldValue} = this.props.form
     if (value && value !== getFieldValue('password')) {
-      callback(formatMessage({id: "errors.passwords-not-match"}));
+      callback(formatMessage({id: "validator.password-confirmation"}));
     } else {
       callback();
     }
@@ -59,7 +59,9 @@ class Widget extends Component {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({id: "errors.empty-password"})
+                      min: 6,
+                      max: 32,
+                      message: formatMessage({id: "validator.password"})
                     }, {
                       validator: this.checkConfirm
                     }
@@ -67,13 +69,13 @@ class Widget extends Component {
                 })(<Input type="password"/>)
               }
             </FormItem>
-            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.passwordConfirmation" />} hasFeedback={true}>
+            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.password-confirmation" />} hasFeedback={true}>
               {
                 getFieldDecorator('passwordConfirmation', {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({id: "errors.empty"})
+                      message: formatMessage({id: "validator.required"})
                     }, {
                       validator: this.checkPassword
                     }

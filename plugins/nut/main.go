@@ -62,6 +62,16 @@ func Main(args ...string) error {
 	if err := loadLocales(); err != nil {
 		return err
 	}
+	// start worker
+	go func() {
+		worker := Server().NewWorker(
+			beego.BConfig.ServerName,
+			beego.AppConfig.DefaultInt("workers", 2),
+		)
+		if err := worker.Launch(); err != nil {
+			beego.Error("worker abort", err)
+		}
+	}()
 
 	return app.Run(args)
 
