@@ -38,6 +38,12 @@ Blog Tool, Publishing Platform, and CMS (By Go and React).
   GRANT ALL PRIVILEGES ON DATABASE db-name TO user-name;
   ```
 
+- Generate a random key
+
+  ```bash
+  openssl rand -base64 32
+  ```
+
 ## Atom plugins
 
 enable autosave
