@@ -9,14 +9,14 @@ AUTHOR_EMAIL=`git config --get user.email`
 COPYRIGHT=`head -n 1 LICENSE`
 USAGE=`sed -n '3p' README.md`
 
-build: frontend dashboard
+build: www ds
 	cd $(dist) && tar cfJ ../$(dist).tar.xz *
 
-frontend:
+www:
 	go build -ldflags "-s -w -X ${pkg}.Version=${VERSION} -X '${pkg}.BuildTime=${BUILD_TIME}' -X '${pkg}.AuthorName=${AUTHOR_NAME}' -X ${pkg}.AuthorEmail=${AUTHOR_EMAIL} -X '${pkg}.Copyright=${COPYRIGHT}' -X '${pkg}.Usage=${USAGE}'" -o ${dist}/arche main.go
 	-cp -r db conf locales templates themes LICENSE README.md $(dist)/
 
-dashboard:
+ds:
 	cd dashboard && npm run build
 	-cp -r dashboard/build $(dist)/dashboard
 
