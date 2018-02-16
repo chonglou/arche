@@ -12,7 +12,7 @@ class Widget extends Component {
     items: []
   }
   componentDidMount() {
-    get('/admin/users').then((rst) => {
+    get('/api/admin/users').then((rst) => {
       this.setState({items: rst})
     }).catch(message.error);
   }

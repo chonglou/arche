@@ -60,7 +60,13 @@ func (p *Controller) CurrentUser() (*User, error) {
 
 	var it User
 	o := orm.NewOrm()
-	if err := o.QueryTable(new(User)).Filter("uid", uid).One(&it); err != nil {
+	if err := o.QueryTable(new(User)).
+		Filter("uid", uid).
+		One(&it,
+			"id", "uid",
+			"provider_type", "name", "email",
+			"current_sign_in_at", "locked_at", "confirmed_at",
+		); err != nil {
 		return nil, err
 	}
 	if !it.IsConfirm() {
