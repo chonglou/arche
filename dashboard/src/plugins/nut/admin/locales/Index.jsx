@@ -20,15 +20,19 @@ class Widget extends Component {
     items: []
   }
   componentDidMount() {
-    get('/admin/locales').then((rst) => {
-      this.setState({items: rst})
+    get(`/api/admin/locales`).then((rst) => {
+      this.setState({
+        items: Object.entries(rst).map((v) => {
+          return {code: v[0], message: v[1]}
+        })
+      })
     }).catch(message.error);
   }
-  handleRemove = (id) => {
+  handleRemove = (code) => {
     const {formatMessage} = this.props.intl
-    _delete(`/admin/locales/${id}`).then((rst) => {
+    _delete(`/api/admin/locales/${code}`).then((rst) => {
       message.success(formatMessage({id: 'flash.success'}))
-      var items = this.state.items.filter((it) => it.id !== id)
+      var items = this.state.items.filter((it) => it.code !== code)
       this.setState({items})
     }).catch(message.error)
   }
@@ -45,7 +49,7 @@ class Widget extends Component {
       <Row>
         <Col>
           <Button onClick={(e) => push('/admin/locales/new')} type='primary' shape="circle" icon="plus"/>
-          <Table bordered={true} rowKey="id" dataSource={this.state.items} columns={[
+          <Table bordered={true} rowKey="code" dataSource={this.state.items} columns={[
               {
                 title: <FormattedMessage id="nut.attributes.locale.code"/>,
                 key: 'code',
@@ -58,8 +62,8 @@ class Widget extends Component {
                 title: 'Action',
                 key: 'action',
                 render: (text, record) => (<span>
-                  <Button onClick={(e) => push(`/admin/locales/edit/${record.id}`)} shape="circle" icon="edit"/>
-                  <Popconfirm title={<FormattedMessage id = "helpers.are-you-sure" />} onConfirm={(e) => this.handleRemove(record.id)}>
+                  <Button onClick={(e) => push(`/admin/locales/edit/${record.code}`)} shape="circle" icon="edit"/>
+                  <Popconfirm title={<FormattedMessage id = "helpers.are-you-sure" />} onConfirm={(e) => this.handleRemove(record.code)}>
                     <Button type="danger" shape="circle" icon="delete"/>
                   </Popconfirm>
                 </span>)

@@ -68,7 +68,7 @@ export default {
       path: "/admin/leave-words",
       component: import ('./admin/leave-words/Index')
     }, {
-      path: "/admin/locales/edit/:id",
+      path: "/admin/locales/edit/:code",
       component: AdminFormLocale
     }, {
       path: "/admin/locales/new",

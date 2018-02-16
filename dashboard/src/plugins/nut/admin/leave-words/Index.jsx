@@ -20,13 +20,13 @@ class Widget extends Component {
     items: []
   }
   componentDidMount() {
-    get('/admin/leave-words').then((rst) => {
+    get('/api/leave-words').then((rst) => {
       this.setState({items: rst})
     }).catch(message.error);
   }
   handleRemove = (id) => {
     const {formatMessage} = this.props.intl
-    _delete(`/admin/leave-words/${id}`).then((rst) => {
+    _delete(`/api/leave-words/${id}`).then((rst) => {
       message.success(formatMessage({id: 'flash.success'}))
       var items = this.state.items.filter((it) => it.id !== id)
       this.setState({items})
@@ -48,7 +48,7 @@ class Widget extends Component {
           }}>
           <Table bordered={true} rowKey="id" dataSource={this.state.items} columns={[
               {
-                title: <FormattedMessage id="attributes.createdAt"/>,
+                title: <FormattedMessage id="attributes.created-at"/>,
                 key: 'createdAt',
                 render: (text, record) => (<Moment fromNow={true}>{record.createdAt}</Moment>)
               }, {
@@ -58,7 +58,7 @@ class Widget extends Component {
                   <pre>{record.body}</pre>
                 </div>)
               }, {
-                title: 'Action',
+                title: <FormattedMessage id="attributes.action"/>,
                 key: 'action',
                 render: (text, record) => (<span>
                   <Popconfirm title={<FormattedMessage id = "helpers.are-you-sure" />} onConfirm={(e) => this.handleRemove(record.id)}>
