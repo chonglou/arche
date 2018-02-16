@@ -9,19 +9,14 @@ const {Header} = Layout;
 
 class Widget extends Component {
   render() {
-    const {user} = this.props
     return (<Header>
       <div className="logo"/>
       <Menu theme="dark" mode="horizontal" defaultSelectedKeys={[]} style={{
           lineHeight: '64px'
         }}>
         <Menu.Item key="personal">
-          <Link to={user.uid
-              ? '/users/logs'
-              : '/users/sign-in'}>
-            <FormattedMessage id={user.uid
-                ? 'nut.dashboard.title'
-                : 'nut.users.sign-in.title'}/>
+          <Link to={'/users/sign-in'}>
+            <FormattedMessage id={'nut.users.sign-in.title'}/>
           </Link>
         </Menu.Item>
       </Menu>

@@ -26,7 +26,7 @@ class Widget extends Component {
         confirm({
           title: formatMessage({id: "helpers.are-you-sure"}),
           onOk() {
-            _delete('/users/sign-out').then(() => {
+            _delete('/api/users/sign-out').then(() => {
               signOut()
               push('/users/sign-in')
               message.success(formatMessage({id: 'flash.success'}))

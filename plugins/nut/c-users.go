@@ -9,6 +9,20 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
+// DeleteUsersSignOut sign out
+// @router /users/sign-out [delete]
+func (p *API) DeleteUsersSignOut() {
+	p.JSON(func() (interface{}, error) {
+		user := p.MustSignIn()
+		if err := AddLog(orm.NewOrm(),
+			user.ID, p.Ctx.Input.IP(),
+			p.Lang, "nut.logs.user.sign-out"); err != nil {
+			return nil, err
+		}
+		return H{}, nil
+	})
+}
+
 type fmUserChangePassword struct {
 	CurrentPassword      string `json:"currentPassword" valid:"Required"`
 	NewPassword          string `json:"newPassword" valid:"Required;MinSize(6);MaxSize(32)"`
