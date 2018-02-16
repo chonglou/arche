@@ -90,7 +90,7 @@ func (p *User) SetPassword(s string) error {
 // Auth check email & password
 func (p *User) Auth(email, password string) bool {
 	return p.ProviderType == UserTypeEmail &&
-		email == p.Email &&
+		strings.ToLower(email) == p.Email &&
 		bcrypt.CompareHashAndPassword([]byte(p.Password), []byte(password)) == nil
 }
 

@@ -183,6 +183,29 @@ func Apply(o orm.Ormer, ip, lang string, user uint, name string, rty string, rid
 	return AddLog(o, user, ip, lang, "nut.logs.user.apply", role)
 }
 
+func signIn(o orm.Ormer, lang, ip string, user *User) error {
+	if err := AddLog(o, user.ID, ip, lang, "nut.logs.user.sign-in.success"); err != nil {
+		return err
+	}
+	user.SignInCount++
+	user.LastSignInAt = user.CurrentSignInAt
+	user.LastSignInIP = user.CurrentSignInIP
+	now := time.Now()
+	user.CurrentSignInAt = &now
+	user.CurrentSignInIP = ip
+	user.UpdatedAt = now
+
+	_, err := o.Update(user,
+		"last_sign_in_at",
+		"last_sign_in_ip",
+		"current_sign_in_at",
+		"current_sign_in_ip",
+		"sign_in_count",
+		"updated_at",
+	)
+	return err
+}
+
 func addEmailUser(o orm.Ormer, ip, lang, name, email, password string) (*User, error) {
 	user := User{
 		Name:            name,

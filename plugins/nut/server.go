@@ -7,7 +7,7 @@ import (
 
 	machinery "github.com/RichardKnop/machinery/v1"
 	"github.com/RichardKnop/machinery/v1/config"
-	log "github.com/RichardKnop/machinery/v1/log"
+	"github.com/RichardKnop/machinery/v1/log"
 	"github.com/astaxie/beego"
 )
 
@@ -15,33 +15,33 @@ type serverLogger struct {
 }
 
 func (p *serverLogger) Print(args ...interface{}) {
-	beego.Info(fmt.Print(args...))
+	beego.Info(fmt.Sprint(args...))
 }
 func (p *serverLogger) Printf(f string, args ...interface{}) {
 	beego.Info(fmt.Sprintf(f, args...))
 }
 func (p *serverLogger) Println(args ...interface{}) {
-	beego.Info(fmt.Println(args...))
+	beego.Info(fmt.Sprintln(args...))
 }
 
 func (p *serverLogger) Fatal(args ...interface{}) {
-	beego.Error(fmt.Print(args...))
+	beego.Error(fmt.Sprint(args...))
 }
 func (p *serverLogger) Fatalf(f string, args ...interface{}) {
 	beego.Error(fmt.Sprintf(f, args...))
 }
 func (p *serverLogger) Fatalln(args ...interface{}) {
-	beego.Error(fmt.Println(args...))
+	beego.Error(fmt.Sprintln(args...))
 }
 
 func (p *serverLogger) Panic(args ...interface{}) {
-	beego.Error(fmt.Print(args...))
+	beego.Error(fmt.Sprint(args...))
 }
 func (p *serverLogger) Panicf(f string, args ...interface{}) {
 	beego.Error(fmt.Sprintf(f, args...))
 }
 func (p *serverLogger) Panicln(args ...interface{}) {
-	beego.Error(fmt.Println(args...))
+	beego.Error(fmt.Sprintln(args...))
 }
 
 var (

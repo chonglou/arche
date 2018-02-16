@@ -14,7 +14,7 @@ class Widget extends Component {
     items: []
   }
   componentDidMount() {
-    get('/users/logs').then((rst) => {
+    get('/api/users/logs').then((rst) => {
       this.setState({items: rst})
     }).catch(message.error);
   }
@@ -34,7 +34,7 @@ class Widget extends Component {
           }}>
           <Table bordered={true} rowKey="id" dataSource={this.state.items} columns={[
               {
-                title: <FormattedMessage id="attributes.createdAt"/>,
+                title: <FormattedMessage id="attributes.created-at"/>,
                 key: 'createdAt',
                 render: (text, record) => (<Moment fromNow={true}>{record.createdAt}</Moment>)
               }, {

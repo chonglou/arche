@@ -1,12 +1,83 @@
 package nut
 
 import (
+	"strings"
 	"time"
 
 	"github.com/RichardKnop/machinery/v1/tasks"
 	"github.com/SermoDigital/jose/jws"
 	"github.com/astaxie/beego/orm"
 )
+
+// GetUsersLogs get user logs
+// @router /users/logs [get]
+func (p *API) GetUsersLogs() {
+	p.JSON(func() (interface{}, error) {
+		user := p.MustSignIn()
+		var items []Log
+		if _, err := orm.NewOrm().QueryTable(new(Log)).
+			Filter("user_id", user.ID).
+			OrderBy("-created_at").
+			All(&items); err != nil {
+			return nil, err
+		}
+		return items, nil
+	})
+}
+
+type fmSignIn struct {
+	Email    string `json:"email" valid:"Email"`
+	Password string `json:"password" valid:"Required"`
+}
+
+// PostUsersSignIn sign in
+// @router /users/sign-in [post]
+func (p *API) PostUsersSignIn() {
+	p.JSON(func() (interface{}, error) {
+		var fm fmSignIn
+		if err := p.BindJSON(&fm); err != nil {
+			return nil, err
+		}
+		var it User
+		o := orm.NewOrm()
+		if err := o.QueryTable(new(User)).
+			Filter("email", strings.ToLower(fm.Email)).
+			One(&it); err != nil {
+			return nil, err
+		}
+		ip := p.Ctx.Input.IP()
+		o.Begin()
+		if !it.Auth(fm.Email, fm.Password) {
+			if err := AddLog(o, it.ID, ip, p.Lang, "nut.logs.user.sign-in.failed"); err != nil {
+				o.Rollback()
+				return nil, err
+			}
+			return nil, Te(p.Lang, "nut.errors.use-.email-password-not-match")
+		}
+
+		if !it.IsConfirm() {
+			return nil, Te(p.Lang, "nut.errors.user-not-confirm")
+		}
+
+		if it.IsLock() {
+			return nil, Te(p.Lang, "nut.errors.user-is-lock")
+		}
+		if err := signIn(o, p.Lang, ip, &it); err != nil {
+			o.Rollback()
+			return nil, err
+		}
+		o.Commit()
+
+		cm := make(jws.Claims)
+		cm.Set("uid", it.UID)
+		cm.Set(RoleAdmin, Is(o, it.ID, RoleAdmin))
+		tkn, err := JWT().Sum(cm, time.Hour*24)
+		if err != nil {
+			return nil, err
+		}
+		return H{"token": string(tkn)}, nil
+	})
+}
 
 type fmSignUp struct {
 	Name     string `json:"name" valid:"Required"`

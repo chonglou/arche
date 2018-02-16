@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/orm"
 	"github.com/astaxie/beego/validation"
 	"github.com/beego/i18n"
 	"golang.org/x/text/language"
@@ -24,6 +25,43 @@ type Controller struct {
 func (p *Controller) Prepare() {
 	p.Layout = "layouts/application/index.html"
 	p.setLocale()
+}
+
+// MustSignIn must sign in
+func (p *Controller) MustSignIn() *User {
+	user, err := p.CurrentUser()
+	if err != nil {
+		p.CustomAbort(http.StatusForbidden, err.Error())
+		return nil
+	}
+	return user
+}
+
+// CurrentUser get current user
+func (p *Controller) CurrentUser() (*User, error) {
+	cm, err := JWT().Parse(p.Ctx.Request)
+	if err != nil {
+		return nil, err
+	}
+	uid, ok := cm.Get("uid").(string)
+	if !ok {
+		return nil, Te(p.Lang, "errors.forbidden")
+	}
+
+	var it User
+	o := orm.NewOrm()
+	if err := o.QueryTable(new(User)).Filter("uid", uid).One(&it); err != nil {
+		return nil, err
+	}
+	if !it.IsConfirm() {
+		return nil, Te(p.Lang, "nut.errors.user-not-confirm")
+	}
+
+	if it.IsLock() {
+		return nil, Te(p.Lang, "nut.errors.user-is-lock")
+	}
+
+	return &it, nil
 }
 
 func (p *Controller) valid(v interface{}) error {

@@ -19,8 +19,8 @@ class Widget extends Component {
     this.props.form.validateFields((err, values) => {
       if (!err) {
         values.type = 'text'
-        post('/leave-words', values).then(() => {
-          message.success(formatMessage({id: "helpers.success"}))
+        post('/api/leave-words', values).then(() => {
+          message.success(formatMessage({id: "flash.success"}))
         }).catch(message.error);
       }
     });
@@ -48,7 +48,7 @@ class Widget extends Component {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({id: "errors.empty-email"})
+                      message: formatMessage({id: "validator.required"})
                     }
                   ]
                 })(<Input.TextArea rows={8}/>)

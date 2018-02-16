@@ -19,7 +19,7 @@ class Widget extends Component {
     e.preventDefault();
     this.props.form.validateFields((err, values) => {
       if (!err) {
-        post('/users/sign-in', values).then((rst) => {
+        post('/api/users/sign-in', values).then((rst) => {
           signIn(rst.token)
           push('/users/logs')
         }).catch(message.error);
