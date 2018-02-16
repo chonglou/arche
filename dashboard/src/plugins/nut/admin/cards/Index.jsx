@@ -20,13 +20,13 @@ class Widget extends Component {
     items: []
   }
   componentDidMount() {
-    get('/admin/cards').then((rst) => {
+    get('/api/admin/cards').then((rst) => {
       this.setState({items: rst})
     }).catch(message.error);
   }
   handleRemove = (id) => {
     const {formatMessage} = this.props.intl
-    _delete(`/admin/cards/${id}`).then((rst) => {
+    _delete(`/api/admin/cards/${id}`).then((rst) => {
       message.success(formatMessage({id: 'flash.success'}))
       var items = this.state.items.filter((it) => it.id !== id)
       this.setState({items})
@@ -50,14 +50,14 @@ class Widget extends Component {
                 title: <FormattedMessage id="attributes.loc"/>,
                 key: 'loc',
                 render: (text, record) => (<span>
-                  {record.loc}[{record.sortOrder}]
+                  {record.loc}[{record.sort}]
                 </span>)
               }, {
                 title: <FormattedMessage id="attributes.content"/>,
                 dataIndex: 'label',
                 render: (text, record) => (<a target="_blank" href={record.href}>{record.title}</a>)
               }, {
-                title: 'Action',
+                title: <FormattedMessage id="attributes.action"/>,
                 key: 'action',
                 render: (text, record) => (<span>
                   <Button onClick={(e) => push(`/admin/cards/edit/${record.id}`)} shape="circle" icon="edit"/>

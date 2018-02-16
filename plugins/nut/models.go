@@ -243,7 +243,7 @@ type Link struct {
 	ID        uint      `json:"id" orm:"column(id)"`
 	Lang      string    `json:"lang"`
 	X         int       `json:"x"`
-	Y         int       `json:"x"`
+	Y         int       `json:"y"`
 	Href      string    `json:"href"`
 	Label     string    `json:"label"`
 	Loc       string    `json:"loc"`
@@ -283,7 +283,7 @@ type FriendLink struct {
 	Title     string    `json:"title"`
 	Home      string    `json:"home"`
 	Logo      string    `json:"logo"`
-	Order     int       `json:"sort"`
+	Sort      int       `json:"sort"`
 	UpdatedAt time.Time `json:"updatedAt" orm:"auto_now"`
 	CreatedAt time.Time `json:"createdAt" orm:"auto_now_add"`
 }

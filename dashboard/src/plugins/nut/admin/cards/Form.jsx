@@ -28,19 +28,19 @@ class Widget extends Component {
     const {setFieldsValue} = this.props.form
     const {id} = this.props.match.params
     if (id) {
-      get(`/admin/cards/${id}`).then((rst) => {
+      get(`/api/admin/cards/${id}`).then((rst) => {
         setFieldsValue({
           title: rst.title,
           action: rst.action,
           logo: rst.logo,
           href: rst.href,
-          sortOrder: rst.sortOrder.toString(),
+          sort: rst.sort.toString(),
           loc: rst.loc
         })
         this.setState({summary: rst.summary})
       }).catch(message.error)
     } else {
-      setFieldsValue({sortOrder: '0'})
+      setFieldsValue({sort: '0', loc: 'carousel-header'})
     }
   }
   handleChange = (value) => {
@@ -55,10 +55,10 @@ class Widget extends Component {
       if (!err) {
         post(
           id
-          ? `/admin/cards/${id}`
-          : '/admin/cards',
+          ? `/api/admin/cards/${id}`
+          : '/api/admin/cards',
         Object.assign({}, values, {
-          sortOrder: parseInt(values.sortOrder, 10),
+          sort: parseInt(values.sort, 10),
           type: 'html',
           summary: this.state.summary
         })).then(() => {
@@ -106,19 +106,24 @@ class Widget extends Component {
           <Form onSubmit={this.handleSubmit}>
             <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.loc" />} hasFeedback={true}>
               {
-                getFieldDecorator('loc', {
-                  rules: [
-                    {
-                      required: true,
-                      message: formatMessage({id: "validator.required"})
-                    }
-                  ]
-                })(<Input/>)
+                getFieldDecorator('loc')(<Select>
+                  {
+                    [
+                      'album-header',
+                      'album-main',
+                      'blog-header',
+                      'blog-main',
+                      'carousel-header',
+                      'carousel-cricle',
+                      'carousel-main'
+                    ].map((l) => (<Option key={l} value={l}>{l}</Option>))
+                  }
+                </Select>)
               }
             </FormItem>
-            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.sortOrder" />}>
+            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.sort-order" />}>
               {
-                getFieldDecorator('sortOrder')(<Select>
+                getFieldDecorator('sort')(<Select>
                   {orders(10).map((p) => (<Option key={p} value={p}>{p}</Option>))}
                 </Select>)
               }

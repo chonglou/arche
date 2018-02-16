@@ -20,13 +20,13 @@ class Widget extends Component {
     items: []
   }
   componentDidMount() {
-    get('/admin/friend-links').then((rst) => {
+    get('/api/admin/friend-links').then((rst) => {
       this.setState({items: rst})
     }).catch(message.error);
   }
   handleRemove = (id) => {
     const {formatMessage} = this.props.intl
-    _delete(`/admin/friend-links/${id}`).then((rst) => {
+    _delete(`/api/admin/friend-links/${id}`).then((rst) => {
       message.success(formatMessage({id: 'flash.success'}))
       var items = this.state.items.filter((it) => it.id !== id)
       this.setState({items})
@@ -47,15 +47,15 @@ class Widget extends Component {
           <Button onClick={(e) => push('/admin/friend-links/new')} type='primary' shape="circle" icon="plus"/>
           <Table bordered={true} rowKey="id" dataSource={this.state.items} columns={[
               {
-                title: <FormattedMessage id="attributes.sortOrder"/>,
-                key: 'sortOrder',
-                dataIndex: 'sortOrder'
+                title: <FormattedMessage id="attributes.sort-order"/>,
+                key: 'sort',
+                dataIndex: 'sort'
               }, {
                 title: <FormattedMessage id="attributes.content"/>,
                 dataIndex: 'label',
                 render: (text, record) => (<a target="_blank" href={record.home}><img alt={record.title} src={record.logo}/></a>)
               }, {
-                title: 'Action',
+                title: <FormattedMessage id="attributes.action"/>,
                 key: 'action',
                 render: (text, record) => (<span>
                   <Button onClick={(e) => push(`/admin/friend-links/edit/${record.id}`)} shape="circle" icon="edit"/>
