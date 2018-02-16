@@ -23,13 +23,13 @@ class Widget extends Component {
     items: []
   }
   componentDidMount() {
-    get('/attachments').then((rst) => {
+    get('/api/attachments').then((rst) => {
       this.setState({items: rst})
     }).catch(message.error);
   }
   handleRemove = (id) => {
     const {formatMessage} = this.props.intl
-    _delete(`/attachments/${id}`).then((rst) => {
+    _delete(`/api/attachments/${id}`).then((rst) => {
       message.success(formatMessage({id: 'flash.success'}))
       var items = this.state.items.filter((it) => it.id !== id)
       this.setState({items})
@@ -46,7 +46,7 @@ class Widget extends Component {
       ]} title={title} roles={[USER, ADMIN]}>
       <Row>
         <Col>
-          <Upload multiple={true} withCredentials={true} name="file" action={"/attachments"} headers={{
+          <Upload multiple={true} withCredentials={true} name="file" action={"/api/attachments"} headers={{
               'Authorization' : `BEARER ${getToken()}`
             }}>
             <Button>
@@ -66,7 +66,7 @@ class Widget extends Component {
                 dataIndex: 'mediaType',
                 key: 'mediaType'
               }, {
-                title: 'Action',
+                title: <FormattedMessage id="attributes.action"/>,
                 key: 'action',
                 render: (text, record) => (<span>
                   <CopyToClipboard text={record.url}><Button shape="circle" icon="copy"/></CopyToClipboard>

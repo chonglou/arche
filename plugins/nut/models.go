@@ -129,7 +129,7 @@ func (p *User) TableName() string {
 type Attachment struct {
 	ID           uint      `json:"id" orm:"column(id)"`
 	Title        string    `json:"title"`
-	URL          string    `json:"url"`
+	URL          string    `json:"url" orm:"column(url)"`
 	Length       int64     `json:"length"`
 	MediaType    string    `json:"mediaType"`
 	ResourceID   uint      `json:"resourceId" orm:"column(resource_id)"`

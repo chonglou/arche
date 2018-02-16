@@ -10,8 +10,9 @@ import (
 )
 
 type fmUserChangePassword struct {
-	CurrentPassword string `json:"currentPassword" valid:"Required"`
-	NewPassword     string `json:"newPassword" valid:"Required"`
+	CurrentPassword      string `json:"currentPassword" valid:"Required"`
+	NewPassword          string `json:"newPassword" valid:"Required;MinSize(6);MaxSize(32)"`
+	PasswordConfirmation string `json:"passwordConfirmation" valid:"Required"`
 }
 
 // PostUsersChangePassword change user password
@@ -22,6 +23,10 @@ func (p *API) PostUsersChangePassword() {
 		if err := p.BindJSON(&fm); err != nil {
 			return nil, err
 		}
+		if fm.NewPassword != fm.PasswordConfirmation {
+			return nil, Te(p.Lang, "nut.errors.passwords-not-match")
+		}
+
 		user := p.MustSignIn()
 		if !user.Auth(user.Email, fm.CurrentPassword) {
 			return nil, Te(p.Lang, "nut.errors.email-password-not-match")
@@ -155,9 +160,10 @@ func (p *API) PostUsersSignIn() {
 }
 
 type fmUserSignUp struct {
-	Name     string `json:"name" valid:"Required"`
-	Email    string `json:"email" valid:"Email;MaxSize(255)"`
-	Password string `json:"password" valid:"Required;MinSize(6);MaxSize(32)"`
+	Name                 string `json:"name" valid:"Required"`
+	Email                string `json:"email" valid:"Email;MaxSize(255)"`
+	Password             string `json:"password" valid:"Required;MinSize(6);MaxSize(32)"`
+	PasswordConfirmation string `json:"passwordConfirmation" valid:"Required"`
 }
 
 // PostUsersSignUp sign up
@@ -168,6 +174,9 @@ func (p *API) PostUsersSignUp() {
 		var fm fmUserSignUp
 		if err := p.BindJSON(&fm); err != nil {
 			return nil, err
+		}
+		if fm.Password != fm.PasswordConfirmation {
+			return nil, Te(p.Lang, "nut.errors.passwords-not-match")
 		}
 
 		o.Begin()
@@ -342,8 +351,9 @@ func (p *HTML) GetUsersUnlockToken() {
 }
 
 type fmUserResetPassword struct {
-	Token    string `json:"token" valid:"Required"`
-	Password string `json:"password" valid:"Required;MinSize(6);MaxSize(32)"`
+	Token                string `json:"token" valid:"Required"`
+	Password             string `json:"password" valid:"Required;MinSize(6);MaxSize(32)"`
+	PasswordConfirmation string `json:"passwordConfirmation" valid:"Required"`
 }
 
 // PostUsersResetPassword reset password
@@ -353,6 +363,9 @@ func (p *API) PostUsersResetPassword() {
 		var fm fmUserResetPassword
 		if err := p.BindJSON(&fm); err != nil {
 			return nil, err
+		}
+		if fm.Password != fm.PasswordConfirmation {
+			return nil, Te(p.Lang, "nut.errors.passwords-not-match")
 		}
 		cm, err := JWT().Validate([]byte(fm.Token))
 		if err != nil {
