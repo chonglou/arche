@@ -59,9 +59,6 @@ export default {
       path: "/admin/site/smtp",
       component: import ('./admin/site/Smtp')
     }, {
-      path: "/admin/site/donate",
-      component: import ('./admin/site/Donate')
-    }, {
       path: "/admin/site/home",
       component: import ('./admin/site/Home')
     }, {
@@ -155,9 +152,6 @@ export default {
         }, {
           label: "nut.admin.site.smtp.title",
           href: "/admin/site/smtp"
-        }, {
-          label: "nut.admin.site.donate.title",
-          href: "/admin/site/donate"
         }, {
           label: "nut.admin.site.home.title",
           href: "/admin/site/home"

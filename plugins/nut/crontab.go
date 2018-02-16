@@ -1,6 +1,16 @@
 package nut
 
-import "github.com/astaxie/beego/toolbox"
+import (
+	h_t "html/template"
+	"os"
+	"path"
+	t_t "text/template"
+
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/orm"
+	"github.com/astaxie/beego/toolbox"
+	"github.com/gorilla/feeds"
+)
 
 func statistics() error {
 	// TODO statistics every month, and send a report email
@@ -13,8 +23,80 @@ func monitor() error {
 }
 
 func seo() error {
-	// TODO generate robots.txt google_verify.html rss.atom, sitemap.xml.gz, ping search engine
+	home := beego.BConfig.ServerName
+	if err := _robotsTxt(home); err != nil {
+		return err
+	}
+	if err := _sitemapXMLGz(home); err != nil {
+		return err
+	}
+	for _, lang := range beego.AppConfig.Strings("languages") {
+		if err := _rssAtom(lang, home); err != nil {
+			return err
+		}
+	}
+	if err := _google(); err != nil {
+		return err
+	}
 	return nil
+}
+
+func _google() error {
+	tpl, err := h_t.ParseFiles(path.Join("templates", "google_site_verify.html"))
+	if err != nil {
+		return err
+	}
+	var googleVerifyCode string
+	o := orm.NewOrm()
+	if err = Get(o, googleSiteVerification, &googleVerifyCode); err != nil {
+		return err
+	}
+	fd, err := os.Open(path.Join("public", "google"+googleVerifyCode+".html"))
+	if err != nil {
+		return err
+	}
+	defer fd.Close()
+	return tpl.Execute(fd, H{"code": googleVerifyCode})
+}
+
+func _rssAtom(l, h string) error {
+	fd, err := os.Open(path.Join("public", "rss-"+l+".atom"))
+	if err != nil {
+		return err
+	}
+	defer fd.Close()
+	if err != nil {
+		return err
+	}
+	author := make(map[string]string)
+	if err := Get(orm.NewOrm(), "site.author", &author); err != nil {
+		return err
+	}
+	return RSSAtomXML(h, l,
+		Tr(l, "site.title"), Tr(l, "site.description"),
+		&feeds.Author{Name: author["name"], Email: author["email"]}, fd)
+}
+
+func _sitemapXMLGz(h string) error {
+	fd, err := os.Open(path.Join("public", "robots.txt"))
+	if err != nil {
+		return err
+	}
+	defer fd.Close()
+	return SitemapXMLGz(h, fd)
+}
+
+func _robotsTxt(h string) error {
+	tpl, err := t_t.ParseFiles(path.Join("templates", "robots.txt"))
+	if err != nil {
+		return err
+	}
+	fd, err := os.Open(path.Join("public", "robots.txt"))
+	if err != nil {
+		return err
+	}
+	defer fd.Close()
+	return tpl.Execute(fd, H{"home": h})
 }
 
 func backup() error {

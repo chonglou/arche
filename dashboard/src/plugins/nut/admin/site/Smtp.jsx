@@ -25,14 +25,14 @@ const Option = Select.Option
 class Widget extends Component {
   componentDidMount() {
     const {setFieldsValue} = this.props.form
-    get('/admin/site/smtp').then((rst) => setFieldsValue(Object.assign({}, rst, {port: rst.port.toString()}))).catch(message.error)
+    get('/api/admin/site/smtp').then((rst) => setFieldsValue(Object.assign({}, rst, {port: rst.port.toString()}))).catch(message.error)
   }
   handleSubmit = (e) => {
     const {formatMessage} = this.props.intl
     e.preventDefault();
     this.props.form.validateFields((err, values) => {
       if (!err) {
-        post('/admin/site/smtp', Object.assign({}, values, {
+        post('/api/admin/site/smtp', Object.assign({}, values, {
           port: parseInt(values.port, 10)
         })).then(() => {
           message.success(formatMessage({id: "flash.success"}))
@@ -44,7 +44,7 @@ class Widget extends Component {
     const {formatMessage} = this.props.intl
     this.props.form.validateFields((err, values) => {
       if (!err) {
-        patch('/admin/site/smtp', Object.assign({}, values, {
+        patch('/api/admin/site/smtp', Object.assign({}, values, {
           port: parseInt(values.port, 10)
         })).then(() => {
           message.success(formatMessage({id: "flash.success"}))
@@ -55,7 +55,9 @@ class Widget extends Component {
   render() {
     const {formatMessage} = this.props.intl
     const {getFieldDecorator} = this.props.form
-    const title = "nut.admin.site.smtp.title"
+    const title = {
+      id: "nut.admin.site.smtp.title"
+    }
     return (<Layout breads={[{
           href: "/admin/site/smtp",
           label: title
@@ -92,10 +94,10 @@ class Widget extends Component {
                   rules: [
                     {
                       type: 'email',
-                      message: formatMessage({id: "errors.not-valid-email"})
+                      message: formatMessage({id: "validator.email"})
                     }, {
                       required: true,
-                      message: formatMessage({id: "validator.required-email"})
+                      message: formatMessage({id: "validator.required"})
                     }
                   ]
                 })(<Input/>)
@@ -107,13 +109,13 @@ class Widget extends Component {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({id: "validator.required-password"})
+                      message: formatMessage({id: "validator.password"})
                     }
                   ]
                 })(<Input type="password"/>)
               }
             </FormItem>
-            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.passwordConfirmation" />} hasFeedback={true}>
+            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.password-confirmation" />} hasFeedback={true}>
               {
                 getFieldDecorator('passwordConfirmation', {
                   rules: [

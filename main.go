@@ -7,6 +7,7 @@ import (
 	_ "github.com/astaxie/beego/cache/redis"
 	"github.com/chonglou/arche/plugins/nut"
 	_ "github.com/chonglou/arche/routers"
+	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 )
 

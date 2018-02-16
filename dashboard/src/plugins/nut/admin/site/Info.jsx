@@ -15,14 +15,14 @@ const FormItem = Form.Item
 class Widget extends Component {
   componentDidMount() {
     const {setFieldsValue} = this.props.form
-    get('/layout').then((rst) => setFieldsValue({title: rst.title, subhead: rst.subhead, keywords: rst.keywords, description: rst.description, copyright: rst.copyright})).catch(message.error)
+    get('/api/layout').then((rst) => setFieldsValue({title: rst.title, subhead: rst.subhead, keywords: rst.keywords, description: rst.description, copyright: rst.copyright})).catch(message.error)
   }
   handleSubmit = (e) => {
     const {formatMessage} = this.props.intl
     e.preventDefault();
     this.props.form.validateFields((err, values) => {
       if (!err) {
-        post('/admin/site/info', values).then(() => {
+        post('/api/admin/site/info', values).then(() => {
           message.success(formatMessage({id: "flash.success"}))
         }).catch(message.error);
       }

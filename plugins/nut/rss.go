@@ -18,8 +18,8 @@ func RegisterRSSHandler(args ...RSSHandler) {
 	rssHandlers = append(rssHandlers, args...)
 }
 
-// ToRSSAtomXML write to rss atom xml
-func ToRSSAtomXML(host, lang, title, dest string, author *feeds.Author, wrt io.Writer) error {
+// RSSAtomXML write to rss atom xml
+func RSSAtomXML(host, lang, title, dest string, author *feeds.Author, wrt io.Writer) error {
 	now := time.Now()
 	feed := &feeds.Feed{
 		Title:       title,

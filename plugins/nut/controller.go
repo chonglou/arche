@@ -37,6 +37,16 @@ func (p *Controller) MustSignIn() *User {
 	return user
 }
 
+// MustAdmin must admin
+func (p *Controller) MustAdmin() *User {
+	user := p.MustSignIn()
+	if !Is(orm.NewOrm(), user.ID, RoleAdmin) {
+		p.CustomAbort(http.StatusForbidden, Tr(p.Lang, "errors.forbidden"))
+		return nil
+	}
+	return user
+}
+
 // CurrentUser get current user
 func (p *Controller) CurrentUser() (*User, error) {
 	cm, err := JWT().Parse(p.Ctx.Request)

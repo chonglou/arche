@@ -15,14 +15,14 @@ const FormItem = Form.Item
 class Widget extends Component {
   componentDidMount() {
     const {setFieldsValue} = this.props.form
-    get('/layout').then((rst) => setFieldsValue(rst.author)).catch(message.error)
+    get('/api/layout').then((rst) => setFieldsValue(rst.author)).catch(message.error)
   }
   handleSubmit = (e) => {
     const {formatMessage} = this.props.intl
     e.preventDefault();
     this.props.form.validateFields((err, values) => {
       if (!err) {
-        post('/admin/site/author', values).then(() => {
+        post('/api/admin/site/author', values).then(() => {
           message.success(formatMessage({id: "flash.success"}))
         }).catch(message.error);
       }
@@ -63,10 +63,10 @@ class Widget extends Component {
                   rules: [
                     {
                       type: 'email',
-                      message: formatMessage({id: "errors.not-valid-email"})
+                      message: formatMessage({id: "validator.email"})
                     }, {
                       required: true,
-                      message: formatMessage({id: "validator.required-email"})
+                      message: formatMessage({id: "validator.required"})
                     }
                   ]
                 })(<Input/>)

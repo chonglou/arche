@@ -66,7 +66,7 @@ func (p *API) PostUsersChangePassword() {
 
 type fmUserProfile struct {
 	Logo string `json:"logo" valid:"Required"`
-	Name string `json:"name	" valid:"Required"`
+	Name string `json:"name" valid:"Required"`
 }
 
 // PostUsersProfile set user profile

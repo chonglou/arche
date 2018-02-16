@@ -1,6 +1,9 @@
 package nut
 
-import "github.com/astaxie/beego"
+import (
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/orm"
+)
 
 // Home home
 // @router / [get]
@@ -20,8 +23,23 @@ func (p *API) GetLayout() {
 		for _, k := range []string{"title", "subhead", "keywords", "description", "copyright"} {
 			rst[k] = Tr(p.Lang, "site."+k)
 		}
-		// TODO favicon
-		// TODO current user
+
+		// site author
+		o := orm.NewOrm()
+		author := make(map[string]string)
+		if err := Get(o, "site.author", &author); err != nil {
+			author["email"] = "manager@change-me.com"
+			author["name"] = "who-am-i"
+		}
+		rst["author"] = author
+		// favicon
+		var favicon string
+		if err := Get(o, "site.favicon", &favicon); err == nil {
+			rst["favicon"] = favicon
+		} else {
+			rst["favicon"] = "/assets/favicon.png"
+		}
+
 		return rst, nil
 	})
 }

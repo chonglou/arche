@@ -33,25 +33,19 @@ class Widget extends Component {
   state = {
     os: {},
     database: {},
-    redis: "",
-    routes: [],
-    jobber: {},
+    cache: "",
+    jobber: {
+      tasks: []
+    },
     network: {}
   }
   componentDidMount() {
-    get('/admin/site/status').then((rst) => {
+    get('/api/admin/site/status').then((rst) => {
       this.setState(rst)
     }).catch(message.error);
   }
   render() {
-    const {
-      redis,
-      os,
-      network,
-      database,
-      jobber,
-      routes
-    } = this.state
+    const {cache, os, network, database, jobber} = this.state
 
     const title = {
       id: "nut.admin.site.status.title"
@@ -77,25 +71,13 @@ class Widget extends Component {
               <Hash item={database}/>
             </Panel>
             <Panel key="jobber" header={(<FormattedMessage id="nut.admin.site.status.jobber"/>)}>
-              <Hash item={jobber}/>
+              <SyntaxHighlighter language="yaml" style={docco}>{jobber.config}</SyntaxHighlighter>
+              <ul>
+                {jobber.tasks.map((t, i) => (<li key={i}>{t}</li>))}
+              </ul>
             </Panel>
-            <Panel key="redis" header={(<FormattedMessage id="nut.admin.site.status.redis"/>)}>
-              <SyntaxHighlighter style={docco}>{redis}</SyntaxHighlighter>
-            </Panel>
-            <Panel header={(<FormattedMessage id='nut.admin.site.status.routes'/>)} key="routes">
-              <Table rowKey="id" dataSource={routes.map((v, k) => {
-                  return {id: k, method: v.Method, path: v.Path}
-                })} columns={[
-                  {
-                    title: 'METHOD',
-                    key: 'method',
-                    dataIndex: 'method'
-                  }, {
-                    title: 'PATH',
-                    key: 'path',
-                    dataIndex: 'path'
-                  }
-                ]}/>
+            <Panel key="redis" header={(<FormattedMessage id="nut.admin.site.status.cache"/>)}>
+              <SyntaxHighlighter style={docco}>{cache}</SyntaxHighlighter>
             </Panel>
           </Collapse>
         </Col>

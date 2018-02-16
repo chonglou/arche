@@ -25,7 +25,7 @@ class Widget extends Component {
   }
   componentDidMount() {
     const {setFieldsValue} = this.props.form
-    get('/admin/site/seo').then((rst) => {
+    get('/api/admin/site/seo').then((rst) => {
       setFieldsValue(rst)
       this.setState({item: rst})
     }).catch(message.error)
@@ -35,7 +35,7 @@ class Widget extends Component {
     e.preventDefault();
     this.props.form.validateFields((err, values) => {
       if (!err) {
-        post('/admin/site/seo', values).then(() => {
+        post('/api/admin/site/seo', values).then(() => {
           message.success(formatMessage({id: "flash.success"}))
         }).catch(message.error);
       }
@@ -81,7 +81,7 @@ class Widget extends Component {
           }}>
           <Card>
             {
-              ['/robots.txt', '/sitemap.xml.gz'].concat(this.props.site.languages.map(it => `/rss/${it}`)).map((it, id) => (<p key={id}>
+              ['/robots.txt', '/sitemap.xml.gz', `/google${this.state.item.googleVerifyCode}.html`].concat(this.props.site.languages.map(it => `/rss-${it}.atom`)).map((it, id) => (<p key={id}>
                 <a href={it} target='_blank'>{it}</a>
               </p>))
             }

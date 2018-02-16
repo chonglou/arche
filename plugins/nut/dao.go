@@ -29,20 +29,20 @@ func Set(o orm.Ormer, k string, v interface{}, f bool) error {
 	if err != nil {
 		return err
 	}
-	var it Setting
-	err = o.QueryTable(new(Setting)).Filter("key", k).One(&it, "id")
-	it.Encode = f
 	if f {
 		buf, err = AES().Encrypt(buf)
 		if err != nil {
 			return err
 		}
 	}
+	var it Setting
+	err = o.QueryTable(new(Setting)).Filter("key", k).One(&it, "id")
+	it.Encode = f
 	it.Value = string(buf)
 
 	if err == nil {
 		_, err = o.Update(&it, "encode", "value")
-	} else {
+	} else if err == orm.ErrNoRows {
 		it.Key = k
 		_, err = o.Insert(&it)
 	}
@@ -52,7 +52,7 @@ func Set(o orm.Ormer, k string, v interface{}, f bool) error {
 // Get settings get
 func Get(o orm.Ormer, k string, v interface{}) error {
 	var it Setting
-	err := o.QueryTable(new(Setting)).Filter("key", k).One(&it, "id")
+	err := o.QueryTable(new(Setting)).Filter("key", k).One(&it, "id", "value", "encode")
 	if err != nil {
 		return err
 	}

@@ -10,6 +10,7 @@ COPYRIGHT=`head -n 1 LICENSE`
 USAGE=`sed -n '3p' README.md`
 
 build: www ds
+	cd $(dist) && mkdir -p tmp public
 	cd $(dist) && tar cfJ ../$(dist).tar.xz *
 
 www:

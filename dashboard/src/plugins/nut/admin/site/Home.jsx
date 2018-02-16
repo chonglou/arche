@@ -18,7 +18,7 @@ class Widget extends Component {
   }
   componentDidMount() {
     const {setFieldsValue} = this.props.form
-    get('/admin/site/home').then((rst) => {
+    get('/api/admin/site/home').then((rst) => {
       setFieldsValue({favicon: rst.favicon})
       if (rst.home) {
         this.setState({body: rst.home.body})
@@ -31,7 +31,7 @@ class Widget extends Component {
     e.preventDefault();
     this.props.form.validateFields((err, values) => {
       if (!err) {
-        post('/admin/site/home', Object.assign({}, values, {
+        post('/api/admin/site/home', Object.assign({}, values, {
           type: 'html',
           body: this.state.body
         })).then(() => {
