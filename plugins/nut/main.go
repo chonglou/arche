@@ -43,7 +43,18 @@ func Main(args ...string) error {
 		// tasks
 		toolbox.StartTask()
 		defer toolbox.StopTask()
-		beego.Run()
+
+		// start http
+		go beego.Run()
+
+		// start worker
+		worker := Server().NewWorker(
+			beego.BConfig.ServerName,
+			beego.AppConfig.DefaultInt("workers", 2),
+		)
+		if err := worker.Launch(); err != nil {
+			beego.Error("worker abort", err)
+		}
 		return nil
 	}
 
@@ -62,16 +73,6 @@ func Main(args ...string) error {
 	if err := loadLocales(); err != nil {
 		return err
 	}
-	// start worker
-	go func() {
-		worker := Server().NewWorker(
-			beego.BConfig.ServerName,
-			beego.AppConfig.DefaultInt("workers", 2),
-		)
-		if err := worker.Launch(); err != nil {
-			beego.Error("worker abort", err)
-		}
-	}()
 
 	return app.Run(args)
 
