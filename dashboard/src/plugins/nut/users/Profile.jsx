@@ -15,15 +15,15 @@ const FormItem = Form.Item
 class Widget extends Component {
   componentDidMount() {
     const {setFieldsValue} = this.props.form
-    get('/users/profile').then((rst) => setFieldsValue({name: rst.name, email: rst.email, logo: rst.logo})).catch(message.error)
+    get('/api/users/profile').then((rst) => setFieldsValue({name: rst.name, email: rst.email, logo: rst.logo})).catch(message.error)
   }
   handleSubmit = (e) => {
     const {formatMessage} = this.props.intl
     e.preventDefault();
     this.props.form.validateFields((err, values) => {
       if (!err) {
-        post('/users/profile', values).then(() => {
-          message.success(formatMessage({id: "helpers.success"}))
+        post('/api/users/profile', values).then(() => {
+          message.success(formatMessage({id: "flash.success"}))
         }).catch(message.error);
       }
     });
@@ -55,7 +55,7 @@ class Widget extends Component {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({id: "errors.empty"})
+                      message: formatMessage({id: "validator.required"})
                     }
                   ]
                 })(<Input/>)
@@ -67,7 +67,7 @@ class Widget extends Component {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({id: "errors.empty"})
+                      message: formatMessage({id: "validator.required"})
                     }
                   ]
                 })(<Input/>)

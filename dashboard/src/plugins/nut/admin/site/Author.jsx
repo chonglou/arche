@@ -23,7 +23,7 @@ class Widget extends Component {
     this.props.form.validateFields((err, values) => {
       if (!err) {
         post('/admin/site/author', values).then(() => {
-          message.success(formatMessage({id: "helpers.success"}))
+          message.success(formatMessage({id: "flash.success"}))
         }).catch(message.error);
       }
     });
@@ -51,7 +51,7 @@ class Widget extends Component {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({id: "errors.empty"})
+                      message: formatMessage({id: "validator.required"})
                     }
                   ]
                 })(<Input/>)
@@ -66,7 +66,7 @@ class Widget extends Component {
                       message: formatMessage({id: "errors.not-valid-email"})
                     }, {
                       required: true,
-                      message: formatMessage({id: "errors.empty-email"})
+                      message: formatMessage({id: "validator.required-email"})
                     }
                   ]
                 })(<Input/>)

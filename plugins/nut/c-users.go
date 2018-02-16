@@ -9,6 +9,81 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
+type fmUserChangePassword struct {
+	CurrentPassword string `json:"currentPassword" valid:"Required"`
+	NewPassword     string `json:"newPassword" valid:"Required"`
+}
+
+// PostUsersChangePassword change user password
+// @router /users/change-password [post]
+func (p *API) PostUsersChangePassword() {
+	p.JSON(func() (interface{}, error) {
+		var fm fmUserChangePassword
+		if err := p.BindJSON(&fm); err != nil {
+			return nil, err
+		}
+		user := p.MustSignIn()
+		if !user.Auth(user.Email, fm.CurrentPassword) {
+			return nil, Te(p.Lang, "nut.errors.email-password-not-match")
+		}
+		if err := user.SetPassword(fm.NewPassword); err != nil {
+			return nil, err
+		}
+		user.UpdatedAt = time.Now()
+		var items []Log
+		o := orm.NewOrm()
+		o.Begin()
+		if _, err := o.Update(user, "password", "updated_at"); err != nil {
+			o.Rollback()
+			return nil, err
+		}
+		if err := AddLog(o, user.ID, p.Ctx.Input.IP(), p.Lang, "nut.logs.user.change-password"); err != nil {
+			return nil, err
+		}
+		o.Commit()
+		return items, nil
+	})
+}
+
+type fmUserProfile struct {
+	Logo string `json:"logo" valid:"Required"`
+	Name string `json:"name	" valid:"Required"`
+}
+
+// PostUsersProfile set user profile
+// @router /users/profile [post]
+func (p *API) PostUsersProfile() {
+	p.JSON(func() (interface{}, error) {
+		var fm fmUserProfile
+		if err := p.BindJSON(&fm); err != nil {
+			return nil, err
+		}
+		user := p.MustSignIn()
+		user.Logo = fm.Logo
+		user.Name = fm.Name
+		user.UpdatedAt = time.Now()
+		var items []Log
+		if _, err := orm.NewOrm().
+			Update(user, "logo", "name", "updated_at"); err != nil {
+			return nil, err
+		}
+		return items, nil
+	})
+}
+
+// GetUsersProfile get user profile
+// @router /users/profile [get]
+func (p *API) GetUsersProfile() {
+	p.JSON(func() (interface{}, error) {
+		user := p.MustSignIn()
+		return H{
+			"email": user.Email,
+			"name":  user.Name,
+			"logo":  user.Logo,
+		}, nil
+	})
+}
+
 // GetUsersLogs get user logs
 // @router /users/logs [get]
 func (p *API) GetUsersLogs() {
@@ -25,7 +100,7 @@ func (p *API) GetUsersLogs() {
 	})
 }
 
-type fmSignIn struct {
+type fmUserSignIn struct {
 	Email    string `json:"email" valid:"Email"`
 	Password string `json:"password" valid:"Required"`
 }
@@ -34,7 +109,7 @@ type fmSignIn struct {
 // @router /users/sign-in [post]
 func (p *API) PostUsersSignIn() {
 	p.JSON(func() (interface{}, error) {
-		var fm fmSignIn
+		var fm fmUserSignIn
 		if err := p.BindJSON(&fm); err != nil {
 			return nil, err
 		}
@@ -52,7 +127,7 @@ func (p *API) PostUsersSignIn() {
 				o.Rollback()
 				return nil, err
 			}
-			return nil, Te(p.Lang, "nut.errors.use-.email-password-not-match")
+			return nil, Te(p.Lang, "nut.errors.email-password-not-match")
 		}
 
 		if !it.IsConfirm() {
@@ -79,7 +154,7 @@ func (p *API) PostUsersSignIn() {
 	})
 }
 
-type fmSignUp struct {
+type fmUserSignUp struct {
 	Name     string `json:"name" valid:"Required"`
 	Email    string `json:"email" valid:"Email;MaxSize(255)"`
 	Password string `json:"password" valid:"Required;MinSize(6);MaxSize(32)"`
@@ -90,7 +165,7 @@ type fmSignUp struct {
 func (p *API) PostUsersSignUp() {
 	p.JSON(func() (interface{}, error) {
 		o := orm.NewOrm()
-		var fm fmSignUp
+		var fm fmUserSignUp
 		if err := p.BindJSON(&fm); err != nil {
 			return nil, err
 		}
@@ -266,7 +341,7 @@ func (p *HTML) GetUsersUnlockToken() {
 	})
 }
 
-type fmUsersResetPassword struct {
+type fmUserResetPassword struct {
 	Token    string `json:"token" valid:"Required"`
 	Password string `json:"password" valid:"Required;MinSize(6);MaxSize(32)"`
 }
@@ -275,7 +350,7 @@ type fmUsersResetPassword struct {
 // @router /users/reset-password [post]
 func (p *API) PostUsersResetPassword() {
 	p.JSON(func() (interface{}, error) {
-		var fm fmUsersResetPassword
+		var fm fmUserResetPassword
 		if err := p.BindJSON(&fm); err != nil {
 			return nil, err
 		}

@@ -27,7 +27,7 @@ class Widget extends Component {
   handleRemove = (id) => {
     const {formatMessage} = this.props.intl
     _delete(`/admin/leave-words/${id}`).then((rst) => {
-      message.success(formatMessage({id: 'helpers.success'}))
+      message.success(formatMessage({id: 'flash.success'}))
       var items = this.state.items.filter((it) => it.id !== id)
       this.setState({items})
     }).catch(message.error)

@@ -36,7 +36,7 @@ class Widget extends Component {
           type: 'html',
           body: this.state.body
         })).then(() => {
-          message.success(formatMessage({id: "helpers.success"}))
+          message.success(formatMessage({id: "flash.success"}))
         }).catch(message.error);
       }
     });
