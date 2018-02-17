@@ -115,7 +115,9 @@ func (p *Controller) BindForm(v interface{}) error {
 
 // HTML render html
 func (p *Controller) HTML(tpl string, f func() error) {
-	if err := f(); err != nil {
+	if err := f(); err == nil {
+		p.TplName = tpl
+	} else {
 		beego.Error(err)
 		p.TplName = "nut/error.html"
 		p.Data["reason"] = err.Error()

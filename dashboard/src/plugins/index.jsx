@@ -3,8 +3,9 @@ import {Route} from 'react-router'
 import Loadable from 'react-loadable';
 
 import nut from './nut'
+import donate from './donate'
 
-const plugins = [nut]
+const plugins = [nut, donate]
 
 const dynamicWrapper = (w) => Loadable({
   loader: () => w,
