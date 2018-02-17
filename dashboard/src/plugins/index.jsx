@@ -4,8 +4,9 @@ import Loadable from 'react-loadable';
 
 import nut from './nut'
 import donate from './donate'
+import forum from './forum'
 
-const plugins = [nut, donate]
+const plugins = [nut, forum, donate]
 
 const dynamicWrapper = (w) => Loadable({
   loader: () => w,
