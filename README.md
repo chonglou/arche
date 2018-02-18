@@ -8,8 +8,8 @@ Blog Tool, Publishing Platform, and CMS (By Go and React).
 
   ```bash
   zsh < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)
-  gvm install go1.10rc2 -B
-  gvm use go1.10rc2 --default
+  gvm install go1.10 -B
+  gvm use go1.10 --default
   ```
 
 - npm
@@ -65,8 +65,6 @@ enable autosave
 - [banner.txt](http://patorjk.com/software/taag/)
 
 - [AWS](http://docs.aws.amazon.com/general/latest/gr/rande.html)
-
-- [beego](https://beego.me/)
 
 - [Bootstrap](http://getbootstrap.com/)
 
