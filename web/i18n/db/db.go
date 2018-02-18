@@ -7,8 +7,8 @@ import (
 	"github.com/go-pg/pg"
 )
 
-// Locale locale
-type Locale struct {
+// Model locale database model
+type Model struct {
 	tableName struct{} `sql:"locales"`
 	ID        uint
 	Code      string
@@ -30,7 +30,7 @@ type Loader struct {
 // Get get message by lang and code
 func (p *Loader) Get(l, c string) (string, error) {
 	var msg string
-	err := p.db.Model(&Locale{}).Column("message").
+	err := p.db.Model(&Model{}).Column("message").
 		Where("lang = ?", l).
 		Where("code = ?", c).Select(&msg)
 	return msg, err
@@ -39,13 +39,13 @@ func (p *Loader) Get(l, c string) (string, error) {
 // Langs list available languages
 func (p *Loader) Langs() ([]string, error) {
 	var items []string
-	err := p.db.Model(&Locale{}).ColumnExpr("DISTINCT lang").Select(&items)
+	err := p.db.Model(&Model{}).ColumnExpr("DISTINCT lang").Select(&items)
 	return items, err
 }
 
 // All get all items by lang
 func (p *Loader) All(l string) (map[string]string, error) {
-	var items []Locale
+	var items []Model
 	err := p.db.Model(&items).Column("code", "message").
 		Where("lang = ?", l).
 		Order("code DESC").
