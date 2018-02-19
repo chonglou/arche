@@ -417,6 +417,12 @@
 			"revisionTime": "2018-01-31T09:42:50Z"
 		},
 		{
+			"checksumSHA1": "/CkShsXSmW4032TjVej9ZwhjxOY=",
+			"path": "github.com/unrolled/render",
+			"revision": "65450fb6b2d3595beca39f969c411db8f8d5c806",
+			"revisionTime": "2017-11-02T16:21:32Z"
+		},
+		{
 			"checksumSHA1": "LRcEVOt5/S4F+At6872qGBTSjwc=",
 			"path": "github.com/urfave/cli",
 			"revision": "a1c7408de3f632d86eee604a3bb755f1ffb68226",
