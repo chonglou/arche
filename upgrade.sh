@@ -2,6 +2,7 @@
 go get -u github.com/kardianos/govendor
 rm -r vendor
 govendor init
+govendor fetch github.com/facebookgo/inject
 govendor fetch github.com/gorilla/mux
 govendor fetch github.com/gorilla/feeds
 govendor fetch github.com/rs/cors
@@ -17,6 +18,7 @@ govendor fetch github.com/SermoDigital/jose/jwt
 govendor fetch github.com/SermoDigital/jose/jws
 govendor fetch github.com/SermoDigital/jose/crypto
 govendor fetch github.com/google/uuid
+govendor fetch github.com/spf13/viper
 govendor fetch github.com/urfave/cli
 govendor fetch github.com/go-ini/ini
 govendor fetch github.com/BurntSushi/toml

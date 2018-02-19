@@ -1,5 +1,5 @@
 dist=dist
-pkg=github.com/chonglou/arche/nut
+pkg=github.com/chonglou/arche/web
 theme=moon
 
 VERSION=`git rev-parse --short HEAD`
