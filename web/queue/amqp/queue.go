@@ -5,21 +5,32 @@ import (
 	"time"
 
 	"github.com/chonglou/arche/web/queue"
+	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
 
 // New create a amqp queue
 func New(url, name string) queue.Queue {
 	return &Queue{
-		url:  url,
-		name: name,
+		url:       url,
+		name:      name,
+		consumers: make(map[string]queue.Consumer),
 	}
 }
 
 // Queue queue for amqp
 type Queue struct {
-	url  string
-	name string
+	url       string
+	name      string
+	consumers map[string]queue.Consumer
+}
+
+// Register register handler
+func (p *Queue) Register(n string, c queue.Consumer) {
+	if _, ok := p.consumers[n]; ok {
+		log.Errorf("consumer for %s already exists, will override it", n)
+	}
+	p.consumers[n] = c
 }
 
 // Put send a message
@@ -48,8 +59,8 @@ func (p *Queue) Launch(name string) error {
 		}
 		for d := range msgs {
 			d.Ack(false)
-			hnd := queue.Get(d.Type)
-			if hnd == nil {
+			hnd, ok := p.consumers[d.Type]
+			if !ok {
 				return fmt.Errorf("unknown message type %s", d.Type)
 			}
 			if err := hnd(d.MessageId, d.Body); err != nil {
