@@ -369,15 +369,17 @@ func (p *Plugin) generateNginxConf(c *cli.Context) error {
 	}
 
 	return tpl.Execute(fd, struct {
-		Port int
-		Root string
-		Name string
-		Ssl  bool
+		Port  int
+		Root  string
+		Name  string
+		Theme string
+		Ssl   bool
 	}{
-		Name: name,
-		Port: viper.GetInt("server.port"),
-		Root: pwd,
-		Ssl:  viper.GetBool("server.secure"),
+		Name:  name,
+		Port:  viper.GetInt("server.port"),
+		Root:  pwd,
+		Theme: viper.GetString("server.theme"),
+		Ssl:   viper.GetBool("server.secure"),
 	})
 }
 func (p *Plugin) generateSsl(c *cli.Context) error {
@@ -446,7 +448,7 @@ func (p *Plugin) generateLocale(c *cli.Context) error {
 	return err
 }
 func (p *Plugin) migrationsDir() string {
-	return filepath.Join("db", viper.GetString("database.driver"), "migrations")
+	return filepath.Join("db", "migrations")
 }
 func (p *Plugin) generateMigration(c *cli.Context) error {
 	name := c.String("name")
@@ -459,8 +461,12 @@ func (p *Plugin) generateMigration(c *cli.Context) error {
 	if err := os.MkdirAll(root, 0700); err != nil {
 		return err
 	}
-	for _, v := range []string{"up", "down"} {
-		fn := filepath.Join(root, fmt.Sprintf("%s_%s.%s.sql", version, name, v))
+	for _, n := range []string{"up", "down"} {
+		dir := filepath.Join(root, fmt.Sprintf("%s_%s", version, name))
+		if err := os.MkdirAll(dir, 0700); err != nil {
+			return err
+		}
+		fn := filepath.Join(dir, n+".sql")
 		fmt.Printf("generate file %s\n", fn)
 		fd, err := os.OpenFile(fn, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
 		if err != nil {
@@ -515,7 +521,7 @@ func (p *Plugin) databaseRun(act string) cli.ActionFunc {
 	return web.InjectAction(func(_ *cli.Context) error {
 		migrations.SetTableName("schema_migrations")
 		var items []migrations.Migration
-		root := path.Join("db", "migrations")
+		root := p.migrationsDir()
 		files, err := ioutil.ReadDir(root)
 		if err != nil {
 			return err
