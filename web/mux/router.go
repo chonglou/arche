@@ -32,6 +32,11 @@ type Router struct {
 	render   *render.Render
 }
 
+// Use use middleware
+func (p *Router) Use(args ...HandlerFunc) {
+	p.handlers = append(p.handlers, args...)
+}
+
 // Listen start server
 // cors.New(cors.Options{
 // 	AllowedOrigins: ["www.change-me.com"],
@@ -128,17 +133,45 @@ func (p *Router) Group(pat string, args ...HandlerFunc) *Router {
 	}
 }
 
+// Get http get
+func (p *Router) Get(pat string, args ...HandlerFunc) {
+	p.add(http.MethodGet, pat, args...)
+}
+
+// Post http post
+func (p *Router) Post(pat string, args ...HandlerFunc) {
+	p.add(http.MethodPost, pat, args...)
+}
+
+// Delete http delete
+func (p *Router) Delete(pat string, args ...HandlerFunc) {
+	p.add(http.MethodDelete, pat, args...)
+}
+
+// Put http put
+func (p *Router) Put(pat string, args ...HandlerFunc) {
+	p.add(http.MethodPut, pat, args...)
+}
+
+// Patch http patch
+func (p *Router) Patch(pat string, args ...HandlerFunc) {
+	p.add(http.MethodPatch, pat, args...)
+}
+
 func (p *Router) add(met, pat string, args ...HandlerFunc) {
 	handlers := append(p.handlers, args...)
 	p.node.HandleFunc(pat, func(w http.ResponseWriter, r *http.Request) {
+		log.Infof("%s %s %s", r.Proto, r.Method, r.URL)
+		begin := time.Now()
 		ctx := Context{
 			Request:  r,
 			Writer:   w,
 			handlers: handlers,
 			render:   p.render,
 			payload:  make(H),
-			index:    0,
+			index:    -1,
 		}
 		ctx.Next()
+		log.Infof("%s", time.Now().Sub(begin))
 	})
 }

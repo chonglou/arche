@@ -3,6 +3,8 @@ package mux
 import (
 	"math"
 	"net/http"
+	"reflect"
+	"runtime"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/unrolled/render"
@@ -25,14 +27,23 @@ type Context struct {
 func (p *Context) Next() {
 	p.index++
 	for s := int8(len(p.handlers)); p.index < s; p.index++ {
-		p.handlers[p.index](p)
+		hnd := p.handlers[p.index]
+		log.Debugf("call %s", runtime.FuncForPC(reflect.ValueOf(hnd).Pointer()).Name())
+		hnd(p)
 	}
+}
+
+// Set k, v
+func (p *Context) Set(k string, v interface{}) {
+	if _, ok := p.payload[k]; ok {
+		log.Warnf("key %s exist, will ovveride it", k)
+	}
+	p.payload[k] = v
 }
 
 // Abort abort
 func (p *Context) Abort(s int, e error) {
 	p.Text(s, e.Error())
-	log.Error(e)
 	p.index = math.MaxInt8
 }
 

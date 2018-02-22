@@ -4,12 +4,12 @@ import (
 	"github.com/chonglou/arche/web"
 	"github.com/chonglou/arche/web/cache"
 	"github.com/chonglou/arche/web/i18n"
+	"github.com/chonglou/arche/web/mux"
 	"github.com/chonglou/arche/web/queue"
 	"github.com/chonglou/arche/web/settings"
 	"github.com/chonglou/arche/web/storage"
 	"github.com/facebookgo/inject"
 	"github.com/go-pg/pg"
-	"github.com/gorilla/mux"
 	"github.com/urfave/cli"
 )
 

@@ -4,18 +4,14 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"encoding/base64"
 	"encoding/json"
 	"time"
 
 	"github.com/go-pg/pg"
 )
 
-func New(sec string) (*Settings, error) {
-	key, err := base64.StdEncoding.DecodeString(sec)
-	if err != nil {
-		return nil, err
-	}
+// New new settings
+func New(key []byte) (*Settings, error) {
 	cip, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err

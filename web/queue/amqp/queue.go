@@ -53,6 +53,16 @@ func (p *Queue) Launch(name string) error {
 		if err := ch.Qos(1, 0, false); err != nil {
 			return err
 		}
+		if _, err := ch.QueueDeclare(
+			p.name, // name of the queue
+			true,   // durable
+			false,  // delete when unused
+			false,  // exclusive
+			false,  // noWait
+			nil,    // arguments
+		); err != nil {
+			return err
+		}
 		msgs, err := ch.Consume(p.name, name, false, false, false, false, nil)
 		if err != nil {
 			return err

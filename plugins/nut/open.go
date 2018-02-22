@@ -10,9 +10,11 @@ import (
 	"github.com/SermoDigital/jose/crypto"
 	"github.com/chonglou/arche/web"
 	r_c "github.com/chonglou/arche/web/cache/redis"
+	"github.com/chonglou/arche/web/i18n"
 	"github.com/chonglou/arche/web/mux"
 	"github.com/chonglou/arche/web/queue"
 	"github.com/chonglou/arche/web/queue/amqp"
+	"github.com/chonglou/arche/web/settings"
 	"github.com/chonglou/arche/web/storage"
 	"github.com/chonglou/arche/web/storage/s3"
 	"github.com/facebookgo/inject"
@@ -76,24 +78,6 @@ func (p *Plugin) openRedis() *redis.Pool {
 				viper.GetInt("redis.db"),
 			))
 		},
-		// Dial: func() (redis.Conn, error) {
-		// 	c, e := redis.Dial(
-		// 		"tcp",
-		// 		fmt.Sprintf(
-		// 			"%s:%d",
-		// 			viper.GetString("redis.host"),
-		// 			viper.GetInt("redis.port"),
-		// 		),
-		// 	)
-		// 	if e != nil {
-		// 		return nil, e
-		// 	}
-		// 	if _, e = c.Do("SELECT", viper.GetInt("redis.db")); e != nil {
-		// 		c.Close()
-		// 		return nil, e
-		// 	}
-		// 	return c, nil
-		// },
 		TestOnBorrow: func(c redis.Conn, t time.Time) error {
 			_, err := c.Do("PING")
 			return err
@@ -111,6 +95,11 @@ func (p *Plugin) openRender(theme string) render.Options {
 	}
 }
 
+func (p *Plugin) detectLocale(c *mux.Context) {
+	lang := i18n.Detect(c.Writer, c.Request)
+	c.Set(i18n.LOCALE, lang)
+}
+
 // Init init beans
 func (p *Plugin) Init(g *inject.Graph) error {
 	db, err := p.openDB()
@@ -126,6 +115,10 @@ func (p *Plugin) Init(g *inject.Graph) error {
 	if err != nil {
 		return err
 	}
+	kvs, err := settings.New(secret)
+	if err != nil {
+		return err
+	}
 
 	redis := p.openRedis()
 
@@ -134,18 +127,24 @@ func (p *Plugin) Init(g *inject.Graph) error {
 		return err
 	}
 
+	cache := r_c.New(redis, "cache://")
+
 	theme := viper.GetString("server.theme")
+	rt := mux.New(p.openRender(theme))
+	rt.Use(p.detectLocale)
 
 	return g.Provide(
 		&inject.Object{Value: db},
 		&inject.Object{Value: redis},
 		&inject.Object{Value: security},
+		&inject.Object{Value: kvs},
 		&inject.Object{Value: p.openQueue()},
 		&inject.Object{Value: s3},
 		&inject.Object{Value: web.NewSitemap()},
 		&inject.Object{Value: web.NewRSS()},
-		&inject.Object{Value: r_c.New(redis, "cache://")},
+		&inject.Object{Value: cache},
 		&inject.Object{Value: web.NewJwt(secret, crypto.SigningMethodHS512)},
-		&inject.Object{Value: mux.New(p.openRender(theme))},
+		&inject.Object{Value: i18n.New(cache)},
+		&inject.Object{Value: rt},
 	)
 }

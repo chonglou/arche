@@ -72,11 +72,10 @@ func init() {
 	})
 
 	viper.SetDefault("server", map[string]interface{}{
-		"port":      8080,
-		"name":      "www.change-me.com",
-		"dashboard": "/my",
-		"theme":     "bootstrap",
-		"secure":    false,
+		"port":   8080,
+		"name":   "www.change-me.com",
+		"theme":  "bootstrap",
+		"secure": false,
 	})
 
 	secret, _ := web.RandomBytes(32)

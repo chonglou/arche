@@ -27,6 +27,7 @@ func (p *Plugin) sitemap() ([]stm.URL, error) {
 func (p *Plugin) Mount() error {
 	p.Sitemap.Register(p.sitemap)
 	// --------------
+	p.Router.Get("/", p.getHome)
 	// i18m, err := p.I18n.Middleware()
 	// if err != nil {
 	// 	return err
