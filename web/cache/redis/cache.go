@@ -11,14 +11,10 @@ import (
 )
 
 // New open a redis cache
-func New(url, prefix string) cache.Cache {
+func New(pool *redis.Pool, prefix string) cache.Cache {
 	return &Cache{
 		prefix: prefix,
-		pool: &redis.Pool{
-			Dial: func() (redis.Conn, error) {
-				return redis.DialURL(url)
-			},
-		},
+		pool:   pool,
 	}
 }
 
@@ -49,6 +45,25 @@ func (p *Cache) Get(key string, val interface{}) error {
 		return err
 	}
 	return json.Unmarshal(buf, val)
+}
+
+// Status list all items
+func (p *Cache) Status() (map[string]uint64, error) {
+	c := p.pool.Get()
+	defer c.Close()
+	keys, err := redis.Strings(c.Do("KEYS", p.key("*")))
+	if err != nil {
+		return nil, err
+	}
+	items := make(map[string]uint64)
+	for _, k := range keys {
+		ttl, err := redis.Uint64(c.Do("TTL", k))
+		if err != nil {
+			return nil, err
+		}
+		items[k] = ttl
+	}
+	return items, nil
 }
 
 // Clear clear all cache.

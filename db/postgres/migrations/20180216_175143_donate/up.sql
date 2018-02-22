@@ -4,7 +4,7 @@ CREATE TABLE donate_projects (
   body TEXT NOT NULL,
   type VARCHAR(8) NOT NULL,
   methods TEXT NOT NULL,
-  created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+  created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
 );
 CREATE INDEX idx_donate_projects_title ON donate_projects (title);

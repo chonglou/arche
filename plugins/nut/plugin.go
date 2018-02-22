@@ -10,10 +10,8 @@ import (
 	"github.com/chonglou/arche/web/queue"
 	"github.com/chonglou/arche/web/settings"
 	"github.com/chonglou/arche/web/storage"
-	"github.com/facebookgo/inject"
 	"github.com/go-pg/pg"
 	"github.com/spf13/viper"
-	"github.com/urfave/cli"
 	"golang.org/x/text/language"
 )
 
@@ -30,21 +28,7 @@ type Plugin struct {
 	RSS      *web.RSS           `inject:""`
 	Router   *mux.Router        `inject:""`
 	DB       *pg.DB             `inject:""`
-}
-
-// Init init beans
-func (p *Plugin) Init(*inject.Graph) error {
-	return nil
-}
-
-// Shell console commands
-func (p *Plugin) Shell() []cli.Command {
-	return []cli.Command{}
-}
-
-// Mount register
-func (p *Plugin) Mount() error {
-	return nil
+	Dao      *Dao               `inject:""`
 }
 
 func init() {
@@ -91,6 +75,7 @@ func init() {
 		"port":      8080,
 		"name":      "www.change-me.com",
 		"dashboard": "/my",
+		"theme":     "bootstrap",
 		"secure":    false,
 	})
 

@@ -321,6 +321,12 @@
 			"revisionTime": "2018-02-14T10:17:53Z"
 		},
 		{
+			"checksumSHA1": "w/LYGLA+aaxkeG9zoH/vJP0jT0Q=",
+			"path": "github.com/go-pg/migrations",
+			"revision": "3df9d3d4b430f9d437bf102434910529d3c267a7",
+			"revisionTime": "2018-02-20T07:46:17Z"
+		},
+		{
 			"checksumSHA1": "wDNcFhu9BStbmbtrfDj/QjNxr+4=",
 			"path": "github.com/go-pg/pg",
 			"revision": "eff1632b1caea7c554b174d5551ff2791021810c",
@@ -369,6 +375,12 @@
 			"revisionTime": "2016-08-17T18:46:32Z"
 		},
 		{
+			"checksumSHA1": "q8qteAwOzNYqC3p/UI6IBwoIV2o=",
+			"path": "github.com/gorilla/csrf",
+			"revision": "8aae08ff9fb9a8fe293deea3d057f37d89744670",
+			"revisionTime": "2017-09-12T15:53:03Z"
+		},
+		{
 			"checksumSHA1": "gKNNcQkvem0BdeK3ZbEDUSNRFr4=",
 			"path": "github.com/gorilla/feeds",
 			"revision": "4b936b5221c53c99fcd4b15ac0b8c38ff490ab89",
@@ -379,6 +391,12 @@
 			"path": "github.com/gorilla/mux",
 			"revision": "c0091a029979286890368b4c7b301261e448e242",
 			"revisionTime": "2018-01-20T07:58:19Z"
+		},
+		{
+			"checksumSHA1": "ucTBCc7dDRKLGPsYfAzu/Gq63qA=",
+			"path": "github.com/gorilla/securecookie",
+			"revision": "e59506cc896acb7f7bf732d4fdf5e25f7ccd8983",
+			"revisionTime": "2017-02-24T19:38:04Z"
 		},
 		{
 			"checksumSHA1": "HtpYAWHvd9mq+mHkpo7z8PGzMik=",

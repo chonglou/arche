@@ -6,5 +6,6 @@ import "time"
 type Cache interface {
 	Put(key string, val interface{}, ttl time.Duration) error
 	Get(key string, val interface{}) error
+	Status() (map[string]uint64, error)
 	Clear() error
 }

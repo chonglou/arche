@@ -12,5 +12,6 @@
 .*.un~
 
 # Test
+/config.toml
 /tmp
 /public

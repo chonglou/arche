@@ -14,7 +14,7 @@ CREATE TABLE users (
   last_sign_in_ip    INET,
   confirmed_at       TIMESTAMP WITHOUT TIME ZONE,
   locked_at          TIMESTAMP WITHOUT TIME ZONE,
-  created_at         TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+  created_at         TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
   updated_at         TIMESTAMP WITHOUT TIME ZONE NOT NULL
 );
 CREATE UNIQUE INDEX idx_users_uid
@@ -36,7 +36,7 @@ CREATE TABLE logs (
   user_id    BIGINT                      NOT NULL REFERENCES users,
   ip         INET                        NOT NULL,
   message    VARCHAR(255)                NOT NULL,
-  created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
+  created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE roles (
@@ -44,7 +44,7 @@ CREATE TABLE roles (
   name          VARCHAR(32)                 NOT NULL,
   resource_id   BIGINT,
   resource_type VARCHAR(255),
-  created_at    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+  created_at    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
   updated_at    TIMESTAMP WITHOUT TIME ZONE NOT NULL
 );
 CREATE UNIQUE INDEX idx_roles_name_resource_type_id
@@ -60,7 +60,7 @@ CREATE TABLE policies (
   role_id    BIGINT                      NOT NULL REFERENCES roles,
   nbf        DATE                        NOT NULL DEFAULT current_date,
   exp        DATE                        NOT NULL,
-  created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+  created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
 );
 CREATE UNIQUE INDEX idx_policies

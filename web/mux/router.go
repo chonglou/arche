@@ -1,10 +1,17 @@
 package mux
 
 import (
+	"context"
+	"fmt"
 	"html/template"
 	"net/http"
+	"os"
+	"os/signal"
+	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
+	log "github.com/sirupsen/logrus"
 	"github.com/unrolled/render"
 )
 
@@ -23,6 +30,89 @@ type Router struct {
 	node     *mux.Router
 	handlers []HandlerFunc
 	render   *render.Render
+}
+
+// Listen start server
+// cors.New(cors.Options{
+// 	AllowedOrigins: ["www.change-me.com"],
+// 	AllowedMethods: []string{
+// 		http.MethodGet,
+// 		http.MethodPost,
+// 		http.MethodPatch,
+// 		http.MethodPut,
+// 		http.MethodDelete,
+// 	},
+// 	AllowedHeaders:   []string{"Authorization", "X-Requested-With"},
+// 	AllowCredentials: true,
+// 	Debug:            true,
+// })
+// csrf.Protect(
+// 	secret,
+// 	csrf.Path("/"),
+// 	csrf.Secure(secure),
+// 	csrf.CookieName("csrf"),
+// 	csrf.RequestHeader("Authenticity-Token"),
+// 	csrf.FieldName("authenticity_token"),
+// )
+func (p *Router) Listen(port int, cors *cors.Cors, csrf mux.MiddlewareFunc, grace bool) error {
+	log.Infof(
+		"application starting on http://localhost:%d",
+		port,
+	)
+	var hnd http.Handler
+	hnd = p.node
+	if cors != nil {
+		hnd = cors.Handler(hnd)
+	}
+	if csrf != nil {
+		hnd = csrf(hnd)
+	}
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: hnd,
+	}
+
+	if !grace {
+		// for debug mode
+		return srv.ListenAndServe()
+	}
+
+	go func() {
+		// service connections
+		if err := srv.ListenAndServe(); err != nil {
+			log.Error(err)
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shutdown the server with
+	// a timeout of 5 seconds.
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	log.Warn("shutdown server ...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		return err
+	}
+	log.Warn("server exiting")
+	return nil
+}
+
+// Walk walk all routes
+func (p *Router) Walk(f func(path string, methods ...string) error) error {
+	return p.node.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		tpl, err := route.GetPathTemplate()
+		if err != nil {
+			return err
+		}
+		methods, err := route.GetMethods()
+		if err != nil {
+			return nil
+		}
+		return f(tpl, methods...)
+	})
 }
 
 // Static mount static dir like:  node_modules => /3rd/
