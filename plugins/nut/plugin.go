@@ -50,7 +50,7 @@ func init() {
 	viper.SetDefault("redis", map[string]interface{}{
 		"host": "localhost",
 		"port": 6379,
-		"db":   8,
+		"db":   6,
 	})
 
 	viper.SetDefault("rabbitmq", map[string]interface{}{

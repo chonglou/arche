@@ -242,7 +242,11 @@ func (p *Plugin) Shell() []cli.Command {
 					Usage:   "clear cache items",
 					Aliases: []string{"c"},
 					Action: web.InjectAction(func(_ *cli.Context) error {
-						return p.Cache.Clear()
+						if err := p.Cache.Clear(); err != nil {
+							return err
+						}
+						fmt.Println("Done.")
+						return nil
 					}),
 				},
 			},

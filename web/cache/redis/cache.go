@@ -48,16 +48,16 @@ func (p *Cache) Get(key string, val interface{}) error {
 }
 
 // Status list all items
-func (p *Cache) Status() (map[string]uint64, error) {
+func (p *Cache) Status() (map[string]int, error) {
 	c := p.pool.Get()
 	defer c.Close()
 	keys, err := redis.Strings(c.Do("KEYS", p.key("*")))
 	if err != nil {
 		return nil, err
 	}
-	items := make(map[string]uint64)
+	items := make(map[string]int)
 	for _, k := range keys {
-		ttl, err := redis.Uint64(c.Do("TTL", k))
+		ttl, err := redis.Int(c.Do("TTL", k))
 		if err != nil {
 			return nil, err
 		}
@@ -73,6 +73,9 @@ func (p *Cache) Clear() error {
 	keys, err := redis.Strings(c.Do("KEYS", p.key("*")))
 	if err != nil {
 		return err
+	}
+	if len(keys) == 0 {
+		return nil
 	}
 	var args []interface{}
 	for _, k := range keys {
