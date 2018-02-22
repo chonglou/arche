@@ -2,11 +2,14 @@ package nut
 
 import (
 	"crypto/x509/pkix"
+	"errors"
 	"fmt"
 	"html/template"
+	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -484,17 +487,11 @@ func (p *Plugin) generateConfig(c *cli.Context) error {
 
 // --------------------------------
 func (p *Plugin) databaseExample(_ *cli.Context) error {
-	drv := viper.GetString("database.driver")
-	switch drv {
-	case postgresqlDriverName:
-		args := viper.GetStringMapString("database.args")
-		fmt.Printf("CREATE USER %s WITH PASSWORD '%s';\n", args["user"], args["password"])
-		fmt.Printf("CREATE DATABASE %s WITH ENCODING='UTF8';\n", args["dbname"])
-		fmt.Printf("GRANT ALL PRIVILEGES ON DATABASE %s TO %s;\n", args["dbname"], args["user"])
-		return nil
-	default:
-		return fmt.Errorf("bad driver %s", drv)
-	}
+	args := viper.GetStringMapString("postgresql")
+	fmt.Printf("CREATE USER %s WITH PASSWORD '%s';\n", args["user"], args["password"])
+	fmt.Printf("CREATE DATABASE %s WITH ENCODING='UTF8';\n", args["name"])
+	fmt.Printf("GRANT ALL PRIVILEGES ON DATABASE %s TO %s;\n", args["name"], args["user"])
+	return nil
 }
 
 func (p *Plugin) databaseSource() string {
@@ -504,7 +501,7 @@ func (p *Plugin) databaseSource() string {
 		args["user"],
 		args["password"],
 		args["host"],
-		args["port"].(int),
+		args["port"],
 		args["name"],
 		args["sslmode"],
 	)
@@ -513,59 +510,82 @@ func (p *Plugin) databaseSource() string {
 func (p *Plugin) databaseRun(act string) cli.ActionFunc {
 	return web.InjectAction(func(_ *cli.Context) error {
 		migrations.SetTableName("schema_migrations")
+		var items []migrations.Migration
+		root := path.Join("db", "migrations")
+		files, err := ioutil.ReadDir(root)
+		if err != nil {
+			return err
+		}
+		for _, info := range files {
+			if !info.IsDir() {
+				return nil
+			}
+			name := info.Name()
+			log.Debugf("find migrations %s", name)
+			idx := strings.Index(name, "_")
+			if idx == -1 {
+				return errors.New("bad migration name")
+			}
+			ver, err := strconv.ParseInt(name[0:idx], 10, 64)
+			if err != nil {
+				return err
+			}
+			up, err := ioutil.ReadFile(filepath.Join(root, name, "up.sql"))
+			if err != nil {
+				return err
+			}
+			down, err := ioutil.ReadFile(filepath.Join(root, name, "down.sql"))
+			if err != nil {
+				return err
+			}
+			items = append(items, migrations.Migration{
+				Version: ver,
+				Up: func(db migrations.DB) error {
+					_, err := db.Exec(string(up))
+					return err
+				},
+				Down: func(db migrations.DB) error {
+					_, err := db.Exec(string(down))
+					return err
+				},
+			})
+		}
+
 		return p.DB.RunInTransaction(func(db *pg.Tx) error {
-			_, _, err := migrations.Run(db, act)
+			ov, nv, err := migrations.RunMigrations(db, items, act)
+			fmt.Printf("old version: %d, current version: %d\n", ov, nv)
 			return err
 		})
 	})
 }
 
 func (p *Plugin) createDatabase(_ *cli.Context) error {
-	drv := viper.GetString("database.driver")
-	switch drv {
-	case postgresqlDriverName:
-		args := viper.GetStringMapString("database.args")
-		return web.Shell("psql",
-			"-h", args["host"],
-			"-p", args["port"],
-			"-U", "postgres",
-			"-c", fmt.Sprintf(
-				"CREATE DATABASE %s WITH ENCODING='UTF8'",
-				args["dbname"],
-			),
-		)
-	default:
-		return fmt.Errorf("bad driver %s", drv)
-	}
+	args := viper.GetStringMapString("postgresql")
+	return web.Shell("psql",
+		"-h", args["host"],
+		"-p", args["port"],
+		"-U", "postgres",
+		"-c", fmt.Sprintf(
+			"CREATE DATABASE %s WITH ENCODING='UTF8'",
+			args["name"],
+		),
+	)
 }
 func (p *Plugin) dropDatabase(_ *cli.Context) error {
-	drv := viper.GetString("database.driver")
-	switch drv {
-	case postgresqlDriverName:
-		args := viper.GetStringMapString("database.args")
-		return web.Shell("psql",
-			"-h", args["host"],
-			"-p", args["port"],
-			"-U", "postgres",
-			"-c", fmt.Sprintf("DROP DATABASE %s", args["dbname"]),
-		)
-	default:
-		return fmt.Errorf("bad driver %s", drv)
-	}
-
+	args := viper.GetStringMapString("postgresql")
+	return web.Shell("psql",
+		"-h", args["host"],
+		"-p", args["port"],
+		"-U", "postgres",
+		"-c", fmt.Sprintf("DROP DATABASE %s", args["name"]),
+	)
 }
 func (p *Plugin) connectDatabase(_ *cli.Context) error {
-	drv := viper.GetString("database.driver")
-	switch drv {
-	case postgresqlDriverName:
-		args := viper.GetStringMapString("database.args")
-		return web.Shell("psql",
-			"-h", args["host"],
-			"-p", args["port"],
-			"-U", args["user"],
-			args["dbname"],
-		)
-	default:
-		return fmt.Errorf("bad driver %s", drv)
-	}
+	args := viper.GetStringMapString("postgresql")
+	return web.Shell("psql",
+		"-h", args["host"],
+		"-p", args["port"],
+		"-U", args["user"],
+		args["name"],
+	)
 }

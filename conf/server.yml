@@ -1,4 +1,0 @@
-broker: redis://localhost:6379/6
-default_queue: tasks
-result_backend: redis://localhost:6379/6
-results_expire_in: 86400000

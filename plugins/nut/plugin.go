@@ -67,7 +67,7 @@ func init() {
 		"port":     5432,
 		"user":     "postgres",
 		"password": "",
-		"dbname":   "arche_dev",
+		"name":     "arche_dev",
 		"sslmode":  "disable",
 	})
 

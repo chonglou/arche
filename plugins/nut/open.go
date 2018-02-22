@@ -43,12 +43,12 @@ func (p *Plugin) openDB() (*pg.DB, error) {
 
 func (p *Plugin) openS3() (storage.Storage, error) {
 	args := viper.GetStringMap("aws")
-	s3c := args["s3"].(map[string]string)
+	s3c := args["s3"].(map[string]interface{})
 	return s3.New(
 		args["access_key_id"].(string),
 		args["secret_access_key"].(string),
-		s3c["region"],
-		s3c["bucket"],
+		s3c["region"].(string),
+		s3c["bucket"].(string),
 	)
 }
 
