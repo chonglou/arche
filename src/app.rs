@@ -57,13 +57,13 @@ impl App {
                 .finalize()
         );
         // FIXME
-        rocket::custom(cfg, false)
-            .mount(
-                "/",
-                routes![forum::users::get_sign_in, forum::users::get_sign_up],
-            )
-            .attach(rocket_contrib::Template::fairing())
-            .launch();
+        let mut app = rocket::custom(cfg, false);
+        app = forum::mount(app);
+        // app = app.mount(
+        //     "/",
+        //     routes![forum::users::get_sign_in, forum::users::get_sign_up],
+        // );
+        app.attach(rocket_contrib::Template::fairing()).launch();
         return Ok(());
     }
 
