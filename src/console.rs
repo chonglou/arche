@@ -22,8 +22,6 @@ struct Args {
     cmd_rollback: bool,
     cmd_drop: bool,
     cmd_status: bool,
-
-    cmd_start: bool,
 }
 
 pub fn run() -> Result<()> {
@@ -36,11 +34,11 @@ AUTHORS: {authors}
 HOMEPAGE: {homepage}
 
 USAGE:
+  {name}
   {name} generate config
   {name} generate (locale|migration) [--name=<fn>]
   {name} generate nginx [--https]
   {name} database (create|connect|migrate|rollback|status|drop)
-  {name} start
   {name} (-h | --help)
   {name} --version
 
@@ -64,9 +62,6 @@ OPTIONS:
 
     if args.flag_version {
         return app.show_version();
-    }
-    if args.cmd_start {
-        return app.start();
     }
     if args.cmd_generate {
         if args.cmd_config {
@@ -102,6 +97,5 @@ OPTIONS:
             return app.database(|c| c.drop(), false);
         }
     }
-
-    return Ok(());
+    return app.start();
 }

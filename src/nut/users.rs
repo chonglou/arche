@@ -8,7 +8,7 @@ pub fn get_sign_in() -> Template {
     ctx.insert("title", "sign in");
     ctx.insert("parent", "layouts/application/index");
 
-    return Template::render("nut/users/sign-in", ctx);
+    return Template::render("forum/users/sign-in", ctx);
 }
 
 #[get("/users/sign-up")]

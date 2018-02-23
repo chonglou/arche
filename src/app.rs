@@ -56,6 +56,7 @@ impl App {
                 )
                 .finalize()
         );
+        // FIXME
         rocket::custom(cfg, false)
             .mount(
                 "/",
@@ -325,7 +326,7 @@ impl App {
     }
 
     pub fn show_version(&self) -> Result<()> {
-        info!("{}", env::VERSION);
+        println!("{}", env::VERSION);
         return Ok(());
     }
 
