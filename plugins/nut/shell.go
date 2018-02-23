@@ -340,6 +340,20 @@ func (p *Plugin) Shell() []cli.Command {
 				})
 			}),
 		},
+		{
+			Name:  "i18n",
+			Usage: "internationalization operations",
+			Subcommands: []cli.Command{
+				{
+					Name:    "sync",
+					Usage:   "sync locales from locales to database",
+					Aliases: []string{"s"},
+					Action: web.InjectAction(func(_ *cli.Context) error {
+						return p.I18n.Sync("locales")
+					}),
+				},
+			},
+		},
 	}
 }
 
@@ -518,7 +532,7 @@ func (p *Plugin) databaseSource() string {
 }
 
 func (p *Plugin) databaseRun(act string) cli.ActionFunc {
-	return web.InjectAction(func(_ *cli.Context) error {
+	return web.ConfigAction(func(_ *cli.Context) error {
 		migrations.SetTableName("schema_migrations")
 		var items []migrations.Migration
 		root := p.migrationsDir()
@@ -560,9 +574,12 @@ func (p *Plugin) databaseRun(act string) cli.ActionFunc {
 				},
 			})
 		}
-
-		return p.DB.RunInTransaction(func(db *pg.Tx) error {
-			ov, nv, err := migrations.RunMigrations(db, items, act)
+		db, err := p.openDB()
+		if err != nil {
+			return err
+		}
+		return db.RunInTransaction(func(tx *pg.Tx) error {
+			ov, nv, err := migrations.RunMigrations(tx, items, act)
 			fmt.Printf("old version: %d, current version: %d\n", ov, nv)
 			return err
 		})

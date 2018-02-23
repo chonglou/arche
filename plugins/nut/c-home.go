@@ -25,7 +25,7 @@ func (p *Plugin) getLayout(c *mux.Context) {
 
 	// i18n
 	site[i18n.LOCALE] = lang
-	site["languages"] = p.I18n.Languages()
+	site["languages"], _ = p.I18n.Languages()
 
 	// current-user
 	user := c.Get(CurrentUser)

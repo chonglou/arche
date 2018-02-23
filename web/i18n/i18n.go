@@ -2,45 +2,54 @@ package i18n
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"html/template"
+	"time"
 
-	"golang.org/x/text/language"
+	"github.com/chonglou/arche/web/cache"
+	"github.com/go-pg/pg"
 )
 
-// New new
-func New(langs ...string) (*I18n, error) {
-	var items []language.Tag
-	for _, l := range langs {
-		t, e := language.Parse(l)
-		if e != nil {
-			return nil, e
-		}
-		items = append(items, t)
-	}
+// New load from database and filesystem
+func New(db *pg.DB, c cache.Cache) *I18n {
 	return &I18n{
-		loaders:   make([]Loader, 0),
-		matcher:   language.NewMatcher(items),
-		languages: langs[:],
-	}, nil
+		db:    db,
+		cache: c,
+	}
 }
 
 // I18n i18n
 type I18n struct {
-	languages []string
-	loaders   []Loader
-	matcher   language.Matcher
+	db    *pg.DB
+	cache cache.Cache
 }
 
 // Languages all available languages
-func (p *I18n) Languages() []string {
-	return p.languages[:]
+func (p *I18n) Languages() ([]string, error) {
+	var items []string
+	if err := p.db.Model(&Model{}).
+		ColumnExpr("DISTINCT lang").
+		Select(&items); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
-// Register register loader
-func (p *I18n) Register(args ...Loader) {
-	p.loaders = append(p.loaders, args...)
+// All get all items by lang
+func (p *I18n) All(l string) (map[string]string, error) {
+	var items []Model
+	err := p.db.Model(&items).Column("code", "message").
+		Where("lang = ?", l).
+		Order("code DESC").
+		Select()
+	if err != nil {
+		return nil, err
+	}
+	rst := make(map[string]string)
+	for _, it := range items {
+		rst[it.Code] = it.Message
+	}
+	return rst, nil
 }
 
 // H html
@@ -62,7 +71,7 @@ func (p *I18n) H(lang, code string, obj interface{}) (string, error) {
 func (p *I18n) T(lang, code string, args ...interface{}) string {
 	msg, err := p.get(lang, code)
 	if err != nil {
-		return err.Error()
+		return fmt.Sprintf("%s.%s", lang, code)
 	}
 	return fmt.Sprintf(msg, args...)
 }
@@ -71,17 +80,23 @@ func (p *I18n) T(lang, code string, args ...interface{}) string {
 func (p *I18n) E(lang, code string, args ...interface{}) error {
 	msg, err := p.get(lang, code)
 	if err != nil {
-		return err
+		return fmt.Errorf("%s.%s", lang, code)
 	}
 	return fmt.Errorf(msg, args...)
 }
 
 func (p *I18n) get(lang, code string) (string, error) {
-	for _, it := range p.loaders {
-		msg, err := it.Get(lang, code)
-		if err == nil && msg != "" {
-			return msg, nil
-		}
+	key := "locales/" + lang + "/" + code
+	var msg string
+	if err := p.cache.Get(key, &msg); err == nil {
+		return msg, nil
 	}
-	return "", errors.New(lang + "." + code)
+	if err := p.db.Model(&Model{}).Column("message").
+		Where("lang = ?", lang).
+		Where("code = ?", code).
+		Select(&msg); err != nil {
+		return "", err
+	}
+	p.cache.Put(key, msg, time.Hour*24)
+	return msg, nil
 }

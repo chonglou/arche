@@ -19,8 +19,38 @@ type Context struct {
 	Writer   http.ResponseWriter
 	handlers []HandlerFunc
 	render   *render.Render
+	params   map[string]string
 	payload  H
 	index    int8
+}
+
+// Param get param from url parse
+func (p *Context) Param(k string) string {
+	return p.params[k]
+}
+
+// Query get param from http url query
+func (p *Context) Query(k string) string {
+	return p.Request.URL.Query().Get(k)
+}
+
+// Cookie get param from http cookie
+func (p *Context) Cookie(k string) (string, error) {
+	it, err := p.Request.Cookie(k)
+	if err != nil {
+		return "", err
+	}
+	return it.Value, nil
+}
+
+// SetCookie write cookie
+func (p *Context) SetCookie(ck *http.Cookie) {
+	http.SetCookie(p.Writer, ck)
+}
+
+// Header get param from http header
+func (p *Context) Header(k string) string {
+	return p.Request.Header.Get(k)
 }
 
 // Next run next

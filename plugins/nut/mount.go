@@ -29,6 +29,7 @@ func (p *Plugin) Mount() error {
 	// --------------
 	api := p.Router.Group("/api")
 	api.Get("/layout", p.getLayout)
+	api.Get("/locales/{lang}", p.indexLocale)
 
 	// i18m, err := p.I18n.Middleware()
 	// if err != nil {

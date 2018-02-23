@@ -171,6 +171,7 @@ func (p *Router) add(met, pat string, args ...HandlerFunc) {
 			render:   p.render,
 			payload:  make(H),
 			index:    -1,
+			params:   mux.Vars(r),
 		}
 		ctx.Next()
 		log.Infof("%s", time.Now().Sub(begin))

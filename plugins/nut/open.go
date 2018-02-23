@@ -11,8 +11,6 @@ import (
 	"github.com/chonglou/arche/web"
 	r_c "github.com/chonglou/arche/web/cache/redis"
 	"github.com/chonglou/arche/web/i18n"
-	i18n_d "github.com/chonglou/arche/web/i18n/db"
-	i18n_i "github.com/chonglou/arche/web/i18n/ini"
 	"github.com/chonglou/arche/web/mux"
 	"github.com/chonglou/arche/web/queue"
 	"github.com/chonglou/arche/web/queue/amqp"
@@ -88,18 +86,16 @@ func (p *Plugin) openRedis() *redis.Pool {
 }
 
 func (p *Plugin) openRender(theme string) render.Options {
+	debug := web.MODE() != web.PRODUCTION
 	return render.Options{
 		Directory:     filepath.Join("themes", theme, "views"),
 		Layout:        "layouts/application/index",
 		Extensions:    []string{".html"},
-		IsDevelopment: web.MODE() != web.PRODUCTION,
+		IndentJSON:    debug,
+		IndentXML:     debug,
+		IsDevelopment: debug,
 		Funcs:         []template.FuncMap{},
 	}
-}
-
-func (p *Plugin) detectLocale(c *mux.Context) {
-	lang := i18n.Detect(c.Writer, c.Request)
-	c.Set(i18n.LOCALE, lang)
 }
 
 // Init init beans
@@ -132,21 +128,16 @@ func (p *Plugin) Init(g *inject.Graph) error {
 	cache := r_c.New(redis, "cache://")
 
 	// i18n
-	langs := viper.GetStringSlice("languages")
-	i18n, err := i18n.New(langs...)
-	if err != nil {
-		return err
-	}
-	i_i, err := i18n_i.New("locales")
-	if err != nil {
-		return err
-	}
-	i18n.Register(i18n_d.New(db), i_i)
+	i18n := i18n.New(db, cache)
 
 	// router
 	theme := viper.GetString("server.theme")
 	rt := mux.New(p.openRender(theme))
-	rt.Use(p.detectLocale)
+	im, err := i18n.Middleware()
+	if err != nil {
+		return err
+	}
+	rt.Use(im)
 
 	return g.Provide(
 		&inject.Object{Value: db},
