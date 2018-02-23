@@ -130,6 +130,7 @@ func (p *Router) Group(pat string, args ...HandlerFunc) *Router {
 	return &Router{
 		node:     p.node.PathPrefix(pat).Subrouter().StrictSlash(true),
 		handlers: append(p.handlers, args...),
+		render:   p.render,
 	}
 }
 
@@ -173,5 +174,5 @@ func (p *Router) add(met, pat string, args ...HandlerFunc) {
 		}
 		ctx.Next()
 		log.Infof("%s", time.Now().Sub(begin))
-	})
+	}).Methods(met)
 }

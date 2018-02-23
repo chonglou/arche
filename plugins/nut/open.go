@@ -11,6 +11,8 @@ import (
 	"github.com/chonglou/arche/web"
 	r_c "github.com/chonglou/arche/web/cache/redis"
 	"github.com/chonglou/arche/web/i18n"
+	i18n_d "github.com/chonglou/arche/web/i18n/db"
+	i18n_i "github.com/chonglou/arche/web/i18n/ini"
 	"github.com/chonglou/arche/web/mux"
 	"github.com/chonglou/arche/web/queue"
 	"github.com/chonglou/arche/web/queue/amqp"
@@ -129,6 +131,19 @@ func (p *Plugin) Init(g *inject.Graph) error {
 
 	cache := r_c.New(redis, "cache://")
 
+	// i18n
+	langs := viper.GetStringSlice("languages")
+	i18n, err := i18n.New(langs...)
+	if err != nil {
+		return err
+	}
+	i_i, err := i18n_i.New("locales")
+	if err != nil {
+		return err
+	}
+	i18n.Register(i18n_d.New(db), i_i)
+
+	// router
 	theme := viper.GetString("server.theme")
 	rt := mux.New(p.openRender(theme))
 	rt.Use(p.detectLocale)
@@ -144,7 +159,7 @@ func (p *Plugin) Init(g *inject.Graph) error {
 		&inject.Object{Value: web.NewRSS()},
 		&inject.Object{Value: cache},
 		&inject.Object{Value: web.NewJwt(secret, crypto.SigningMethodHS512)},
-		&inject.Object{Value: i18n.New(cache)},
+		&inject.Object{Value: i18n},
 		&inject.Object{Value: rt},
 	)
 }

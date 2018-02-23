@@ -41,6 +41,11 @@ func (p *Context) Set(k string, v interface{}) {
 	p.payload[k] = v
 }
 
+// Get get
+func (p *Context) Get(k string) interface{} {
+	return p.payload[k]
+}
+
 // Abort abort
 func (p *Context) Abort(s int, e error) {
 	p.Text(s, e.Error())
