@@ -1,6 +1,6 @@
-#include "server.h"
+#include "application.h"
 
 int main(int argc, char **argv) {
-  arche::HTTPTimeServer app;
+  arche::Application app;
   return app.run(argc, argv);
 }

@@ -1,9 +1,9 @@
-#include "server.h"
+#include "application.h"
 
 namespace arche {
 
-void HTTPTimeServer::handleHelp(const std::string &name,
-                                const std::string &value) {
+void Application::handleHelp(const std::string &name,
+                             const std::string &value) {
   HelpFormatter helpFormatter(options());
   helpFormatter.setCommand(commandName());
   helpFormatter.setUsage("OPTIONS");
@@ -14,16 +14,15 @@ void HTTPTimeServer::handleHelp(const std::string &name,
   _helpRequested = true;
 }
 
-int HTTPTimeServer::main(const std::vector<std::string> &args) {
+int Application::main(const std::vector<std::string> &args) {
   if (!_helpRequested) {
     unsigned short port =
-        (unsigned short)config().getInt("HTTPTimeServer.port", 8080);
-    std::string format(config().getString("HTTPTimeServer.format",
+        (unsigned short)config().getInt("Application.port", 8080);
+    std::string format(config().getString("Application.format",
                                           DateTimeFormat::SORTABLE_FORMAT));
 
     ServerSocket svs(port);
-    HTTPServer srv(new TimeRequestHandlerFactory(format), svs,
-                   new HTTPServerParams);
+    HTTPServer srv(new Router(format), svs, new HTTPServerParams);
     srv.start();
     waitForTerminationRequest();
     srv.stop();
@@ -31,14 +30,14 @@ int HTTPTimeServer::main(const std::vector<std::string> &args) {
   return Application::EXIT_OK;
 }
 
-void HTTPTimeServer::defineOptions(OptionSet &options) {
+void Application::defineOptions(OptionSet &options) {
   ServerApplication::defineOptions(options);
 
   options.addOption(Option("help", "h", "display argument help information")
                         .required(false)
                         .repeatable(false)
-                        .callback(OptionCallback<HTTPTimeServer>(
-                            this, &HTTPTimeServer::handleHelp)));
+                        .callback(OptionCallback<Application>(
+                            this, &Application::handleHelp)));
 }
 
 } // namespace arche

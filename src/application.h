@@ -17,11 +17,11 @@ using Poco::Util::ServerApplication;
 
 namespace arche {
 
-class HTTPTimeServer : public Poco::Util::ServerApplication {
+class Application : public Poco::Util::ServerApplication {
 public:
-  HTTPTimeServer() : _helpRequested(false) {}
+  Application() : _helpRequested(false) {}
 
-  ~HTTPTimeServer() {}
+  ~Application() {}
 
 protected:
   void initialize(Application &self) {

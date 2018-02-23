@@ -10,9 +10,9 @@ using Poco::Net::HTTPServerRequest;
 
 namespace arche {
 
-class TimeRequestHandlerFactory : public HTTPRequestHandlerFactory {
+class Router : public HTTPRequestHandlerFactory {
 public:
-  TimeRequestHandlerFactory(const std::string &format) : _format(format) {}
+  Router(const std::string &format) : _format(format) {}
   HTTPRequestHandler *createRequestHandler(const HTTPServerRequest &request);
 
 private:
