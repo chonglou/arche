@@ -29,7 +29,7 @@ struct Args {
 pub fn run() -> Result<()> {
     let usage = format!(
         "
-{name} - {description}.
+{title} - {description}
 
 VERSION: {version}
 AUTHORS: {authors}
@@ -53,6 +53,7 @@ OPTIONS:
     ",
         version = env::VERSION,
         name = env::NAME,
+        title = env::NAME.to_uppercase(),
         description = env::DESCRIPTION,
         homepage = env::HOMEPAGE,
         authors = env::AUTHORS,

@@ -165,7 +165,7 @@ impl App {
                 name: "www.change-me.com".to_string(),
                 limits: 1 << 25,
                 port: 8080,
-                theme: "moon".to_string(),
+                theme: "bootstrap".to_string(),
             },
             database: env::Database {
                 driver: env::POSTGRESQL.to_string(),
@@ -182,7 +182,7 @@ impl App {
             redis: env::Redis {
                 host: "localhost".to_string(),
                 port: 6379,
-                db: 0,
+                db: 6,
             },
             // rabbitmq: env::RabbitMQ {
             //     host: "localhost".to_string(),
