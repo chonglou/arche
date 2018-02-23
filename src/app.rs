@@ -72,7 +72,7 @@ impl App {
         let mut fd = try!(
             fs::OpenOptions::new()
                 .read(true)
-                .open(Path::new("templates").join("nginx.conf"))
+                .open(Path::new("templates").join("nginx.conf.hbs"))
         );
         let mut buf = String::new();
         try!(fd.read_to_string(&mut buf));
