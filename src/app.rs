@@ -16,7 +16,7 @@ use handlebars::Handlebars;
 use super::result::{Error, Result};
 use super::env;
 use super::db::{Database, PostgreSQL};
-use super::nut;
+use super::forum;
 
 pub struct App {}
 
@@ -60,7 +60,7 @@ impl App {
         rocket::custom(cfg, false)
             .mount(
                 "/",
-                routes![nut::users::get_sign_in, nut::users::get_sign_up],
+                routes![forum::users::get_sign_in, forum::users::get_sign_up],
             )
             .attach(rocket_contrib::Template::fairing())
             .launch();

@@ -21,7 +21,6 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate toml;
 
-pub mod nut;
 pub mod forum;
 pub mod survey;
 pub mod reading;
