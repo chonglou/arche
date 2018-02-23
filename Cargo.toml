@@ -1,0 +1,40 @@
+[package]
+name = "arche"
+version = "1.0.0"
+authors = ["Jeremy Zheng <jitang.zheng@gmail.com>"]
+description = "Blog Tool, Publishing Platform, and CMS (By Rust and React)."
+homepage = "https://github.com/chonglou/arche"
+license = "MIT"
+
+[profile.release]
+lto = true
+
+[dependencies]
+docopt = "0.8"
+# docopt_macros = "0.8"
+serde = "1.0"
+serde_derive = "1.0"
+toml = "0.4"
+rocket = "0.3.6"
+rocket_codegen = "0.3.6"
+rand = "0.4"
+base64 = "0.9"
+chrono = { version = "0.4", features = ["serde"] }
+r2d2 = "0.8"
+r2d2_redis = "0.7"
+r2d2_postgres = "0.14"
+postgres = { version = "0.15", features = ["with-chrono", "with-uuid"]}
+redis = "0.8"
+log = "0.4"
+env_logger = "0.5"
+handlebars = "0.30"
+serde_json = "1.0"
+rusoto_core = "0.31"
+rusoto_sqs = "0.31"
+rusoto_s3 = "0.31"
+
+
+[dependencies.rocket_contrib]
+version = "*"
+default-features = false
+features = ["handlebars_templates"]

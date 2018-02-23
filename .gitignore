@@ -1,0 +1,17 @@
+# Rust
+/target/
+**/*.rs.bk
+
+# Javascript
+/node_modules/
+
+# Build
+/dist*
+
+# Vim
+.*.swp
+.*.un~
+
+# Test
+/tmp
+/config.toml
