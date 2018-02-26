@@ -4,7 +4,7 @@ import bootstrap from 'bootstrap/dist/css/bootstrap.css'
 
 export default({
   children,
-  title = 'This is the default title'
+  title = 'application'
 }) => (<div>
   <Head>
     <meta charset="utf-8"/>
