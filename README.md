@@ -7,9 +7,8 @@ Blog Tool, Publishing Platform, and CMS (By Go and React).
 - Install go
 
   ```bash
-  zsh < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)
-  gvm install go1.10 -B
-  gvm use go1.10 --default
+  export GOPATH=/opt/go
+  export PATH=$GOPATH/bin:$PATH
   ```
 
 - npm
