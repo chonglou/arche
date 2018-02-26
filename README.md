@@ -65,7 +65,11 @@ enable autosave
 
 - [AWS](http://docs.aws.amazon.com/general/latest/gr/rande.html)
 
+- [next.js](https://github.com/zeit/next.js)
+
 - [Bootstrap](http://getbootstrap.com/)
+
+- [reactstrap](https://github.com/reactstrap/reactstrap)
 
 - [Ant Design](https://ant.design/docs/react/introduce)
 
