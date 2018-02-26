@@ -164,7 +164,17 @@ func (p *Plugin) Shell() []cli.Command {
 					Name:    "nginx",
 					Aliases: []string{"ng"},
 					Usage:   "generate nginx.conf",
-					Action:  web.ConfigAction(p.generateNginxConf),
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "name, n",
+							Usage: "server name",
+						},
+						cli.BoolFlag{
+							Name:  "https, s",
+							Usage: "enable HTTP secure?",
+						},
+					},
+					Action: web.ConfigAction(p.generateNginxConf),
 				},
 				{
 					Name:    "openssl",
@@ -419,7 +429,11 @@ func (p *Plugin) generateNginxConf(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	name := viper.GetString("server.name")
+	name := c.String("name")
+	if name == "" {
+		cli.ShowCommandHelp(c, "nginx")
+		return nil
+	}
 
 	fn := path.Join("tmp", "etc", "nginx", "sites-enabled", name+".conf")
 	if err = os.MkdirAll(path.Dir(fn), 0700); err != nil {
@@ -438,17 +452,15 @@ func (p *Plugin) generateNginxConf(c *cli.Context) error {
 	}
 
 	return tpl.Execute(fd, struct {
-		Port  int
-		Root  string
-		Name  string
-		Theme string
-		Ssl   bool
+		Port int
+		Root string
+		Name string
+		Ssl  bool
 	}{
-		Name:  name,
-		Port:  viper.GetInt("server.port"),
-		Root:  pwd,
-		Theme: viper.GetString("server.theme"),
-		Ssl:   viper.GetBool("server.secure"),
+		Name: name,
+		Port: viper.GetInt("server.port"),
+		Root: pwd,
+		Ssl:  c.Bool("https"),
 	})
 }
 func (p *Plugin) generateSsl(c *cli.Context) error {
@@ -605,17 +617,17 @@ func (p *Plugin) databaseRun(act string) cli.ActionFunc {
 			if idx == -1 {
 				return errors.New("bad migration name")
 			}
-			ver, err := strconv.ParseInt(name[0:idx], 10, 64)
-			if err != nil {
-				return err
+			ver, er := strconv.ParseInt(name[0:idx], 10, 64)
+			if er != nil {
+				return er
 			}
-			up, err := ioutil.ReadFile(filepath.Join(root, name, "up.sql"))
-			if err != nil {
-				return err
+			up, er := ioutil.ReadFile(filepath.Join(root, name, "up.sql"))
+			if er != nil {
+				return er
 			}
-			down, err := ioutil.ReadFile(filepath.Join(root, name, "down.sql"))
-			if err != nil {
-				return err
+			down, er := ioutil.ReadFile(filepath.Join(root, name, "down.sql"))
+			if er != nil {
+				return er
 			}
 			items = append(items, migrations.Migration{
 				Version: ver,
