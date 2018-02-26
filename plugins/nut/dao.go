@@ -6,6 +6,7 @@ import (
 	"github.com/chonglou/arche/web"
 	"github.com/chonglou/arche/web/i18n"
 	"github.com/go-pg/pg"
+	"github.com/go-pg/pg/orm"
 )
 
 // Dao dao
@@ -15,7 +16,7 @@ type Dao struct {
 }
 
 // SignIn set sign-in info
-func (p *Dao) SignIn(db *pg.Tx, lang, ip, email, password string) (*User, error) {
+func (p *Dao) SignIn(db orm.DB, lang, ip, email, password string) (*User, error) {
 	var it User
 	if err := db.Model(&it).
 		Where("provider_id = ?", email).
@@ -59,7 +60,7 @@ func (p *Dao) SignIn(db *pg.Tx, lang, ip, email, password string) (*User, error)
 }
 
 // AddLog add log
-func (p *Dao) AddLog(db *pg.Tx, user uint, ip, lang, format string, args ...interface{}) error {
+func (p *Dao) AddLog(db orm.DB, user uint, ip, lang, format string, args ...interface{}) error {
 	err := db.Insert(&Log{
 		UserID:  user,
 		IP:      ip,
@@ -69,7 +70,7 @@ func (p *Dao) AddLog(db *pg.Tx, user uint, ip, lang, format string, args ...inte
 }
 
 // AddEmailUser add email user
-func (p *Dao) AddEmailUser(db *pg.Tx, lang, ip, name, email, password string) (*User, error) {
+func (p *Dao) AddEmailUser(db orm.DB, lang, ip, name, email, password string) (*User, error) {
 	cnt, err := db.Model(new(User)).Where("email = ?", email).Count()
 	if err != nil {
 		return nil, err
@@ -103,7 +104,7 @@ func (p *Dao) AddEmailUser(db *pg.Tx, lang, ip, name, email, password string) (*
 }
 
 //Is is role ?
-func (p *Dao) Is(db *pg.Tx, user uint, names ...string) bool {
+func (p *Dao) Is(db orm.DB, user uint, names ...string) bool {
 	for _, name := range names {
 		if p.Can(db, user, name, DefaultResourceType, DefaultResourceID) {
 			return true
@@ -113,7 +114,7 @@ func (p *Dao) Is(db *pg.Tx, user uint, names ...string) bool {
 }
 
 //Can can?
-func (p *Dao) Can(db *pg.Tx, user uint, name string, rty string, rid uint) bool {
+func (p *Dao) Can(db orm.DB, user uint, name string, rty string, rid uint) bool {
 	var r Role
 
 	if err := db.Model(&r).
@@ -137,7 +138,7 @@ func (p *Dao) Can(db *pg.Tx, user uint, name string, rty string, rid uint) bool 
 }
 
 // GetRole create role if not exist
-func (p *Dao) GetRole(db *pg.Tx, name string, rty string, rid uint) (*Role, error) {
+func (p *Dao) GetRole(db orm.DB, name string, rty string, rid uint) (*Role, error) {
 	it := Role{}
 	err := db.Model(&it).
 		Where("name = ?", name).
@@ -162,7 +163,7 @@ func (p *Dao) GetRole(db *pg.Tx, name string, rty string, rid uint) (*Role, erro
 }
 
 //Deny deny permission
-func (p *Dao) Deny(db *pg.Tx, user uint, role uint) error {
+func (p *Dao) Deny(db orm.DB, user uint, role uint) error {
 	_, err := db.Model(new(Policy)).
 		Where("role_id = ?", role).
 		Where("user_id = ?", user).
@@ -171,7 +172,7 @@ func (p *Dao) Deny(db *pg.Tx, user uint, role uint) error {
 }
 
 // Authority get roles
-func (p *Dao) Authority(db *pg.Tx, user uint, rty string, rid uint) ([]string, error) {
+func (p *Dao) Authority(db orm.DB, user uint, rty string, rid uint) ([]string, error) {
 	var items []*Role
 
 	if err := db.Model(&items).
@@ -197,7 +198,7 @@ func (p *Dao) Authority(db *pg.Tx, user uint, rty string, rid uint) ([]string, e
 }
 
 //Allow allow permission
-func (p *Dao) Allow(db *pg.Tx, user uint, role uint, years, months, days int) error {
+func (p *Dao) Allow(db orm.DB, user uint, role uint, years, months, days int) error {
 	now := time.Now()
 	exp := now.AddDate(years, months, days)
 
@@ -221,7 +222,7 @@ func (p *Dao) Allow(db *pg.Tx, user uint, role uint, years, months, days int) er
 	return err
 }
 
-func (p *Dao) confirmUser(db *pg.Tx, lang, ip string, user *User) error {
+func (p *Dao) confirmUser(db orm.DB, lang, ip string, user *User) error {
 	now := time.Now()
 	user.ConfirmedAt = &now
 	user.UpdatedAt = now
@@ -232,7 +233,7 @@ func (p *Dao) confirmUser(db *pg.Tx, lang, ip string, user *User) error {
 	return p.AddLog(db, user.ID, ip, lang, "nut.logs.user.confirm")
 }
 
-func (p *Dao) setUserPassword(db *pg.Tx, lang, ip string, user *User, password string) error {
+func (p *Dao) setUserPassword(db orm.DB, lang, ip string, user *User, password string) error {
 	passwd, err := p.Security.Hash([]byte(password))
 	if err != nil {
 		return err

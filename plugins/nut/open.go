@@ -3,15 +3,12 @@ package nut
 import (
 	"encoding/base64"
 	"fmt"
-	"html/template"
-	"path/filepath"
 	"time"
 
 	"github.com/SermoDigital/jose/crypto"
 	"github.com/chonglou/arche/web"
 	r_c "github.com/chonglou/arche/web/cache/redis"
 	"github.com/chonglou/arche/web/i18n"
-	"github.com/chonglou/arche/web/mux"
 	"github.com/chonglou/arche/web/queue"
 	"github.com/chonglou/arche/web/queue/amqp"
 	"github.com/chonglou/arche/web/settings"
@@ -19,10 +16,10 @@ import (
 	"github.com/chonglou/arche/web/storage/s3"
 	"github.com/facebookgo/inject"
 	"github.com/garyburd/redigo/redis"
+	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"github.com/unrolled/render"
 )
 
 func (p *Plugin) openDB() (*pg.DB, error) {
@@ -85,19 +82,6 @@ func (p *Plugin) openRedis() *redis.Pool {
 	}
 }
 
-func (p *Plugin) openRender(theme string) render.Options {
-	debug := web.MODE() != web.PRODUCTION
-	return render.Options{
-		Directory:     filepath.Join("themes", theme, "views"),
-		Layout:        "layouts/application/index",
-		Extensions:    []string{".html"},
-		IndentJSON:    debug,
-		IndentXML:     debug,
-		IsDevelopment: debug,
-		Funcs:         []template.FuncMap{},
-	}
-}
-
 // Init init beans
 func (p *Plugin) Init(g *inject.Graph) error {
 	db, err := p.openDB()
@@ -130,15 +114,6 @@ func (p *Plugin) Init(g *inject.Graph) error {
 	// i18n
 	i18n := i18n.New(db, cache)
 
-	// router
-	theme := viper.GetString("server.theme")
-	rt := mux.New(p.openRender(theme))
-	im, err := i18n.Middleware()
-	if err != nil {
-		return err
-	}
-	rt.Use(im)
-
 	return g.Provide(
 		&inject.Object{Value: db},
 		&inject.Object{Value: redis},
@@ -151,6 +126,6 @@ func (p *Plugin) Init(g *inject.Graph) error {
 		&inject.Object{Value: cache},
 		&inject.Object{Value: web.NewJwt(secret, crypto.SigningMethodHS512)},
 		&inject.Object{Value: i18n},
-		&inject.Object{Value: rt},
+		&inject.Object{Value: gin.Default()},
 	)
 }

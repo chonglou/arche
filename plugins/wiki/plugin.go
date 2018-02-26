@@ -4,7 +4,6 @@ import (
 	"github.com/chonglou/arche/web"
 	"github.com/chonglou/arche/web/cache"
 	"github.com/chonglou/arche/web/i18n"
-	"github.com/chonglou/arche/web/mux"
 	"github.com/chonglou/arche/web/queue"
 	"github.com/chonglou/arche/web/settings"
 	"github.com/chonglou/arche/web/storage"
@@ -26,7 +25,6 @@ type Plugin struct {
 	Storage  storage.Storage    `inject:""`
 	Sitemap  *web.Sitemap       `inject:""`
 	RSS      *web.RSS           `inject:""`
-	Router   *mux.Router        `inject:""`
 	DB       *pg.DB             `inject:""`
 }
 

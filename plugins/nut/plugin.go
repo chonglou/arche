@@ -6,13 +6,12 @@ import (
 	"github.com/chonglou/arche/web"
 	"github.com/chonglou/arche/web/cache"
 	"github.com/chonglou/arche/web/i18n"
-	"github.com/chonglou/arche/web/mux"
 	"github.com/chonglou/arche/web/queue"
 	"github.com/chonglou/arche/web/settings"
 	"github.com/chonglou/arche/web/storage"
+	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg"
 	"github.com/spf13/viper"
-	"golang.org/x/text/language"
 )
 
 // Plugin plugin
@@ -26,17 +25,13 @@ type Plugin struct {
 	Storage  storage.Storage    `inject:""`
 	Sitemap  *web.Sitemap       `inject:""`
 	RSS      *web.RSS           `inject:""`
-	Router   *mux.Router        `inject:""`
+	Router   *gin.Engine        `inject:""`
 	DB       *pg.DB             `inject:""`
 	Dao      *Dao               `inject:""`
+	Layout   *Layout            `inject:""`
 }
 
 func init() {
-	viper.SetDefault("languages", []string{
-		language.AmericanEnglish.String(),
-		language.SimplifiedChinese.String(),
-		language.TraditionalChinese.String(),
-	})
 
 	viper.SetDefault("aws", map[string]interface{}{
 		"access_key_id":     "change-me",
@@ -72,10 +67,9 @@ func init() {
 	})
 
 	viper.SetDefault("server", map[string]interface{}{
-		"port":   8080,
-		"name":   "www.change-me.com",
-		"theme":  "bootstrap",
-		"secure": false,
+		"port":    8080,
+		"origins": []string{"www.change-me.com"},
+		"name":    "www.change-me.com",
 	})
 
 	secret, _ := web.RandomBytes(32)

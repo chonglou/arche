@@ -1,12 +1,15 @@
 package nut
 
 import (
+	"context"
 	"crypto/x509/pkix"
 	"errors"
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"net/http"
 	"os"
+	"os/signal"
 	"path"
 	"path/filepath"
 	"strconv"
@@ -17,6 +20,7 @@ import (
 	"github.com/chonglou/arche/web"
 	"github.com/go-pg/migrations"
 	"github.com/go-pg/pg"
+	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli"
@@ -96,9 +100,9 @@ func (p *Plugin) Shell() []cli.Command {
 							return nil
 						}
 
-						return p.DB.RunInTransaction(func(tx *pg.Tx) error {
+						return p.DB.RunInTransaction(func(db *pg.Tx) error {
 							var user User
-							if err := tx.Model(&user).Column("id").
+							if err := db.Model(&user).Column("id").
 								Where("uid = ?", uid).Select(); err != nil {
 								return err
 							}
@@ -107,27 +111,27 @@ func (p *Plugin) Shell() []cli.Command {
 							const ip = "0.0.0.0"
 							// confirm ?
 							if confirm {
-								if er := p.Dao.confirmUser(tx, lang, ip, &user); er != nil {
+								if er := p.Dao.confirmUser(db, lang, ip, &user); er != nil {
 									return er
 								}
 							}
 
-							role, err := p.Dao.GetRole(tx, name, DefaultResourceType, DefaultResourceID)
+							role, err := p.Dao.GetRole(db, name, DefaultResourceType, DefaultResourceID)
 							if err != nil {
 								return err
 							}
 							if deny {
-								if err = p.Dao.Deny(tx, user.ID, role.ID); err != nil {
+								if err = p.Dao.Deny(db, user.ID, role.ID); err != nil {
 									return err
 								}
-								if err = p.Dao.AddLog(tx, user.ID, lang, ip, "nut.logs.deny", role); err != nil {
+								if err = p.Dao.AddLog(db, user.ID, lang, ip, "nut.logs.deny", role); err != nil {
 									return err
 								}
 							} else {
-								if err = p.Dao.Allow(tx, user.ID, role.ID, years, 0, 0); err != nil {
+								if err = p.Dao.Allow(db, user.ID, role.ID, years, 0, 0); err != nil {
 									return err
 								}
-								if err = p.Dao.AddLog(tx, user.ID, lang, ip, "nut.logs.allow", role); err != nil {
+								if err = p.Dao.AddLog(db, user.ID, lang, ip, "nut.logs.allow", role); err != nil {
 									return err
 								}
 							}
@@ -320,9 +324,8 @@ func (p *Plugin) Shell() []cli.Command {
 					}
 				}()
 				// -------
-				return p.Router.Listen(
+				return p.listen(
 					viper.GetInt("server.port"),
-					nil, nil,
 					viper.GetString("env") == web.PRODUCTION,
 				)
 			}),
@@ -332,12 +335,12 @@ func (p *Plugin) Shell() []cli.Command {
 			Aliases: []string{"rt"},
 			Usage:   "print out all defined routes",
 			Action: web.InjectAction(func(_ *cli.Context) error {
-				f := "%-16s %s\n"
-				fmt.Printf(f, "METHODS", "PATH")
-				return p.Router.Walk(func(path string, methods ...string) error {
-					fmt.Printf(f, strings.Join(methods, ","), path)
-					return nil
-				})
+				tpl := "%-16s %s\n"
+				fmt.Printf(tpl, "METHODS", "PATH")
+				for _, rt := range p.Router.Routes() {
+					fmt.Printf(tpl, rt.Method, rt.Path)
+				}
+				return nil
 			}),
 		},
 		{
@@ -358,6 +361,58 @@ func (p *Plugin) Shell() []cli.Command {
 }
 
 // --------------------------------------------
+
+func (p *Plugin) listen(port int, debug bool) error {
+	log.Infof(
+		"application starting on http://localhost:%d",
+		port,
+	)
+	var hnd http.Handler = p.Router
+
+	hnd = cors.New(cors.Options{
+		AllowedOrigins: viper.GetStringSlice("server.origins"),
+		AllowedMethods: []string{
+			http.MethodGet,
+			http.MethodPost,
+			http.MethodPatch,
+			http.MethodPut,
+			http.MethodDelete,
+		},
+		AllowedHeaders:   []string{"Authorization", "X-Requested-With"},
+		AllowCredentials: true,
+		Debug:            true,
+	}).Handler(hnd)
+
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: hnd,
+	}
+	if debug {
+		return srv.ListenAndServe()
+	}
+
+	go func() {
+		// service connections
+		if err := srv.ListenAndServe(); err != nil {
+			log.Printf("listen: %s\n", err)
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shutdown the server with
+	// a timeout of 5 seconds.
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	log.Warn("shutdown Server ...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Error("server Shutdown:", err)
+	}
+	log.Warn("server exiting")
+	return nil
+}
 
 func (p *Plugin) generateNginxConf(c *cli.Context) error {
 	pwd, err := os.Getwd()
@@ -579,7 +634,7 @@ func (p *Plugin) databaseRun(act string) cli.ActionFunc {
 			return err
 		}
 		return db.RunInTransaction(func(tx *pg.Tx) error {
-			ov, nv, err := migrations.RunMigrations(tx, items, act)
+			ov, nv, err := migrations.RunMigrations(db, items, act)
 			fmt.Printf("old version: %d, current version: %d\n", ov, nv)
 			return err
 		})
