@@ -69,7 +69,7 @@ func init() {
 	viper.SetDefault("server", map[string]interface{}{
 		"port":    8080,
 		"origins": []string{"www.change-me.com"},
-		"name":    "www.change-me.com",
+		"name":    "change_me",
 	})
 
 	secret, _ := web.RandomBytes(32)

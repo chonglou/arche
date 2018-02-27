@@ -2,8 +2,8 @@ package web
 
 import (
 	"encoding/base64"
+	"fmt"
 	"log/syslog"
-	"reflect"
 
 	"github.com/facebookgo/inject"
 	log "github.com/sirupsen/logrus"
@@ -36,21 +36,24 @@ func (p *injectLogger) Debugf(format string, v ...interface{}) {
 
 // ConfigAction read config at first
 func ConfigAction(f cli.ActionFunc) cli.ActionFunc {
-	viper.SetEnvPrefix(reflect.TypeOf(Main).String()) // TODO
-	viper.BindEnv("env")
-
-	viper.SetConfigName("config")
-	viper.SetConfigType("toml")
-	viper.AddConfigPath(".")
-
 	return func(c *cli.Context) error {
+		viper.SetEnvPrefix("arche")
+		viper.BindEnv("env")
+
+		viper.SetConfigName("config")
+		viper.SetConfigType("toml")
+		viper.AddConfigPath(".")
+
 		if err := viper.ReadInConfig(); err != nil {
 			return err
 		}
 		if MODE() == PRODUCTION {
 			// ----------
 			log.SetLevel(log.InfoLevel)
-			wrt, err := syslog.New(syslog.LOG_INFO, viper.GetString("server.name"))
+			wrt, err := syslog.New(
+				syslog.LOG_INFO,
+				fmt.Sprintf(":%d", viper.GetInt("server.port")),
+			)
 			if err != nil {
 				return err
 			}
