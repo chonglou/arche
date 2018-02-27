@@ -164,10 +164,6 @@ func (p *Plugin) Shell() []cli.Command {
 					Aliases: []string{"ng"},
 					Usage:   "generate nginx.conf",
 					Flags: []cli.Flag{
-						cli.StringFlag{
-							Name:  "name, n",
-							Usage: "server name",
-						},
 						cli.BoolFlag{
 							Name:  "https, s",
 							Usage: "enable HTTP secure?",
