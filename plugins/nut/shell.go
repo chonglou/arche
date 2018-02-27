@@ -20,7 +20,6 @@ import (
 	"github.com/chonglou/arche/web"
 	"github.com/go-pg/migrations"
 	"github.com/go-pg/pg"
-	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli"
@@ -379,19 +378,19 @@ func (p *Plugin) listen(port int, debug bool) error {
 	)
 	var hnd http.Handler = p.Router
 
-	hnd = cors.New(cors.Options{
-		AllowedOrigins: viper.GetStringSlice("server.origins"),
-		AllowedMethods: []string{
-			http.MethodGet,
-			http.MethodPost,
-			http.MethodPatch,
-			http.MethodPut,
-			http.MethodDelete,
-		},
-		AllowedHeaders:   []string{"Authorization", "X-Requested-With"},
-		AllowCredentials: true,
-		Debug:            true,
-	}).Handler(hnd)
+	// hnd = cors.New(cors.Options{
+	// 	AllowedOrigins: viper.GetStringSlice("server.origins"),
+	// 	AllowedMethods: []string{
+	// 		http.MethodGet,
+	// 		http.MethodPost,
+	// 		http.MethodPatch,
+	// 		http.MethodPut,
+	// 		http.MethodDelete,
+	// 	},
+	// 	AllowedHeaders:   []string{"Authorization", "X-Requested-With"},
+	// 	AllowCredentials: true,
+	// 	Debug:            true,
+	// }).Handler(hnd)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
@@ -429,11 +428,7 @@ func (p *Plugin) generateNginxConf(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	name := c.String("name")
-	if name == "" {
-		cli.ShowCommandHelp(c, "nginx")
-		return nil
-	}
+	name := viper.GetString("server.name")
 
 	fn := path.Join("tmp", "etc", "nginx", "sites-enabled", name+".conf")
 	if err = os.MkdirAll(path.Dir(fn), 0700); err != nil {
@@ -452,15 +447,17 @@ func (p *Plugin) generateNginxConf(c *cli.Context) error {
 	}
 
 	return tpl.Execute(fd, struct {
-		Port int
-		Root string
-		Name string
-		Ssl  bool
+		Port  int
+		Root  string
+		Name  string
+		Theme string
+		Ssl   bool
 	}{
-		Name: name,
-		Port: viper.GetInt("server.port"),
-		Root: pwd,
-		Ssl:  c.Bool("https"),
+		Name:  name,
+		Port:  viper.GetInt("server.port"),
+		Theme: viper.GetString("server.theme"),
+		Root:  pwd,
+		Ssl:   c.Bool("https"),
 	})
 }
 func (p *Plugin) generateSsl(c *cli.Context) error {

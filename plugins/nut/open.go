@@ -13,6 +13,7 @@ import (
 	"github.com/chonglou/arche/web/queue/amqp"
 	"github.com/chonglou/arche/web/settings"
 	"github.com/chonglou/arche/web/storage"
+	"github.com/chonglou/arche/web/storage/fs"
 	"github.com/chonglou/arche/web/storage/s3"
 	"github.com/facebookgo/inject"
 	"github.com/garyburd/redigo/redis"
@@ -40,15 +41,27 @@ func (p *Plugin) openDB() (*pg.DB, error) {
 	return db, nil
 }
 
-func (p *Plugin) openS3() (storage.Storage, error) {
-	args := viper.GetStringMap("aws")
-	s3c := args["s3"].(map[string]interface{})
-	return s3.New(
-		args["access_key_id"].(string),
-		args["secret_access_key"].(string),
-		s3c["region"].(string),
-		s3c["bucket"].(string),
-	)
+func (p *Plugin) openStorage() (storage.Storage, error) {
+	typ := viper.GetString("storage.provider")
+	switch typ {
+	case "s3":
+		args := viper.GetStringMap("aws")
+		s3c := args["s3"].(map[string]interface{})
+		return s3.New(
+			args["access_key_id"].(string),
+			args["secret_access_key"].(string),
+			s3c["region"].(string),
+			s3c["bucket"].(string),
+		)
+	case "local":
+		return fs.New(
+			viper.GetString("storage.root"),
+			viper.GetString("storage.endpoint"),
+		)
+
+	}
+	return nil, fmt.Errorf("bad storage provider %s", typ)
+
 }
 
 func (p *Plugin) openQueue() queue.Queue {
@@ -104,7 +117,7 @@ func (p *Plugin) Init(g *inject.Graph) error {
 
 	redis := p.openRedis()
 
-	s3, err := p.openS3()
+	st, err := p.openStorage()
 	if err != nil {
 		return err
 	}
@@ -120,7 +133,7 @@ func (p *Plugin) Init(g *inject.Graph) error {
 		&inject.Object{Value: security},
 		&inject.Object{Value: kvs},
 		&inject.Object{Value: p.openQueue()},
-		&inject.Object{Value: s3},
+		&inject.Object{Value: st},
 		&inject.Object{Value: web.NewSitemap()},
 		&inject.Object{Value: web.NewRSS()},
 		&inject.Object{Value: cache},

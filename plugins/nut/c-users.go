@@ -269,26 +269,26 @@ func (p *Plugin) postUsersResetPassword(l string, c *gin.Context) (interface{}, 
 	return gin.H{}, nil
 }
 
-func (p *Plugin) getUsersConfirmToken(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) getUsersConfirmToken(l string, c *gin.Context) error {
 	cm, err := p.Jwt.Validate([]byte(c.Param("token")))
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if cm.Get("act").(string) != actConfirm {
-		return nil, p.I18n.E(l, "errors.bad-action")
+		return p.I18n.E(l, "errors.bad-action")
 	}
 	user, err := p.Dao.GetUserByUID(p.DB, cm.Get("uid").(string))
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if user.IsConfirm() {
-		return nil, p.I18n.E(l, "nut.errors.user.already-confirm")
+		return p.I18n.E(l, "nut.errors.user.already-confirm")
 	}
 
 	now := time.Now()
 	user.UpdatedAt = now
 	user.ConfirmedAt = &now
-	if err := p.DB.RunInTransaction(func(db *pg.Tx) error {
+	return p.DB.RunInTransaction(func(db *pg.Tx) error {
 		if _, err = db.Model(user).Column("confirmed_at", "updated_at").Update(); err != nil {
 			return err
 		}
@@ -296,31 +296,27 @@ func (p *Plugin) getUsersConfirmToken(l string, c *gin.Context) (interface{}, er
 			return err
 		}
 		return nil
-	}); err != nil {
-		return nil, err
-	}
-
-	return gin.H{}, nil
+	})
 }
 
-func (p *Plugin) getUsersUnlockToken(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) getUsersUnlockToken(l string, c *gin.Context) error {
 	cm, err := p.Jwt.Validate([]byte(c.Param("token")))
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if cm.Get("act").(string) != actUnlock {
-		return nil, p.I18n.E(l, "errors.bad-action")
+		return p.I18n.E(l, "errors.bad-action")
 	}
 	user, err := p.Dao.GetUserByUID(p.DB, cm.Get("uid").(string))
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if !user.IsLock() {
-		return nil, p.I18n.E(l, "nut.errors.user.not-lock")
+		return p.I18n.E(l, "nut.errors.user.not-lock")
 	}
 	user.LockedAt = nil
 	user.UpdatedAt = time.Now()
-	if err := p.DB.RunInTransaction(func(db *pg.Tx) error {
+	return p.DB.RunInTransaction(func(db *pg.Tx) error {
 		if _, err = db.Model(user).Column("locked_at", "updated_at").Update(); err != nil {
 			return err
 		}
@@ -328,11 +324,7 @@ func (p *Plugin) getUsersUnlockToken(l string, c *gin.Context) (interface{}, err
 			return err
 		}
 		return nil
-	}); err != nil {
-		return nil, err
-	}
-
-	return gin.H{}, nil
+	})
 }
 
 const (
@@ -354,9 +346,8 @@ func (p *Plugin) sendEmail(c *gin.Context, lang string, user *User, act string) 
 	}
 
 	obj := gin.H{
-		"backend":  p.Layout.Backend(c),
-		"frontend": p.Layout.Frontend(c),
-		"token":    string(tkn),
+		"home":  p.Layout.Home(c),
+		"token": string(tkn),
 	}
 
 	subject, err := p.I18n.H(lang, fmt.Sprintf("nut.emails.user.%s.subject", act), obj)

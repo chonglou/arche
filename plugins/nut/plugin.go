@@ -2,6 +2,7 @@ package nut
 
 import (
 	"encoding/base64"
+	"path"
 
 	"github.com/chonglou/arche/web"
 	"github.com/chonglou/arche/web/cache"
@@ -50,6 +51,12 @@ func init() {
 		"db":   6,
 	})
 
+	viper.SetDefault("storage", map[string]interface{}{
+		"provider": "local",
+		"endpoint": "/upload",
+		"root":     path.Join("public", "upload"),
+	})
+
 	viper.SetDefault("rabbitmq", map[string]interface{}{
 		"user":     "guest",
 		"password": "guest",
@@ -69,9 +76,9 @@ func init() {
 	})
 
 	viper.SetDefault("server", map[string]interface{}{
-		"port":    8080,
-		"origins": []string{"www.change-me.com"},
-		"name":    "change_me",
+		"port":  8080,
+		"name":  "www.change-me.com",
+		"theme": "bootstrap",
 	})
 
 	secret, _ := web.RandomBytes(32)

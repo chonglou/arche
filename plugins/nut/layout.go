@@ -84,6 +84,18 @@ func (p *Layout) CurrentUserMiddleware(c *gin.Context) {
 	c.Set(IsAdmin, p.Dao.Is(p.DB, user.ID, RoleAdmin))
 }
 
+// Redirect redirect
+func (p *Layout) Redirect(to string, fn RedirectHandlerFunc) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if err := fn(c.MustGet(i18n.LOCALE).(string), c); err != nil {
+			log.Error(err)
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+		c.Redirect(http.StatusFound, to)
+	}
+}
+
 // JSON render json
 func (p *Layout) JSON(fn ObjectHandlerFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -121,16 +133,11 @@ func (p *Layout) XML(fn ObjectHandlerFunc) gin.HandlerFunc {
 	}
 }
 
-// Backend backend home url
-func (p *Layout) Backend(c *gin.Context) string {
+// Home home url
+func (p *Layout) Home(c *gin.Context) string {
 	scheme := "http"
 	if c.Request.TLS != nil {
 		scheme += "s"
 	}
 	return scheme + "://" + c.Request.Host
-}
-
-// Frontend frontend home url
-func (p *Layout) Frontend(c *gin.Context) string {
-	return c.GetHeader("Origin")
 }

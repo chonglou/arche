@@ -405,10 +405,28 @@
 			"revisionTime": "2017-11-29T19:10:14Z"
 		},
 		{
+			"checksumSHA1": "g/V4qrXjUGG9B+e3hB+4NAYJ5Gs=",
+			"path": "github.com/gorilla/context",
+			"revision": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42",
+			"revisionTime": "2016-08-17T18:46:32Z"
+		},
+		{
 			"checksumSHA1": "gKNNcQkvem0BdeK3ZbEDUSNRFr4=",
 			"path": "github.com/gorilla/feeds",
 			"revision": "4b936b5221c53c99fcd4b15ac0b8c38ff490ab89",
 			"revisionTime": "2017-11-08T04:59:58Z"
+		},
+		{
+			"checksumSHA1": "ucTBCc7dDRKLGPsYfAzu/Gq63qA=",
+			"path": "github.com/gorilla/securecookie",
+			"revision": "e59506cc896acb7f7bf732d4fdf5e25f7ccd8983",
+			"revisionTime": "2017-02-24T19:38:04Z"
+		},
+		{
+			"checksumSHA1": "cafP2ifWJNQG19vp8kRMF5VbVM0=",
+			"path": "github.com/gorilla/sessions",
+			"revision": "7087b4d669d1bc3da42fb4e2eda73ae139a24439",
+			"revisionTime": "2018-02-20T20:10:45Z"
 		},
 		{
 			"checksumSHA1": "HtpYAWHvd9mq+mHkpo7z8PGzMik=",

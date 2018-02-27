@@ -4,6 +4,7 @@ rm -r vendor
 govendor init
 govendor fetch github.com/facebookgo/inject
 govendor fetch github.com/gorilla/feeds
+govendor fetch github.com/gorilla/sessions
 govendor fetch github.com/ikeikeikeike/go-sitemap-generator/stm
 govendor fetch github.com/gin-gonic/gin
 govendor fetch github.com/rs/cors
