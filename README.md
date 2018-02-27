@@ -29,6 +29,15 @@ Blog Tool, Publishing Platform, and CMS (By Go and React).
   make
   ```
 
+- Deployment
+
+  ```bash
+  cd dist
+  ./arche -h # show help commands
+  ./arche s # start backend server
+  cd frontend && npm install && next start # start frontend server
+  ```
+
 - create database(for postgresql)
 
   ```sql

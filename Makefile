@@ -19,12 +19,12 @@ api:
 
 www:
 	cd frontend && npm run build
-	-cp -r dashboard/build $(dist)/dashboard
+	mkdir -p $(dist)/frontend
+	-cp -r frontend/.next frontend/package.json frontend/package-lock.json $(dist)/frontend/
 
 clean:
-	-rm -r $(dist) $(dist).tar.xz dashboard/build
+	-rm -r $(dist) $(dist).tar.xz frontend/.next
 
 init:
-	npm install
-	cd dashboard && npm install
-	go get -u github.com/beego/bee
+	govendor sync
+	cd frontend && npm install
