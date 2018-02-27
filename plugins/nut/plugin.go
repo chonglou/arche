@@ -9,6 +9,7 @@ import (
 	"github.com/chonglou/arche/web/queue"
 	"github.com/chonglou/arche/web/settings"
 	"github.com/chonglou/arche/web/storage"
+	"github.com/garyburd/redigo/redis"
 	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg"
 	"github.com/spf13/viper"
@@ -16,6 +17,7 @@ import (
 
 // Plugin plugin
 type Plugin struct {
+	Redis    *redis.Pool        `inject:""`
 	I18n     *i18n.I18n         `inject:""`
 	Cache    cache.Cache        `inject:""`
 	Jwt      *web.Jwt           `inject:""`

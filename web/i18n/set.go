@@ -4,10 +4,11 @@ import (
 	"time"
 
 	"github.com/go-pg/pg"
+	"github.com/go-pg/pg/orm"
 )
 
 // Set set locale
-func (p *I18n) Set(db *pg.Tx, lang, code, message string) error {
+func (p *I18n) Set(db orm.DB, lang, code, message string) error {
 	var it Model
 	err := db.Model(&it).Column("id").
 		Where("lang = ?", lang).

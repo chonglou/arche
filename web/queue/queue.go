@@ -8,4 +8,5 @@ type Queue interface {
 	Register(n string, c Consumer)
 	Put(typ, id string, pri uint8, buf []byte) error
 	Launch(name string) error
+	Status() (map[string]interface{}, error)
 }

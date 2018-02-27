@@ -137,6 +137,24 @@ func (p *Dao) Can(db orm.DB, user uint, name string, rty string, rid uint) bool 
 	return pm.Enable()
 }
 
+// GetUserByEmail get user by email
+func (p *Dao) GetUserByEmail(tx orm.DB, email string) (*User, error) {
+	var it User
+	if err := tx.Model(&it).Where("email = ?", email).Select(); err != nil {
+		return nil, err
+	}
+	return &it, nil
+}
+
+// GetUserByUID get user by uid
+func (p *Dao) GetUserByUID(tx orm.DB, uid string) (*User, error) {
+	var it User
+	if err := tx.Model(&it).Where("uid = ?", uid).Select(); err != nil {
+		return nil, err
+	}
+	return &it, nil
+}
+
 // GetRole create role if not exist
 func (p *Dao) GetRole(db orm.DB, name string, rty string, rid uint) (*Role, error) {
 	it := Role{}

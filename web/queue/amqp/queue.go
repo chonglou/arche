@@ -2,6 +2,8 @@ package amqp
 
 import (
 	"fmt"
+	"reflect"
+	"runtime"
 	"time"
 
 	"github.com/chonglou/arche/web/queue"
@@ -23,6 +25,17 @@ type Queue struct {
 	url       string
 	name      string
 	consumers map[string]queue.Consumer
+}
+
+// Status status
+func (p *Queue) Status() (map[string]interface{}, error) {
+	tasks := make(map[string]string)
+	for n, f := range p.consumers {
+		tasks[n] = runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
+	}
+	return map[string]interface{}{
+		"tasks": tasks,
+	}, nil
 }
 
 // Register register handler

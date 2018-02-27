@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-pg/pg"
+	"github.com/go-pg/pg/orm"
 )
 
 // New new settings
@@ -35,7 +36,7 @@ type Settings struct {
 }
 
 // Set set value
-func (p *Settings) Set(db *pg.Tx, k string, v interface{}, f bool) error {
+func (p *Settings) Set(db orm.DB, k string, v interface{}, f bool) error {
 	buf, err := json.Marshal(v)
 	if err != nil {
 		return err

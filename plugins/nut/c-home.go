@@ -3,8 +3,6 @@ package nut
 import (
 	"github.com/chonglou/arche/web/i18n"
 	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
-	"golang.org/x/text/language"
 )
 
 func (p *Plugin) getLayout(l string, c *gin.Context) (interface{}, error) {
@@ -24,16 +22,7 @@ func (p *Plugin) getLayout(l string, c *gin.Context) (interface{}, error) {
 
 	// i18n
 	site[i18n.LOCALE] = l
-	langs, err := p.I18n.Languages()
-	if err != nil {
-		log.Error(err)
-		langs = []string{
-			language.AmericanEnglish.String(),
-			language.SimplifiedChinese.String(),
-			language.TraditionalChinese.String(),
-		}
-	}
-	site["languages"] = langs
+	site["languages"], _ = p.I18n.Languages()
 
 	// current-user
 	user, ok := c.Get(CurrentUser)
@@ -43,6 +32,7 @@ func (p *Plugin) getLayout(l string, c *gin.Context) (interface{}, error) {
 		site["user"] = gin.H{
 			"name":  user.Name,
 			"type":  user.ProviderType,
+			"logo":  user.Logo,
 			"admin": c.MustGet(IsAdmin).(bool),
 		}
 	}
