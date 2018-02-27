@@ -1,0 +1,1 @@
+export default({name, version, file}) => (<link rel="stylesheet" href={`https://unpkg.com/${name}@${version}/dist/${file}`} crossorigin="anonymous"/>)
