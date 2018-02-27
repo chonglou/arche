@@ -1,7 +1,5 @@
 import Link from 'next/link'
 import Head from 'next/head'
-import antDesign from 'antd/dist/antd.css'
-import antDesignPro from 'ant-design-pro/dist/ant-design-pro.css'
 
 export default({
   children,
@@ -12,14 +10,6 @@ export default({
     <meta name='viewport' content='initial-scale=1.0, width=device-width'/>
     <title>{title}</title>
   </Head>
-  <style jsx="jsx" global="global">
-    {
-      antDesign
-    }</style>
-  <style jsx="jsx" global="global">
-    {
-      antDesignPro
-    }</style>
   <header>
     head
   </header>
