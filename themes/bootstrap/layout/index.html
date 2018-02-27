@@ -7,6 +7,9 @@
 </head>
 <body>
   {{template "layout-header" .}}
+  {{if .flashes.error}}
+    error: {{range .flashes.error}}{{.}}{{end}}
+  {{end}}
   {{block "main" .}}default body{{end}}
   {{template "layout-footer" .}}
 </body>

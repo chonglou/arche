@@ -122,25 +122,3 @@ func (p *Plugin) renderFuncMap() template.FuncMap {
 		},
 	}
 }
-
-// func (p *Plugin) openRender() (render.HTMLRender, error) {
-// 	root := filepath.Join("themes", viper.GetString("server.theme"))
-// 	rdr := multitemplate.NewRenderer()
-//
-// 	layout, err := filepath.Glob(filepath.Join(root, "layout", "*.html"))
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	pages, err := filepath.Glob(filepath.Join(root, "pages", "*.html"))
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	for _, page := range pages {
-// 		files := append([]string{page}, layout...)
-// 		log.Debug(filepath.Base(page), " ", files)
-// 		rdr.AddFromFilesFuncs(filepath.Base(page), funcs, files...)
-// 		// rdr.Add(filepath.Base(page), template.Must(template.ParseFiles(files...)))
-// 	}
-//
-// 	return rdr, nil
-// }

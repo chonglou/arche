@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/ikeikeikeike/go-sitemap-generator/stm"
 	"github.com/spf13/viper"
 )
@@ -28,6 +29,11 @@ func (p *Plugin) sitemap() ([]stm.URL, error) {
 func (p *Plugin) Mount() error {
 	p.Sitemap.Register(p.sitemap)
 	// --------------
+	secret, err := p.secretKey()
+	if err != nil {
+		return err
+	}
+
 	rdr, err := NewHTMLRender(
 		filepath.Join("themes", viper.GetString("server.theme")),
 		p.renderFuncMap(),
@@ -40,7 +46,17 @@ func (p *Plugin) Mount() error {
 	if err != nil {
 		return err
 	}
-	p.Router.Use(im, p.Layout.CurrentUserMiddleware)
+	store := sessions.NewCookieStore(secret)
+	store.Options(sessions.Options{
+		HttpOnly: true,
+		Path:     "/",
+		MaxAge:   60 * 20,
+	})
+	p.Router.Use(
+		sessions.Sessions("_session_", store),
+		im,
+		p.Layout.CurrentUserMiddleware,
+	)
 	// --------------
 	p.Router.GET("/", p.Layout.HTML("nut/index", p.getHome))
 

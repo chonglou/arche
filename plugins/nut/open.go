@@ -95,13 +95,17 @@ func (p *Plugin) openRedis() *redis.Pool {
 	}
 }
 
+func (p *Plugin) secretKey() ([]byte, error) {
+	return base64.StdEncoding.DecodeString(viper.GetString("secret"))
+}
+
 // Init init beans
 func (p *Plugin) Init(g *inject.Graph) error {
 	db, err := p.openDB()
 	if err != nil {
 		return err
 	}
-	secret, err := base64.StdEncoding.DecodeString(viper.GetString("secret"))
+	secret, err := p.secretKey()
 	if err != nil {
 		return err
 	}

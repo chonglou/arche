@@ -7,6 +7,7 @@ import (
 
 	"github.com/chonglou/arche/web"
 	"github.com/chonglou/arche/web/i18n"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg"
 	log "github.com/sirupsen/logrus"
@@ -20,6 +21,11 @@ const (
 	CurrentUser = "current-user"
 	// IsAdmin is admin?
 	IsAdmin = "is-admin"
+
+	// ERROR error
+	ERROR = "error"
+	// NOTICE notice
+	NOTICE = "notice"
 )
 
 // HTMLHandlerFunc html handler func
@@ -87,12 +93,15 @@ func (p *Layout) CurrentUserMiddleware(c *gin.Context) {
 // Redirect redirect
 func (p *Layout) Redirect(to string, fn RedirectHandlerFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if err := fn(c.MustGet(i18n.LOCALE).(string), c); err != nil {
+		if err := fn(c.MustGet(i18n.LOCALE).(string), c); err == nil {
+			c.Redirect(http.StatusFound, to)
+		} else {
 			log.Error(err)
-			c.String(http.StatusInternalServerError, err.Error())
-			return
+			ss := sessions.Default(c)
+			ss.AddFlash(err.Error(), ERROR)
+			ss.Save()
+			c.Redirect(http.StatusFound, "/")
 		}
-		c.Redirect(http.StatusFound, to)
 	}
 }
 
@@ -114,7 +123,15 @@ func (p *Layout) HTML(tpl string, fn HTMLHandlerFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		data := gin.H{}
 		// TODO site info
-		// TODO flash message
+		// flash message
+		ss := sessions.Default(c)
+		flashes := gin.H{}
+		for _, k := range []string{ERROR, NOTICE} {
+			flashes[k] = ss.Flashes(k)
+		}
+		ss.Save()
+		data["flashes"] = flashes
+
 		if err := fn(c.MustGet(i18n.LOCALE).(string), data, c); err == nil {
 			c.HTML(http.StatusOK, tpl, data)
 		} else {
