@@ -5,8 +5,24 @@
       {
         "extensions": [".css"]
       }
+    ],
+    [
+      "transform-assets",
+      {
+        "extensions": ["txt", "svg", "png"],
+        "regExp": ".*/static/(.+)",
+        "name": "/static/[1]?[sha512:hash:base64:7]"
+      }
     ]
   ],
+  "env": {
+    "development": {
+      "plugins": ["inline-dotenv"]
+    },
+    "production": {
+      "plugins": ["transform-inline-environment-variables"]
+    }
+  },
   "presets": ["next/babel"],
   "ignore": []
 }

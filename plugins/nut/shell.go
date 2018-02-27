@@ -336,7 +336,7 @@ func (p *Plugin) Shell() []cli.Command {
 				// -------
 				return p.listen(
 					viper.GetInt("server.port"),
-					viper.GetString("env") == web.PRODUCTION,
+					viper.GetString("env") != web.PRODUCTION,
 				)
 			}),
 		},

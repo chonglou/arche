@@ -1,3 +1,4 @@
 # next.js
 /node_modules/
 /.next/
+/.env.*
