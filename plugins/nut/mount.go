@@ -2,6 +2,7 @@ package nut
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/ikeikeikeike/go-sitemap-generator/stm"
 	"github.com/spf13/viper"
@@ -27,18 +28,21 @@ func (p *Plugin) sitemap() ([]stm.URL, error) {
 func (p *Plugin) Mount() error {
 	p.Sitemap.Register(p.sitemap)
 	// --------------
-	tpl, err := p.openRender()
+	rdr, err := NewHTMLRender(
+		filepath.Join("themes", viper.GetString("server.theme")),
+		p.renderFuncMap(),
+	)
 	if err != nil {
 		return err
 	}
-	p.Router.SetHTMLTemplate(tpl)
+	p.Router.HTMLRender = rdr
 	im, err := p.I18n.Middleware()
 	if err != nil {
 		return err
 	}
 	p.Router.Use(im, p.Layout.CurrentUserMiddleware)
 	// --------------
-	p.Router.GET("/", p.Layout.HTML("nut-home", p.getHome))
+	p.Router.GET("/", p.Layout.HTML("nut/index", p.getHome))
 
 	api := p.Router.Group("/api")
 

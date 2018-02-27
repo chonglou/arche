@@ -1,0 +1,13 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>application {{block "title" .}}default title{{end}}</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body>
+  {{template "layout-header" .}}
+  {{block "main" .}}default body{{end}}
+  {{template "layout-footer" .}}
+</body>
+</html>
