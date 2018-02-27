@@ -5,6 +5,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func (p *Plugin) getHome(l string, d gin.H, c *gin.Context) error {
+	return nil
+}
+
 func (p *Plugin) getLayout(l string, c *gin.Context) (interface{}, error) {
 	// site info
 	site := gin.H{}

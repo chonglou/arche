@@ -23,7 +23,7 @@ const (
 )
 
 // HTMLHandlerFunc html handler func
-type HTMLHandlerFunc func(string, *gin.Context) (gin.H, error)
+type HTMLHandlerFunc func(string, gin.H, *gin.Context) error
 
 // RedirectHandlerFunc redirect handle func
 type RedirectHandlerFunc func(string, *gin.Context) error
@@ -105,6 +105,23 @@ func (p *Layout) JSON(fn ObjectHandlerFunc) gin.HandlerFunc {
 			log.Error(err)
 			status, body := p.detectError(err)
 			c.String(status, body)
+		}
+	}
+}
+
+// HTML render html
+func (p *Layout) HTML(tpl string, fn HTMLHandlerFunc) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		data := gin.H{}
+		// TODO site info
+		// TODO flash message
+		if err := fn(c.MustGet(i18n.LOCALE).(string), data, c); err == nil {
+			c.HTML(http.StatusOK, tpl, data)
+		} else {
+			log.Error(err)
+			status, body := p.detectError(err)
+			data["reason"] = body
+			c.HTML(status, "nut-error", data)
 		}
 	}
 }

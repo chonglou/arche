@@ -27,12 +27,18 @@ func (p *Plugin) sitemap() ([]stm.URL, error) {
 func (p *Plugin) Mount() error {
 	p.Sitemap.Register(p.sitemap)
 	// --------------
+	tpl, err := p.openRender()
+	if err != nil {
+		return err
+	}
+	p.Router.SetHTMLTemplate(tpl)
 	im, err := p.I18n.Middleware()
 	if err != nil {
 		return err
 	}
 	p.Router.Use(im, p.Layout.CurrentUserMiddleware)
 	// --------------
+	p.Router.GET("/", p.Layout.HTML("nut-home", p.getHome))
 
 	api := p.Router.Group("/api")
 
