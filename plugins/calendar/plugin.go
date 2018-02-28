@@ -12,7 +12,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-// Plugin plugin
+// Plugin plugin(task manager)
 type Plugin struct {
 	I18n     *i18n.I18n         `inject:""`
 	Cache    cache.Cache        `inject:""`

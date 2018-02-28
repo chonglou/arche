@@ -1,14 +1,13 @@
 package nut
 
 import (
-	"bytes"
-	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/SermoDigital/jose/jws"
 	"github.com/chonglou/arche/web"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg"
 	"github.com/google/uuid"
@@ -180,7 +179,7 @@ func (p *Plugin) postUsersConfirm(l string, c *gin.Context) (interface{}, error)
 		return nil, err
 	}
 	if user.IsConfirm() {
-		return nil, p.I18n.E(l, "nut.errors.user.already-confirm")
+		return nil, p.I18n.E(l, "nut.errors.user-already-confirm")
 	}
 	if err := p.sendEmail(c, l, user, actConfirm); err != nil {
 		log.Error(err)
@@ -254,7 +253,7 @@ func (p *Plugin) postUsersResetPassword(l string, c *gin.Context) (interface{}, 
 	}
 	user.Password = pwd
 	user.UpdatedAt = time.Now()
-	if err := p.DB.RunInTransaction(func(db *pg.Tx) error {
+	if err = p.DB.RunInTransaction(func(db *pg.Tx) error {
 		if _, err = db.Model(user).Column("password", "updated_at").Update(); err != nil {
 			return err
 		}
@@ -282,13 +281,13 @@ func (p *Plugin) getUsersConfirmToken(l string, c *gin.Context) error {
 		return err
 	}
 	if user.IsConfirm() {
-		return p.I18n.E(l, "nut.errors.user.already-confirm")
+		return p.I18n.E(l, "nut.errors.user-already-confirm")
 	}
 
 	now := time.Now()
 	user.UpdatedAt = now
 	user.ConfirmedAt = &now
-	return p.DB.RunInTransaction(func(db *pg.Tx) error {
+	err = p.DB.RunInTransaction(func(db *pg.Tx) error {
 		if _, err = db.Model(user).Column("confirmed_at", "updated_at").Update(); err != nil {
 			return err
 		}
@@ -297,6 +296,12 @@ func (p *Plugin) getUsersConfirmToken(l string, c *gin.Context) error {
 		}
 		return nil
 	})
+	if err == nil {
+		ss := sessions.Default(c)
+		ss.AddFlash(p.I18n.T(l, "flash.success"), NOTICE)
+		ss.Save()
+	}
+	return err
 }
 
 func (p *Plugin) getUsersUnlockToken(l string, c *gin.Context) error {
@@ -316,7 +321,7 @@ func (p *Plugin) getUsersUnlockToken(l string, c *gin.Context) error {
 	}
 	user.LockedAt = nil
 	user.UpdatedAt = time.Now()
-	return p.DB.RunInTransaction(func(db *pg.Tx) error {
+	err = p.DB.RunInTransaction(func(db *pg.Tx) error {
 		if _, err = db.Model(user).Column("locked_at", "updated_at").Update(); err != nil {
 			return err
 		}
@@ -325,6 +330,12 @@ func (p *Plugin) getUsersUnlockToken(l string, c *gin.Context) error {
 		}
 		return nil
 	})
+	if err == nil {
+		ss := sessions.Default(c)
+		ss.AddFlash(p.I18n.T(l, "flash.success"), NOTICE)
+		ss.Save()
+	}
+	return err
 }
 
 const (
@@ -350,11 +361,11 @@ func (p *Plugin) sendEmail(c *gin.Context, lang string, user *User, act string) 
 		"token": string(tkn),
 	}
 
-	subject, err := p.I18n.H(lang, fmt.Sprintf("nut.emails.user.%s.subject", act), obj)
+	subject, err := p.I18n.H(lang, fmt.Sprintf("nut.users.%s.email-subject", act), obj)
 	if err != nil {
 		return err
 	}
-	body, err := p.I18n.H(lang, fmt.Sprintf("nut.emails.user.%s.body", act), obj)
+	body, err := p.I18n.H(lang, fmt.Sprintf("nut.users.%s.email-body", act), obj)
 	if err != nil {
 		return err
 	}
@@ -371,11 +382,9 @@ func (p *Plugin) sendEmail(c *gin.Context, lang string, user *User, act string) 
 }
 
 func (p *Plugin) doSendEmail(id string, payload []byte) error {
-	var buf bytes.Buffer
-	dec := gob.NewDecoder(&buf)
-	buf.Write(payload)
 	arg := make(map[string]string)
-	if err := dec.Decode(&arg); err != nil {
+
+	if err := json.Unmarshal(payload, &arg); err != nil {
 		return err
 	}
 

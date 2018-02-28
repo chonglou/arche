@@ -90,6 +90,7 @@ func (p *Dao) AddEmailUser(db orm.DB, lang, ip, name, email, password string) (*
 		ProviderID:      email,
 		LastSignInIP:    "0.0.0.0",
 		CurrentSignInIP: "0.0.0.0",
+		UpdatedAt:       time.Now(),
 	}
 	user.SetUID()
 	user.SetGravatarLogo()

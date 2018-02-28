@@ -625,12 +625,12 @@ func (p *Plugin) databaseRun(act string) cli.ActionFunc {
 			items = append(items, migrations.Migration{
 				Version: ver,
 				Up: func(db migrations.DB) error {
-					_, err := db.Exec(string(up))
-					return err
+					_, er := db.Exec(string(up))
+					return er
 				},
 				Down: func(db migrations.DB) error {
-					_, err := db.Exec(string(down))
-					return err
+					_, er := db.Exec(string(down))
+					return er
 				},
 			})
 		}

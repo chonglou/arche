@@ -21,7 +21,7 @@ class Widget extends Component {
       if (!err) {
         values.token = match.params.token
         post('/users/reset-password', values).then(() => {
-          message.info(formatMessage({id: "nut.emails.user.reset-password.success"}))
+          message.info(formatMessage({id: "nut.users.reset-password.success"}))
           push('/users/sign-in')
         }).catch(message.error);
       }

@@ -48,6 +48,7 @@ func (p *Queue) Register(n string, c queue.Consumer) {
 
 // Put send a message
 func (p *Queue) Put(typ, id string, pri uint8, buf []byte) error {
+	log.Debugf("send message %s@%s", id, typ)
 	return p.open(func(ch *amqp.Channel) error {
 		return ch.Publish("", p.name, false, false, amqp.Publishing{
 			DeliveryMode: amqp.Persistent,
@@ -82,6 +83,7 @@ func (p *Queue) Launch(name string) error {
 		}
 		for d := range msgs {
 			d.Ack(false)
+			log.Debugf("receive message %s@%s", d.MessageId, d.Body)
 			hnd, ok := p.consumers[d.Type]
 			if !ok {
 				return fmt.Errorf("unknown message type %s", d.Type)
