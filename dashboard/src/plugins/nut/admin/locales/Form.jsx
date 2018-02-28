@@ -27,7 +27,7 @@ class Widget extends Component {
     this.props.form.validateFields((err, values) => {
       if (!err) {
         post('/admin/locales', values).then(() => {
-          message.success(formatMessage({id: "helpers.success"}))
+          message.success(formatMessage({id: "flash.success"}))
           push('/admin/locales')
         }).catch(message.error);
       }
@@ -76,7 +76,7 @@ class Widget extends Component {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({id: "errors.empty"})
+                      message: formatMessage({id: "validator.required"})
                     }
                   ]
                 })(<Input/>)
@@ -88,7 +88,7 @@ class Widget extends Component {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({id: "errors.empty"})
+                      message: formatMessage({id: "validator.required"})
                     }
                   ]
                 })(<Input.TextArea rows={6}/>)

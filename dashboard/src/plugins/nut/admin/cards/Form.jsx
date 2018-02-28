@@ -62,7 +62,7 @@ class Widget extends Component {
           type: 'html',
           summary: this.state.summary
         })).then(() => {
-          message.success(formatMessage({id: "helpers.success"}))
+          message.success(formatMessage({id: "flash.success"}))
           push('/admin/cards')
         }).catch(message.error);
       }
@@ -110,7 +110,7 @@ class Widget extends Component {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({id: "errors.empty"})
+                      message: formatMessage({id: "validator.required"})
                     }
                   ]
                 })(<Input/>)
@@ -129,7 +129,7 @@ class Widget extends Component {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({id: "errors.empty"})
+                      message: formatMessage({id: "validator.required"})
                     }
                   ]
                 })(<Input/>)
@@ -141,7 +141,7 @@ class Widget extends Component {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({id: "errors.empty"})
+                      message: formatMessage({id: "validator.required"})
                     }
                   ]
                 })(<Input/>)
@@ -156,7 +156,7 @@ class Widget extends Component {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({id: "errors.empty"})
+                      message: formatMessage({id: "validator.required"})
                     }
                   ]
                 })(<Input/>)
@@ -168,7 +168,7 @@ class Widget extends Component {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({id: "errors.empty"})
+                      message: formatMessage({id: "validator.required"})
                     }
                   ]
                 })(<Input/>)

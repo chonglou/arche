@@ -44,7 +44,7 @@ class Widget extends Component {
         Object.assign({}, values, {
           sortOrder: parseInt(values.sortOrder, 10)
         })).then(() => {
-          message.success(formatMessage({id: "helpers.success"}))
+          message.success(formatMessage({id: "flash.success"}))
           push('/admin/links')
         }).catch(message.error);
       }
@@ -93,7 +93,7 @@ class Widget extends Component {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({id: "errors.empty"})
+                      message: formatMessage({id: "validator.required"})
                     }
                   ]
                 })(<Input/>)
@@ -112,7 +112,7 @@ class Widget extends Component {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({id: "errors.empty"})
+                      message: formatMessage({id: "validator.required"})
                     }
                   ]
                 })(<Input/>)
@@ -124,7 +124,7 @@ class Widget extends Component {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({id: "errors.empty"})
+                      message: formatMessage({id: "validator.required"})
                     }
                   ]
                 })(<Input/>)

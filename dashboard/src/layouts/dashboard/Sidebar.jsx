@@ -29,7 +29,7 @@ class Widget extends Component {
             _delete('/users/sign-out').then(() => {
               signOut()
               push('/users/sign-in')
-              message.success(formatMessage({id: 'helpers.success'}))
+              message.success(formatMessage({id: 'flash.success'}))
             }).catch(message.error)
           }
         });

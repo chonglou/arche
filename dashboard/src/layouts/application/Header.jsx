@@ -1,17 +1,15 @@
 import React, {Component} from 'react'
 import PropTypes from 'prop-types'
-import {Layout, Menu, Icon} from 'antd';
+import {Layout, Menu} from 'antd';
 import {connect} from 'react-redux'
 import {Link} from 'react-router-dom'
 import {FormattedMessage} from 'react-intl'
 
 const {Header} = Layout;
-const SubMenu = Menu.SubMenu;
-const MenuItemGroup = Menu.ItemGroup;
 
 class Widget extends Component {
   render() {
-    const width = document.body.offsetWidth
+    // const width = document.body.offsetWidth
     const {site, user} = this.props
     return (<Header>
       <div className="logo"/>

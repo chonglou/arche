@@ -49,10 +49,10 @@ class Widget extends Component {
                   rules: [
                     {
                       type: 'email',
-                      message: formatMessage({id: "errors.not-valid-email"})
+                      message: formatMessage({id: "validator.email"})
                     }, {
                       required: true,
-                      message: formatMessage({id: "errors.empty-email"})
+                      message: formatMessage({id: "validator.required"})
                     }
                   ]
                 })(<Input/>)
@@ -64,7 +64,7 @@ class Widget extends Component {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({id: "errors.empty-password"})
+                      message: formatMessage({id: "validator.required"})
                     }
                   ]
                 })(<Input type="password"/>)
