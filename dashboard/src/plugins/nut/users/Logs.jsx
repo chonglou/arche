@@ -34,7 +34,7 @@ class Widget extends Component {
           }}>
           <Table bordered={true} rowKey="id" dataSource={this.state.items} columns={[
               {
-                title: <FormattedMessage id="attributes.createdAt"/>,
+                title: <FormattedMessage id="attributes.created-at"/>,
                 key: 'createdAt',
                 render: (text, record) => (<Moment fromNow={true}>{record.createdAt}</Moment>)
               }, {

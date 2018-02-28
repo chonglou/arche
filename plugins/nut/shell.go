@@ -123,14 +123,14 @@ func (p *Plugin) Shell() []cli.Command {
 								if err = p.Dao.Deny(db, user.ID, role.ID); err != nil {
 									return err
 								}
-								if err = p.Dao.AddLog(db, user.ID, lang, ip, "nut.logs.deny", role); err != nil {
+								if err = p.Dao.AddLog(db, user.ID, ip, lang, "nut.logs.user.deny", role); err != nil {
 									return err
 								}
 							} else {
 								if err = p.Dao.Allow(db, user.ID, role.ID, years, 0, 0); err != nil {
 									return err
 								}
-								if err = p.Dao.AddLog(db, user.ID, lang, ip, "nut.logs.allow", role); err != nil {
+								if err = p.Dao.AddLog(db, user.ID, ip, lang, "nut.logs.user.apply", role); err != nil {
 									return err
 								}
 							}

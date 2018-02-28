@@ -76,10 +76,8 @@ func (p *Layout) CurrentUserMiddleware(c *gin.Context) {
 	if !ok {
 		return
 	}
-	var user User
-	if err := p.DB.Model(&user).Column("email", "confirmed_at", "locked_at").
-		Where("uid = ?", uid).
-		Select(); err != nil {
+	user, err := p.Dao.GetUserByUID(p.DB, uid)
+	if err != nil {
 		log.Error(err)
 		return
 	}

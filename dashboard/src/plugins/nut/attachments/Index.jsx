@@ -66,7 +66,7 @@ class Widget extends Component {
                 dataIndex: 'mediaType',
                 key: 'mediaType'
               }, {
-                title: 'Action',
+                title: <FormattedMessage id="attributes.action"/>,
                 key: 'action',
                 render: (text, record) => (<span>
                   <CopyToClipboard text={record.url}><Button shape="circle" icon="copy"/></CopyToClipboard>

@@ -95,7 +95,7 @@ func (p *Plugin) postUsersChangePassword(l string, c *gin.Context) (interface{},
 func (p *Plugin) getUsersLogs(l string, c *gin.Context) (interface{}, error) {
 	user := c.MustGet(CurrentUser).(*User)
 	var items []Log
-	if err := p.DB.Model(&items).Column("message", "created_at").
+	if err := p.DB.Model(&items).
 		Where("user_id = ?", user.ID).
 		Order("created_at DESC").Select(); err != nil {
 		return nil, err

@@ -42,8 +42,8 @@ CREATE TABLE logs (
 CREATE TABLE roles (
   id            BIGSERIAL PRIMARY KEY,
   name          VARCHAR(32)                 NOT NULL,
-  resource_id   BIGINT,
-  resource_type VARCHAR(255),
+  resource_id   BIGINT NOT NULL,
+  resource_type VARCHAR(255) NOT NULL,
   created_at    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
   updated_at    TIMESTAMP WITHOUT TIME ZONE NOT NULL
 );

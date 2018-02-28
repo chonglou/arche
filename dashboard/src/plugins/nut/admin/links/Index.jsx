@@ -57,7 +57,7 @@ class Widget extends Component {
                 dataIndex: 'label',
                 render: (text, record) => (<a target="_blank" href={record.href}>{record.label}</a>)
               }, {
-                title: 'Action',
+                title: <FormattedMessage id="attributes.action"/>,
                 key: 'action',
                 render: (text, record) => (<span>
                   <Button onClick={(e) => push(`/admin/links/edit/${record.id}`)} shape="circle" icon="edit"/>

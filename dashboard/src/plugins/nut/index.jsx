@@ -179,9 +179,6 @@ export default {
           label: "nut.admin.site.smtp.title",
           href: "/admin/site/smtp"
         }, {
-          label: "nut.admin.site.donate.title",
-          href: "/admin/site/donate"
-        }, {
           label: "nut.admin.site.home.title",
           href: "/admin/site/home"
         }, {

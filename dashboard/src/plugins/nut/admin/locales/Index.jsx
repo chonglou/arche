@@ -55,7 +55,7 @@ class Widget extends Component {
                 dataIndex: 'message',
                 key: 'message'
               }, {
-                title: 'Action',
+                title: <FormattedMessage id="attributes.action"/>,
                 key: 'action',
                 render: (text, record) => (<span>
                   <Button onClick={(e) => push(`/admin/locales/edit/${record.id}`)} shape="circle" icon="edit"/>

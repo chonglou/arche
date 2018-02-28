@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// NewS3 new s3
+// New new s3
 func New(root, endpoint string) (storage.Storage, error) {
 	if err := os.MkdirAll(root, 0755); err != nil {
 		return nil, err
@@ -33,5 +33,5 @@ func (p *Fs) Write(name string, body []byte, size int64) (string, string, error)
 	if err := ioutil.WriteFile(dest, body, 0644); err != nil {
 		return "", "", err
 	}
-	return fileType, dest, nil
+	return fileType, p.endpoint + "/" + fn, nil
 }

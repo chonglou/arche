@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
@@ -19,9 +20,9 @@ const (
 	UserTypeEmail = "email"
 
 	// DefaultResourceType default resource type
-	DefaultResourceType = ""
+	DefaultResourceType = "nil"
 	// DefaultResourceID default resourc id
-	DefaultResourceID = 0
+	DefaultResourceID = math.MaxInt64
 )
 
 // User user
@@ -77,7 +78,7 @@ func (p User) String() string {
 
 // Attachment attachment
 type Attachment struct {
-	tableName struct{} `sql:"users"`
+	tableName struct{} `sql:"attachments"`
 
 	ID           uint      `json:"id"`
 	Title        string    `json:"title"`

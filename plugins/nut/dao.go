@@ -35,7 +35,7 @@ func (p *Dao) SignIn(db orm.DB, lang, ip, email, password string) (*User, error)
 	}
 
 	if it.IsLock() {
-		return nil, p.I18n.E(lang, "nut.errors.user.is-lock")
+		return nil, p.I18n.E(lang, "nut.errors.user-is-lock")
 	}
 
 	p.AddLog(db, it.ID, ip, lang, "nut.logs.user.sign-in.success")
@@ -45,6 +45,7 @@ func (p *Dao) SignIn(db orm.DB, lang, ip, email, password string) (*User, error)
 	now := time.Now()
 	it.CurrentSignInAt = &now
 	it.CurrentSignInIP = ip
+	it.UpdatedAt = now
 
 	if _, err := db.Model(&it).
 		Column(
