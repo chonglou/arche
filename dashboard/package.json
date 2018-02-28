@@ -2,12 +2,19 @@
   "name": "arche",
   "version": "0.1.0",
   "private": true,
+  "homepage": "/my",
+  "proxy": {
+    "api": {
+      "target": "http://localhost:8080"
+    }
+  },
   "dependencies": {
     "ant-design-pro": "^1.1.0",
     "antd": "^3.2.2",
     "emoji-mart": "^2.4.2",
     "js-cookie": "^2.2.0",
     "jwt-decode": "^2.2.0",
+    "moment": "^2.20.1",
     "moment-timezone": "^0.5.14",
     "qrcode.react": "^0.8.0",
     "react": "^16.2.0",
@@ -17,6 +24,7 @@
     "react-google-maps": "^9.4.5",
     "react-intl": "^2.4.0",
     "react-markdown": "^3.2.2",
+    "react-moment": "^0.7.0",
     "react-quill": "^1.2.6",
     "react-redux": "^5.0.7",
     "react-router": "^4.2.0",

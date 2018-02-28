@@ -1,114 +1,137 @@
+import React from 'react'
+
 import {USER, ADMIN} from '../../auth'
 
-const AdminFormLocale = import ('./admin/locales/Form')
-const AdminFormLink = import ('./admin/links/Form')
-const AdminFormCard = import ('./admin/cards/Form')
-const AdminFormFriendLink = import ('./admin/friend-links/Form')
+import Home from './Home'
+import AttachmentsIndex from './attachments/Index'
+import AdminCardsIndex from './admin/cards/Index'
+import AdminCardsForm from './admin/cards/Form'
+import AdminLinksIndex from './admin/links/Index'
+import AdminLinksForm from './admin/links/Form'
+import AdminFriendLinksIndex from './admin/friend-links/Index'
+import AdminFriendLinksForm from './admin/friend-links/Form'
+import AdminLocalesIndex from './admin/locales/Index'
+import AdminLocalesForm from './admin/locales/Form'
+import AdminLeaveWordsIndex from './admin/leave-words/Index'
+import AdminUsersIndex from './admin/users/Index'
+import AdminSiteHome from './admin/site/Home'
+import AdminSiteSmtp from './admin/site/Smtp'
+import AdminSiteSeo from './admin/site/Seo'
+import AdminSiteAuthor from './admin/site/Author'
+import AdminSiteInfo from './admin/site/Info'
+import AdminSiteStatus from './admin/site/Status'
+
+import LeaveWordsNew from './leave-words/New'
+import UsersChangePassword from './users/ChangePassword'
+import UsersProfile from './users/Profile'
+import UsersLogs from './users/Logs'
+import UsersResetPassword from './users/ResetPassword'
+import UsersSignIn from './users/SignIn'
+import UsersSignUp from './users/SignUp'
+import UsersEmailForm from './users/EmailForm'
+
+const UsersConfirm = () => (<UsersEmailForm action="confirm"/>)
+const UsersUnlock = () => (<UsersEmailForm action="unlock"/>)
+const UsersForgotPassword = () => (<UsersEmailForm action="forgot-password"/>)
 
 export default {
   routes: [
     {
       path: "/",
-      component: import ('./Home')
-    }, {
-      path: "/donate",
-      component: import ('./Donate')
+      component: Home
     }, {
       path: "/users/sign-in",
-      component: import ('./users/SignIn')
+      component: UsersSignIn
     }, {
       path: "/users/sign-up",
-      component: import ('./users/SignUp')
+      component: UsersSignUp
     }, {
       path: "/users/confirm",
-      component: import ('./users/Confirm')
+      component: UsersConfirm
     }, {
       path: "/users/unlock",
-      component: import ('./users/Unlock')
+      component: UsersUnlock
     }, {
       path: "/users/forgot-password",
-      component: import ('./users/ForgotPassword')
+      component: UsersForgotPassword
     }, {
       path: "/users/reset-password/:token",
-      component: import ('./users/ResetPassword')
+      component: UsersResetPassword
     }, {
       path: "/users/logs",
-      component: import ('./users/Logs')
+      component: UsersLogs
     }, {
       path: "/users/profile",
-      component: import ('./users/Profile')
+      component: UsersProfile
     }, {
       path: "/users/change-password",
-      component: import ('./users/ChangePassword')
+      component: UsersChangePassword
     }, {
       path: "/leave-words/new",
-      component: import ('./leave-words/New')
+      component: LeaveWordsNew
     }, {
       path: "/admin/site/status",
-      component: import ('./admin/site/Status')
+      component: AdminSiteStatus
     }, {
       path: "/admin/site/info",
-      component: import ('./admin/site/Info')
+      component: AdminSiteInfo
     }, {
       path: "/admin/site/author",
-      component: import ('./admin/site/Author')
+      component: AdminSiteAuthor
     }, {
       path: "/admin/site/seo",
-      component: import ('./admin/site/Seo')
+      component: AdminSiteSeo
     }, {
       path: "/admin/site/smtp",
-      component: import ('./admin/site/Smtp')
-    }, {
-      path: "/admin/site/donate",
-      component: import ('./admin/site/Donate')
+      component: AdminSiteSmtp
     }, {
       path: "/admin/site/home",
-      component: import ('./admin/site/Home')
+      component: AdminSiteHome
     }, {
       path: "/admin/users",
-      component: import ('./admin/users/Index')
+      component: AdminUsersIndex
     }, {
       path: "/admin/leave-words",
-      component: import ('./admin/leave-words/Index')
+      component: AdminLeaveWordsIndex
     }, {
       path: "/admin/locales/edit/:id",
-      component: AdminFormLocale
+      component: AdminLocalesForm
     }, {
       path: "/admin/locales/new",
-      component: AdminFormLocale
+      component: AdminLocalesForm
     }, {
       path: "/admin/locales",
-      component: import ('./admin/locales/Index')
+      component: AdminLocalesIndex
     }, {
       path: "/admin/friend-links/edit/:id",
-      component: AdminFormFriendLink
+      component: AdminFriendLinksForm
     }, {
       path: "/admin/friend-links/new",
-      component: AdminFormFriendLink
+      component: AdminFriendLinksForm
     }, {
       path: "/admin/friend-links",
-      component: import ('./admin/friend-links/Index')
+      component: AdminFriendLinksIndex
     }, {
       path: "/admin/links/edit/:id",
-      component: AdminFormLink
+      component: AdminLinksForm
     }, {
       path: "/admin/links/new",
-      component: AdminFormLink
+      component: AdminLinksForm
     }, {
       path: "/admin/links",
-      component: import ('./admin/links/Index')
+      component: AdminLinksIndex
     }, {
       path: "/admin/cards/edit/:id",
-      component: AdminFormCard
+      component: AdminCardsForm
     }, {
       path: "/admin/cards/new",
-      component: AdminFormCard
+      component: AdminCardsForm
     }, {
       path: "/admin/cards",
-      component: import ('./admin/cards/Index')
+      component: AdminCardsIndex
     }, {
       path: "/attachments",
-      component: import ('./attachments/Index')
+      component: AttachmentsIndex
     }
   ],
   menus: [
