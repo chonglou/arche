@@ -64,7 +64,9 @@ class Widget extends Component {
   render() {
     const {formatMessage} = this.props.intl
     const {getFieldDecorator} = this.props.form
-    const title = "nut.admin.site.smtp.title"
+    const title = {
+      id: "nut.admin.site.smtp.title"
+    }
     return (<Layout breads={[{
           href: "/admin/site/smtp",
           label: title

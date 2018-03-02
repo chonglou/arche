@@ -47,9 +47,9 @@ class Widget extends Component {
           <Button onClick={(e) => push('/admin/friend-links/new')} type='primary' shape="circle" icon="plus"/>
           <Table bordered={true} rowKey="id" dataSource={this.state.items} columns={[
               {
-                title: <FormattedMessage id="attributes.sortOrder"/>,
-                key: 'sortOrder',
-                dataIndex: 'sortOrder'
+                title: <FormattedMessage id="attributes.sort-order"/>,
+                key: 'sort',
+                dataIndex: 'sort'
               }, {
                 title: <FormattedMessage id="attributes.content"/>,
                 dataIndex: 'label',

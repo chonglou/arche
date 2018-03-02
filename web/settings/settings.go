@@ -20,12 +20,13 @@ func New(key []byte) (*Settings, error) {
 	return &Settings{cip: cip}, nil
 }
 
-// Model locale database model
+// Model setting database model
 type Model struct {
-	tableName struct{} `sql:"locales"`
+	tableName struct{} `sql:"settings"`
+	ID        uint
 	Key       string
 	Value     []byte
-	Encode    bool
+	Encode    bool `sql:",notnull"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }

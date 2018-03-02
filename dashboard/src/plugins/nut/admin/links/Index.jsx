@@ -50,7 +50,7 @@ class Widget extends Component {
                 title: <FormattedMessage id="attributes.loc"/>,
                 key: 'loc',
                 render: (text, record) => (<span>
-                  {record.loc}[{record.sortOrder}]
+                  {record.loc}({record.x},{record.y})
                 </span>)
               }, {
                 title: <FormattedMessage id="attributes.content"/>,

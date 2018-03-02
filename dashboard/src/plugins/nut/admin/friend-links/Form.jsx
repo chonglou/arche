@@ -25,9 +25,9 @@ class Widget extends Component {
     const {setFieldsValue} = this.props.form
     const {id} = this.props.match.params
     if (id) {
-      get(`/admin/friend-links/${id}`).then((rst) => setFieldsValue({title: rst.title, home: rst.home, logo: rst.logo, sortOrder: rst.sortOrder.toString()})).catch(message.error)
+      get(`/admin/friend-links/${id}`).then((rst) => setFieldsValue({title: rst.title, home: rst.home, logo: rst.logo, sort: rst.sort.toString()})).catch(message.error)
     } else {
-      setFieldsValue({sortOrder: '0'})
+      setFieldsValue({sort: '0'})
     }
   }
   handleSubmit = (e) => {
@@ -42,7 +42,7 @@ class Widget extends Component {
           ? `/admin/friend-links/${id}`
           : '/admin/friend-links',
         Object.assign({}, values, {
-          sortOrder: parseInt(values.sortOrder, 10)
+          sort: parseInt(values.sort, 10)
         })).then(() => {
           message.success(formatMessage({id: "flash.success"}))
           push('/admin/friend-links')
@@ -123,9 +123,9 @@ class Widget extends Component {
                 })(<Input/>)
               }
             </FormItem>
-            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.sortOrder" />}>
+            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.sort-order" />}>
               {
-                getFieldDecorator('sortOrder')(<Select>
+                getFieldDecorator('sort')(<Select>
                   {orders(10).map((p) => (<Option key={p} value={p}>{p}</Option>))}
                 </Select>)
               }

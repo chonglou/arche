@@ -6,11 +6,11 @@ import (
 
 // Model locale database model
 type Model struct {
-	tableName struct{} `sql:"locales"`
-	ID        uint
-	Lang      string
-	Code      string
-	Message   string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	tableName struct{}  `sql:"locales"`
+	ID        uint      `json:"id"`
+	Lang      string    `json:"lang"`
+	Code      string    `json:"code"`
+	Message   string    `json:"message"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }

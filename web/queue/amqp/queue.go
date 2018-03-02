@@ -29,13 +29,11 @@ type Queue struct {
 
 // Status status
 func (p *Queue) Status() (map[string]interface{}, error) {
-	tasks := make(map[string]string)
+	tasks := make(map[string]interface{})
 	for n, f := range p.consumers {
 		tasks[n] = runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
 	}
-	return map[string]interface{}{
-		"tasks": tasks,
-	}, nil
+	return tasks, nil
 }
 
 // Register register handler

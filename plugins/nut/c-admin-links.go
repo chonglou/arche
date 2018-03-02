@@ -11,7 +11,8 @@ func (p *Plugin) indexAdminLinks(l string, c *gin.Context) (interface{}, error) 
 	var items []Link
 	if err := p.DB.Model(&items).Column("id", "label", "href", "loc", "x", "y").
 		Where("lang = ?", l).
-		Order("loc ASC, x ASC, y ASC").Select(); err != nil {
+		Order("loc ASC").Order("x ASC").Order("y ASC").
+		Select(); err != nil {
 		return nil, err
 	}
 	return items, nil

@@ -32,10 +32,10 @@ Hash.propTypes = {
 class Widget extends Component {
   state = {
     os: {},
-    database: {},
+    postgresql: {},
     redis: "",
     routes: [],
-    jobber: {},
+    queue: {},
     network: {}
   }
   componentDidMount() {
@@ -48,8 +48,8 @@ class Widget extends Component {
       redis,
       os,
       network,
-      database,
-      jobber,
+      postgresql,
+      queue,
       routes
     } = this.state
 
@@ -73,11 +73,11 @@ class Widget extends Component {
             <Panel key="network" header={(<FormattedMessage id="nut.admin.site.status.network"/>)}>
               <Hash item={network}/>
             </Panel>
-            <Panel key="database" header={(<FormattedMessage id="nut.admin.site.status.database"/>)}>
-              <Hash item={database}/>
+            <Panel key="postgresql" header={(<FormattedMessage id="nut.admin.site.status.postgresql"/>)}>
+              <Hash item={postgresql}/>
             </Panel>
-            <Panel key="jobber" header={(<FormattedMessage id="nut.admin.site.status.jobber"/>)}>
-              <Hash item={jobber}/>
+            <Panel key="queue" header={(<FormattedMessage id="nut.admin.site.status.queue"/>)}>
+              <Hash item={queue}/>
             </Panel>
             <Panel key="redis" header={(<FormattedMessage id="nut.admin.site.status.redis"/>)}>
               <SyntaxHighlighter style={docco}>{redis}</SyntaxHighlighter>

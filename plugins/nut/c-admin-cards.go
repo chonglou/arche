@@ -11,7 +11,7 @@ func (p *Plugin) indexAdminCards(l string, c *gin.Context) (interface{}, error) 
 	var items []Card
 	if err := p.DB.Model(&items).Column("id", "loc", "sort", "title", "href").
 		Where("lang = ?", l).
-		Order("loc ASC, sort ASC").
+		Order("loc ASC").Order("sort ASC").
 		Select(); err != nil {
 		return nil, err
 	}

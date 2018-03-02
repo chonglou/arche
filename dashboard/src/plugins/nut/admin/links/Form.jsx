@@ -25,9 +25,9 @@ class Widget extends Component {
     const {setFieldsValue} = this.props.form
     const {id} = this.props.match.params
     if (id) {
-      get(`/admin/links/${id}`).then((rst) => setFieldsValue({label: rst.label, href: rst.href, sortOrder: rst.sortOrder.toString(), loc: rst.loc})).catch(message.error)
+      get(`/admin/links/${id}`).then((rst) => setFieldsValue({label: rst.label, href: rst.href, x: rst.x.toString(), y: rst.y.toString(), loc: rst.loc})).catch(message.error)
     } else {
-      setFieldsValue({sortOrder: '0'})
+      setFieldsValue({x: '0', y: '0', loc: 'header'})
     }
   }
   handleSubmit = (e) => {
@@ -42,7 +42,8 @@ class Widget extends Component {
           ? `/admin/links/${id}`
           : '/admin/links',
         Object.assign({}, values, {
-          sortOrder: parseInt(values.sortOrder, 10)
+          x: parseInt(values.x, 10),
+          y: parseInt(values.y, 10)
         })).then(() => {
           message.success(formatMessage({id: "flash.success"}))
           push('/admin/links')
@@ -87,21 +88,23 @@ class Widget extends Component {
             offset: 2
           }}>
           <Form onSubmit={this.handleSubmit}>
-            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.loc" />} hasFeedback={true}>
+            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.loc" />}>
               {
-                getFieldDecorator('loc', {
-                  rules: [
-                    {
-                      required: true,
-                      message: formatMessage({id: "validator.required"})
-                    }
-                  ]
-                })(<Input/>)
+                getFieldDecorator('loc')(<Select>
+                  {['header', 'footer', 'sidebar'].map((p) => (<Option key={p} value={p}>{p}</Option>))}
+                </Select>)
               }
             </FormItem>
-            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.sortOrder" />}>
+            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.x" />}>
               {
-                getFieldDecorator('sortOrder')(<Select>
+                getFieldDecorator('x')(<Select>
+                  {orders(10).map((p) => (<Option key={p} value={p}>{p}</Option>))}
+                </Select>)
+              }
+            </FormItem>
+            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.y" />}>
+              {
+                getFieldDecorator('y')(<Select>
                   {orders(10).map((p) => (<Option key={p} value={p}>{p}</Option>))}
                 </Select>)
               }

@@ -34,13 +34,13 @@ class Widget extends Component {
           action: rst.action,
           logo: rst.logo,
           href: rst.href,
-          sortOrder: rst.sortOrder.toString(),
+          sort: rst.sort.toString(),
           loc: rst.loc
         })
         this.setState({summary: rst.summary})
       }).catch(message.error)
     } else {
-      setFieldsValue({sortOrder: '0'})
+      setFieldsValue({sort: '0', loc: 'album-main'})
     }
   }
   handleChange = (value) => {
@@ -58,7 +58,7 @@ class Widget extends Component {
           ? `/admin/cards/${id}`
           : '/admin/cards',
         Object.assign({}, values, {
-          sortOrder: parseInt(values.sortOrder, 10),
+          sort: parseInt(values.sort, 10),
           type: 'html',
           summary: this.state.summary
         })).then(() => {
@@ -104,21 +104,16 @@ class Widget extends Component {
             span: 18
           }}>
           <Form onSubmit={this.handleSubmit}>
-            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.loc" />} hasFeedback={true}>
+            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.loc" />}>
               {
-                getFieldDecorator('loc', {
-                  rules: [
-                    {
-                      required: true,
-                      message: formatMessage({id: "validator.required"})
-                    }
-                  ]
-                })(<Input/>)
+                getFieldDecorator('loc')(<Select>
+                  {['album-header', 'album-main', 'carousel-top', 'carousel-middle', 'carousel-bottom'].map((p) => (<Option key={p} value={p}>{p}</Option>))}
+                </Select>)
               }
             </FormItem>
-            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.sortOrder" />}>
+            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.sort-order" />}>
               {
-                getFieldDecorator('sortOrder')(<Select>
+                getFieldDecorator('sort')(<Select>
                   {orders(10).map((p) => (<Option key={p} value={p}>{p}</Option>))}
                 </Select>)
               }

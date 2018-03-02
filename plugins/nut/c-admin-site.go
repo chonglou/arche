@@ -223,7 +223,7 @@ func (p *Plugin) getAdminSiteStatus(l string, c *gin.Context) (interface{}, erro
 	if ret["network"], err = p._networkStatus(); err != nil {
 		return nil, err
 	}
-	if ret["database"], err = p._databaseStatus(); err != nil {
+	if ret["postgresql"], err = p._databaseStatus(); err != nil {
 		return nil, err
 	}
 	if ret["redis"], err = p._redisStatus(); err != nil {

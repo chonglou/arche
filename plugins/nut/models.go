@@ -186,7 +186,6 @@ type Link struct {
 	Y         int       `json:"y"`
 	Href      string    `json:"href"`
 	Label     string    `json:"label"`
-	Sort      int       `json:"sort"`
 	UpdatedAt time.Time `json:"updatedAt"`
 	CreatedAt time.Time `json:"createdAt"`
 }
