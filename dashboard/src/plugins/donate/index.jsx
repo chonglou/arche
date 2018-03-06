@@ -1,7 +1,6 @@
-import ProjectsForm from './projects/Form'
-import ProjectsIndex from './projects/Index'
-
 import {USER, ADMIN} from '../../auth'
+
+const ProjectsForm = import ('./projects/Form')
 
 export default {
   routes: [
@@ -13,7 +12,7 @@ export default {
       component: ProjectsForm
     }, {
       path: "/donate/projects",
-      component: ProjectsIndex
+      component: import ('./projects/Index')
     }
   ],
   menus: [
