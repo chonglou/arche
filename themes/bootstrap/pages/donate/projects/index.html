@@ -1,0 +1,18 @@
+{{define "main"}}
+<div class="container">
+  <div class="row justify-content-md-center">
+    <div class="col-md-6">
+      <br/>
+      <div class="list-group">
+        {{range .projects}}
+          <a href="/donate/projects/{{.ID}}" target="_blank" class="list-group-item list-group-item-action">
+            {{.Title}}
+          </a>
+        {{end}}
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}
+
+{{define "title"}} {{t .locale "donate.projects.index.title"}} {{end}}

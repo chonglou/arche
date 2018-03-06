@@ -2,8 +2,11 @@ package nut
 
 import (
 	"fmt"
+	"net/http"
+	"path"
 	"path/filepath"
 
+	"github.com/chonglou/arche/web"
 	"github.com/gin-contrib/sessions"
 	"github.com/ikeikeikeike/go-sitemap-generator/stm"
 	"github.com/spf13/viper"
@@ -34,8 +37,10 @@ func (p *Plugin) Mount() error {
 		return err
 	}
 
+	theme := viper.GetString("server.theme")
+
 	rdr, err := NewHTMLRender(
-		filepath.Join("themes", viper.GetString("server.theme")),
+		filepath.Join("themes", theme),
 		p.renderFuncMap(),
 	)
 	if err != nil {
@@ -58,7 +63,18 @@ func (p *Plugin) Mount() error {
 		p.Layout.CurrentUserMiddleware,
 	)
 	// --------------
+	if web.MODE() != web.PRODUCTION {
+		for k, v := range map[string]string{
+			"3rd":    "node_modules",
+			"assets": path.Join("themes", theme, "assets"),
+			"global": path.Join("themes", "global"),
+		} {
+			p.Router.StaticFS(k, http.Dir(v))
+		}
+	}
+
 	p.Router.GET("/", p.Layout.HTML("nut/index", p.getHome))
+	p.Router.GET("/friend-links", p.Layout.HTML("nut/friend-links/index", p.getFriendLinks))
 
 	api := p.Router.Group("/api")
 

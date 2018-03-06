@@ -42,6 +42,10 @@ func (p *Plugin) Shell() []cli.Command {
 
 // Mount register
 func (p *Plugin) Mount() error {
+	rt := p.Router.Group("/donate")
+	rt.GET("/projects", p.Layout.HTML("donate/projects/index", p.getProjects))
+	rt.GET("/projects/:id", p.Layout.HTML("donate/projects/show", p.getProject))
+
 	api := p.Router.Group("/api/donate", p.Layout.MustSignInMiddleware)
 	api.GET("/projects", p.Layout.JSON(p.indexProjects))
 	api.POST("/projects", p.Layout.JSON(p.createProject))

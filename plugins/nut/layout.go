@@ -7,6 +7,7 @@ import (
 
 	"github.com/chonglou/arche/web"
 	"github.com/chonglou/arche/web/i18n"
+	"github.com/chonglou/arche/web/settings"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg"
@@ -39,10 +40,11 @@ type ObjectHandlerFunc func(string, *gin.Context) (interface{}, error)
 
 // Layout layout
 type Layout struct {
-	I18n *i18n.I18n `inject:""`
-	Jwt  *web.Jwt   `inject:""`
-	DB   *pg.DB     `inject:""`
-	Dao  *Dao       `inject:""`
+	I18n     *i18n.I18n         `inject:""`
+	Settings *settings.Settings `inject:""`
+	Jwt      *web.Jwt           `inject:""`
+	DB       *pg.DB             `inject:""`
+	Dao      *Dao               `inject:""`
 }
 
 // MustSignInMiddleware must sign in middleware
@@ -120,7 +122,22 @@ func (p *Layout) JSON(fn ObjectHandlerFunc) gin.HandlerFunc {
 func (p *Layout) HTML(tpl string, fn HTMLHandlerFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		data := gin.H{}
-		// TODO site info
+
+		site := gin.H{}
+		// author
+		author := make(map[string]string)
+		p.Settings.Get(p.DB, "site.author", &author)
+		site["author"] = author
+		// favicon
+		var favicon string
+		p.Settings.Get(p.DB, "site.favicon", &favicon)
+		site["favicon"] = favicon
+		data["site"] = site
+
+		// i18n
+		data[i18n.LOCALE] = c.MustGet(i18n.LOCALE)
+		data["languages"], _ = p.I18n.Languages()
+
 		// flash message
 		ss := sessions.Default(c)
 		flashes := gin.H{}

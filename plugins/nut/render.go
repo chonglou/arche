@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/render"
 	log "github.com/sirupsen/logrus"
 )
@@ -48,7 +49,7 @@ func NewHTMLRender(root string, funcs template.FuncMap) (render.HTMLRender, erro
 			if err != nil {
 				return err
 			}
-			// log.Debugf("find template %s => %s, %v", name, tpl.Name(), files)
+			log.Debugf("find template %s => %s, %v", name, tpl.Name(), files)
 			rdr.tpl[name] = tpl
 		}
 		return nil
@@ -80,6 +81,10 @@ func (p *HTMLRender) Instance(name string, data interface{}) render.Render {
 
 func (p *Plugin) renderFuncMap() template.FuncMap {
 	return template.FuncMap{
+		"fmt": fmt.Sprintf,
+		"str2htm": func(s string) template.HTML {
+			return template.HTML(s)
+		},
 		"dtf": func(t time.Time) string {
 			return t.Format(time.RFC822)
 		},
@@ -92,15 +97,38 @@ func (p *Plugin) renderFuncMap() template.FuncMap {
 		"assets_js": func(u string) template.HTML {
 			return template.HTML(fmt.Sprintf(`<script src="%s"></script>`, u))
 		},
-		"links": func(lng, loc string, x int) ([]Link, error) {
-			var items []Link
-			if err := p.DB.Model(&items).
-				Column("label", "href").
-				Where("lang = ? AND loc = ? AND x = ?", lng, loc, x).
-				Order("y ASC").
-				Select(); err != nil {
+		"links": func(lng, loc string) ([]gin.H, error) {
+			var xs []int
+			if err := p.DB.Model(new(Link)).
+				Where("lang = ?", lng).
+				Where("loc = ?", loc).
+				ColumnExpr("DISTINCT x").
+				Order("x ASC").
+				Select(&xs); err != nil {
 				return nil, err
 			}
+
+			var items []gin.H
+			for _, x := range xs {
+				var links []Link
+				if err := p.DB.Model(&links).
+					Column("label", "href").
+					Where("lang = ?", lng).
+					Where("loc = ?", loc).
+					Where("x = ?", x).
+					Order("y ASC").
+					Select(); err != nil {
+					return nil, err
+				}
+				var children []gin.H
+				if len(links) > 1 {
+					for _, it := range links[1:] {
+						children = append(children, gin.H{"label": it.Label, "href": it.Href})
+					}
+				}
+				items = append(items, gin.H{"label": links[0].Label, "href": links[0].Href, "children": children})
+			}
+
 			return items, nil
 		},
 		"cards": func(lng, loc string) ([]Card, error) {

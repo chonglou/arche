@@ -182,8 +182,8 @@ type Link struct {
 	ID        uint      `json:"id"`
 	Lang      string    `json:"lang"`
 	Loc       string    `json:"loc"`
-	X         int       `json:"x"`
-	Y         int       `json:"y"`
+	X         int       `json:"x" sql:",notnull"`
+	Y         int       `json:"y" sql:",notnull"`
 	Href      string    `json:"href"`
 	Label     string    `json:"label"`
 	UpdatedAt time.Time `json:"updatedAt"`
@@ -202,7 +202,7 @@ type Card struct {
 	Type      string    `json:"type"`
 	Href      string    `json:"href"`
 	Logo      string    `json:"logo"`
-	Sort      int       `json:"sort"`
+	Sort      int       `json:"sort" sql:",notnull"`
 	Action    string    `json:"action"`
 	UpdatedAt time.Time `json:"updatedAt"`
 	CreatedAt time.Time `json:"createdAt"`
@@ -216,7 +216,7 @@ type FriendLink struct {
 	Title     string    `json:"title"`
 	Home      string    `json:"home"`
 	Logo      string    `json:"logo"`
-	Sort      int       `json:"sort"`
+	Sort      int       `json:"sort" sql:",notnull"`
 	UpdatedAt time.Time `json:"updatedAt"`
 	CreatedAt time.Time `json:"createdAt"`
 }

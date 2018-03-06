@@ -1,0 +1,20 @@
+{{define "main"}}
+<div class="container">
+  <br/>
+  <div class="row">
+    {{range .links}}
+      <div class="col-md-3">
+        <div class="card block">
+          <img class="card-img-top" src="{{.Logo}}" alt="{{.Title}}">
+          <div class="card-body">
+            <h5 class="card-title">{{.Title}}</h5>
+            <a href="{{.Logo}}" target="_blank" class="btn btn-primary">{{t $.locale "buttons.more"}}</a>
+          </div>
+        </div>
+      </div>
+    {{end}}
+  </div>
+</div>
+{{end}}
+
+{{define "title"}} {{t .locale "donate.projects.index.title"}} {{end}}

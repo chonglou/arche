@@ -1,0 +1,14 @@
+{{define "main"}}
+  <div class="container">        
+    <div class="ql-editor">
+      {{str2htm .project.Body}}
+    </div>
+    <div>
+      {{str2htm .project.Methods}}
+    </div>
+  </div>
+{{end}}
+
+{{define "title"}}
+{{.project.Title}}
+{{end}}

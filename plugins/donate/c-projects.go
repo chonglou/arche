@@ -7,6 +7,31 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func (p *Plugin) getProjects(l string, d gin.H, c *gin.Context) error {
+	var items []Project
+	if err := p.DB.Model(&items).
+		Column("id", "title").
+		Order("updated_at DESC").
+		Select(); err != nil {
+		return err
+	}
+	d["projects"] = items
+	return nil
+}
+
+func (p *Plugin) getProject(l string, d gin.H, c *gin.Context) error {
+	var it Project
+	if err := p.DB.Model(&it).
+		Where("id = ?", c.Param("id")).
+		Select(); err != nil {
+		return err
+	}
+	d["project"] = it
+	return nil
+}
+
+// -----------------------------------------------------------------------------
+
 func (p *Plugin) indexProjects(l string, c *gin.Context) (interface{}, error) {
 	user := c.MustGet(nut.CurrentUser).(*nut.User)
 	admin := c.MustGet(nut.IsAdmin).(bool)

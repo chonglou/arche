@@ -7,6 +7,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func (p *Plugin) getFriendLinks(l string, d gin.H, c *gin.Context) error {
+	var items []FriendLink
+	if err := p.DB.Model(&items).Column("logo", "title", "home").
+		Order("sort ASC").Select(); err != nil {
+		return err
+	}
+	d["links"] = items
+	return nil
+}
+
 func (p *Plugin) indexAdminFriendLinks(l string, c *gin.Context) (interface{}, error) {
 	var items []FriendLink
 	if err := p.DB.Model(&items).Order("sort ASC").Select(); err != nil {
