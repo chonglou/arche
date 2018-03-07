@@ -1,12 +1,20 @@
 import React, {Component} from 'react'
-import {Row, Col, Collapse, Table, message} from 'antd'
+import {
+  Row,
+  Col,
+  Button,
+  Collapse,
+  Table,
+  Popconfirm,
+  message
+} from 'antd'
 import {injectIntl, intlShape, FormattedMessage} from 'react-intl'
 import PropTypes from 'prop-types'
 import SyntaxHighlighter from 'react-syntax-highlighter'
 import {docco} from 'react-syntax-highlighter/styles/hljs'
 
 import Layout from '../../../../layouts/dashboard'
-import {get} from '../../../../ajax'
+import {get, _delete} from '../../../../ajax'
 import {ADMIN} from '../../../../auth'
 
 const Panel = Collapse.Panel
@@ -43,6 +51,12 @@ class Widget extends Component {
       this.setState(rst)
     }).catch(message.error);
   }
+  handleClearCache = () => {
+    const {formatMessage} = this.props.intl
+    _delete('/admin/site/clear-cache').then((rst) => {
+      message.success(formatMessage({id: 'flash.success'}))
+    }).catch(message.error)
+  }
   render() {
     const {
       redis,
@@ -62,6 +76,16 @@ class Widget extends Component {
         }
       ]} title={title} roles={[ADMIN]}>
       <Row>
+        <Col md={{
+            span: 16,
+            offset: 2
+          }}>
+          <Popconfirm title={<FormattedMessage id = "helpers.are-you-sure" />} onConfirm={this.handleClearCache}>
+            <Button type="danger" icon="delete">
+              <FormattedMessage id="nut.admin.site.status.clear-cache"/>
+            </Button>
+          </Popconfirm>
+        </Col>
         <Col md={{
             span: 16,
             offset: 2

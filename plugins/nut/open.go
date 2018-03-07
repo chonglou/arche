@@ -137,6 +137,7 @@ func (p *Plugin) Init(g *inject.Graph) error {
 		&inject.Object{Value: security},
 		&inject.Object{Value: kvs},
 		&inject.Object{Value: p.openQueue()},
+		&inject.Object{Value: NewHomePage()},
 		&inject.Object{Value: st},
 		&inject.Object{Value: web.NewSitemap()},
 		&inject.Object{Value: web.NewRSS()},

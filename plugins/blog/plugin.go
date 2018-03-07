@@ -1,6 +1,9 @@
 package blog
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/chonglou/arche/plugins/nut"
 	"github.com/chonglou/arche/web"
 	"github.com/chonglou/arche/web/cache"
@@ -11,6 +14,7 @@ import (
 	"github.com/facebookgo/inject"
 	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg"
+	"github.com/ikeikeikeike/go-sitemap-generator/stm"
 	"github.com/urfave/cli"
 )
 
@@ -40,8 +44,33 @@ func (p *Plugin) Shell() []cli.Command {
 	return []cli.Command{}
 }
 
+func (p *Plugin) sitemap() ([]stm.URL, error) {
+	var items []stm.URL
+
+	rt := p.root()
+	if err := filepath.Walk(rt, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		items = append(items, stm.URL{
+			"loc":     "/blog" + path[len(rt):],
+			"lastmod": info.ModTime(),
+		})
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	items = append(items, stm.URL{"loc": "/blog/"})
+	return items, nil
+}
+
 // Mount register
 func (p *Plugin) Mount() error {
+	p.Sitemap.Register(p.sitemap)
+	// ------------------
 	rt := p.Router.Group("/blog")
 	rt.GET("/*name", p.show)
 

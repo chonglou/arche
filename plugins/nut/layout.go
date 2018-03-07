@@ -153,7 +153,7 @@ func (p *Layout) HTML(tpl string, fn HTMLHandlerFunc) gin.HandlerFunc {
 			log.Error(err)
 			status, body := p.detectError(err)
 			data["reason"] = body
-			c.HTML(status, "nut-error", data)
+			c.HTML(status, "nut/error", data)
 		}
 	}
 }

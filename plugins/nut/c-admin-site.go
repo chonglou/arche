@@ -16,21 +16,28 @@ import (
 	gomail "gopkg.in/gomail.v2"
 )
 
+func (p *Plugin) deleteAdminSiteClearCache(l string, c *gin.Context) (interface{}, error) {
+	if err := p.Cache.Clear(); err != nil {
+		return nil, err
+	}
+	return gin.H{}, nil
+}
+
 func (p *Plugin) getAdminSiteHome(l string, c *gin.Context) (interface{}, error) {
 	var favicon string
 	p.Settings.Get(p.DB, "site.favicon", &favicon)
-	var home map[string]string
-	p.Settings.Get(p.DB, "site.home."+l, &home)
+	var home string
+	p.Settings.Get(p.DB, "site.home", &home)
 	return gin.H{
 		"favicon": favicon,
 		"home":    home,
+		"options": p.HomePage.Options(),
 	}, nil
 }
 
 type fmSiteHome struct {
 	Favicon string `json:"favicon" binding:"required"`
-	Body    string `json:"body" binding:"required"`
-	Type    string `json:"type" binding:"required"`
+	Home    string `json:"home" binding:"required"`
 }
 
 func (p *Plugin) postAdminSiteHome(l string, c *gin.Context) (interface{}, error) {
@@ -41,10 +48,7 @@ func (p *Plugin) postAdminSiteHome(l string, c *gin.Context) (interface{}, error
 	if err := p.DB.RunInTransaction(func(db *pg.Tx) error {
 		for k, v := range map[string]interface{}{
 			"site.favicon": fm.Favicon,
-			"site.home." + l: map[string]string{
-				"body": fm.Body,
-				"type": fm.Type,
-			},
+			"site.home":    fm.Home,
 		} {
 			if err := p.Settings.Set(db, k, v, false); err != nil {
 				return err

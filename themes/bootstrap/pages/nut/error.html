@@ -1,5 +1,10 @@
 {{define "main"}}
-  <h1>error {{.reason}}</h1>
+  <div class="container">
+    <br/>
+    <div class="alert alert-danger" role="alert">
+      {{.reason}}
+    </div>
+  </div>
 {{end}}
 
 {{define "title"}}

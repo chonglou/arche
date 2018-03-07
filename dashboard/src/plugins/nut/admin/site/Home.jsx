@@ -14,16 +14,13 @@ const FormItem = Form.Item
 
 class Widget extends Component {
   state = {
-    body: ''
+    options: []
   }
   componentDidMount() {
     const {setFieldsValue} = this.props.form
     get('/admin/site/home').then((rst) => {
-      setFieldsValue({favicon: rst.favicon})
-      if (rst.home) {
-        this.setState({body: rst.home.body})
-      }
-
+      setFieldsValue({favicon: rst.favicon, home: rst.home})
+      this.setState({options: rst.options})
     }).catch(message.error)
   }
   handleSubmit = (e) => {

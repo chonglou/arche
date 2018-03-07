@@ -32,6 +32,7 @@ type Plugin struct {
 	DB       *pg.DB             `inject:""`
 	Dao      *Dao               `inject:""`
 	Layout   *Layout            `inject:""`
+	HomePage *HomePage          `inject:""`
 }
 
 func init() {

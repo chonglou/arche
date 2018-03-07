@@ -6,10 +6,24 @@ import (
 )
 
 func (p *Plugin) getHome(l string, d gin.H, c *gin.Context) error {
-	// TODO
 	var googleVerifyCode string
 	p.Settings.Get(p.DB, googleSiteVerification, &googleVerifyCode)
 	d["googleVerifyCode"] = googleVerifyCode
+
+	var home string
+	if err := p.Settings.Get(p.DB, "site.home", &home); err != nil {
+		return err
+	}
+	hnd := p.HomePage.Get(home)
+	if hnd == nil {
+		return p.I18n.E(l, "errors.bad-action")
+	}
+	body, err := hnd(l)
+	if err != nil {
+		return err
+	}
+
+	d[body] = body
 	return nil
 }
 

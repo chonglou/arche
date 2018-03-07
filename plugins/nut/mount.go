@@ -109,6 +109,7 @@ func (p *Plugin) Mount() error {
 
 	ag := api.Group("/admin", p.Layout.MustAdminMiddleware)
 	ag.GET("/site/status", p.Layout.JSON(p.getAdminSiteStatus))
+	ag.DELETE("/site/clear-cache", p.Layout.JSON(p.deleteAdminSiteClearCache))
 	ag.POST("/site/info", p.Layout.JSON(p.postAdminSiteInfo))
 	ag.POST("/site/author", p.Layout.JSON(p.postAdminSiteAuthor))
 	ag.GET("/site/seo", p.Layout.JSON(p.getAdminSiteSeo))

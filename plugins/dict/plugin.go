@@ -11,6 +11,7 @@ import (
 	"github.com/facebookgo/inject"
 	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg"
+	"github.com/ikeikeikeike/go-sitemap-generator/stm"
 	"github.com/urfave/cli"
 )
 
@@ -40,8 +41,16 @@ func (p *Plugin) Shell() []cli.Command {
 	return []cli.Command{}
 }
 
+func (p *Plugin) sitemap() ([]stm.URL, error) {
+	var items []stm.URL
+	items = append(items, stm.URL{"loc": "/dict/search"})
+	return items, nil
+}
+
 // Mount register
 func (p *Plugin) Mount() error {
+	p.Sitemap.Register(p.sitemap)
+	// ---------------
 	rt := p.Router.Group("/dict")
 	rt.GET("/search", p.Layout.HTML("dict/search", p.search))
 
