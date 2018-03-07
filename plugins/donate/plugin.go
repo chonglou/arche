@@ -1,6 +1,8 @@
 package donate
 
 import (
+	"fmt"
+
 	"github.com/chonglou/arche/plugins/nut"
 	"github.com/chonglou/arche/web"
 	"github.com/chonglou/arche/web/cache"
@@ -11,6 +13,7 @@ import (
 	"github.com/facebookgo/inject"
 	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg"
+	"github.com/ikeikeikeike/go-sitemap-generator/stm"
 	"github.com/urfave/cli"
 )
 
@@ -40,8 +43,32 @@ func (p *Plugin) Shell() []cli.Command {
 	return []cli.Command{}
 }
 
+func (p *Plugin) sitemap() ([]stm.URL, error) {
+	var items []stm.URL
+
+	var projects []Project
+	if err := p.DB.Model(&projects).
+		Column("id", "updated_at").
+		Select(); err != nil {
+		return nil, err
+	}
+	for _, it := range projects {
+		items = append(
+			items,
+			stm.URL{
+				"loc":     fmt.Sprintf("/donate/projects/%d", it.ID),
+				"lastmod": it.UpdatedAt,
+			},
+		)
+	}
+	items = append(items, stm.URL{"loc": "/donate/projects"})
+	return items, nil
+}
+
 // Mount register
 func (p *Plugin) Mount() error {
+	p.Sitemap.Register(p.sitemap)
+	// ------------
 	rt := p.Router.Group("/donate")
 	rt.GET("/projects", p.Layout.HTML("donate/projects/index", p.getProjects))
 	rt.GET("/projects/:id", p.Layout.HTML("donate/projects/show", p.getProject))

@@ -92,7 +92,7 @@ func (p *Plugin) renderFuncMap() template.FuncMap {
 			return p.I18n.T(lang, code, args...)
 		},
 		"assets_css": func(u string) template.HTML {
-			return template.HTML(fmt.Sprintf(`<link type="text/css" rel="stylesheet" href="%s">`, u))
+			return template.HTML(fmt.Sprintf(`<link type="text/css" rel="stylesheet" href="%s"/>`, u))
 		},
 		"assets_js": func(u string) template.HTML {
 			return template.HTML(fmt.Sprintf(`<script src="%s"></script>`, u))

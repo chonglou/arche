@@ -25,6 +25,7 @@ func (p *Plugin) sitemap() ([]stm.URL, error) {
 			},
 		)
 	}
+	items = append(items, stm.URL{"loc": "/friend-links"})
 	return items, nil
 }
 
@@ -74,6 +75,9 @@ func (p *Plugin) Mount() error {
 	}
 
 	p.Router.GET("/", p.Layout.HTML("nut/index", p.getHome))
+	p.Router.GET("/robots.txt", p.getRobotsTxt)
+	p.Router.GET("/sitemap.xml.gz", p.getSitemapXMLGz)
+	p.Router.GET("/rss/:lang", p.getRssAtom)
 	p.Router.GET("/friend-links", p.Layout.HTML("nut/friend-links/index", p.getFriendLinks))
 
 	api := p.Router.Group("/api")

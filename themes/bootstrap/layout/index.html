@@ -2,22 +2,22 @@
 <html lang="{{.locale}}">
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="{{t .locale "site.description"}}">
-  <meta name="keywords" content="{{t .locale "site.keywords"}}">
-  <meta name="author" content="{{.site.author.name}}">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+  <meta name="description" content="{{t .locale "site.description"}}"/>
+  <meta name="keywords" content="{{t .locale "site.keywords"}}"/>
+  <meta name="author" content="{{.site.author.name}}"/>
+  {{block "meta" .}}{{end}}
   <title>{{block "title" .}}default title{{end}}|{{t .locale "site.subhead"}}|{{t .locale "site.title"}}</title>
-  <link rel="icon" type="image/png" href="{{.site.favicon}}">
-  <link rel="stylesheet" href="/3rd/bootstrap/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="/3rd/quill/dist/quill.snow.css">
-  <link rel="stylesheet" href="/assets/application.css">
-  <script src="/3rd/jquery/dist/jquery.min.js"></script>
-  <script src="/3rd/popper.js/dist/umd/popper.min.js"></script>
-  <script src="/3rd/bootstrap/dist/js/bootstrap.min.js"></script>
-  <script src="/3rd/marked/marked.min.js"></script>
-  <script src="https://cdn.quilljs.com/1.0.0/quill.js"></script>
-  <script src="/global/main.js"></script>
+  <link rel="icon" type="image/png" href="{{.site.favicon}}"/>
+  {{assets_css "/3rd/bootstrap/dist/css/bootstrap.min.css"}}
+  {{assets_css "/3rd/quill/dist/quill.snow.css"}}
+  {{assets_css "/assets/application.css"}}
+  {{assets_js "/3rd/jquery/dist/jquery.min.js"}}
+  {{assets_js "/3rd/popper.js/dist/umd/popper.min.js"}}
+  {{assets_js "/3rd/bootstrap/dist/js/bootstrap.min.js"}}
+  {{assets_js "/3rd/marked/marked.min.js"}}
+  {{assets_js "/global/main.js"}}
 </head>
 
 <body>
