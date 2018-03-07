@@ -22,9 +22,7 @@
 
 <body>
   {{template "layout-header" .}}
-  {{if .flashes.error}}
-    error: {{range .flashes.error}}{{.}}{{end}}
-  {{end}}
+  {{template "layout-flash" .}}
   <main role="main">
     {{block "main" .}}default body{{end}}
   </main>

@@ -543,6 +543,18 @@
 			"revisionTime": "2018-02-27T04:40:48Z"
 		},
 		{
+			"checksumSHA1": "wVzCEggAxsudOukfhyAHnznroWk=",
+			"path": "github.com/kapmahc/epub",
+			"revision": "7759d080da6dd736e42fc896da65cc6f7e79c2b3",
+			"revisionTime": "2016-10-27T03:53:36Z"
+		},
+		{
+			"checksumSHA1": "NXjCygVQDinUDwy8Y7j+1KY7dfE=",
+			"path": "github.com/kapmahc/stardict",
+			"revision": "9732cbd4ae88c76b6cb44a17d41ce4ee7be236d9",
+			"revisionTime": "2017-03-23T22:25:13Z"
+		},
+		{
 			"checksumSHA1": "MKyEkCX61KaYI8EWK0obIM2yeN8=",
 			"path": "github.com/kidstuff/mongostore",
 			"revision": "256d65ac5b0e35e7c5ebb3f175c0bed1e5c2b253",

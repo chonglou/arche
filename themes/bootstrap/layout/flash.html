@@ -1,0 +1,28 @@
+{{define "layout-flash"}}
+<div class="container-fluid">
+  {{if .flashes.error}}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <h4 class="alert-heading">{{t .locale "flash.fail"}}</h4>
+      <hr/>
+      <ol>
+        {{range .flashes.error}}<li>{{.}}</li>{{end}}
+      </ol>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  {{end}}
+  {{if .flashes.notice}}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <h4 class="alert-heading">{{t .locale "flash.success"}}</h4>
+      <hr/>
+      <ol>
+        {{range .flashes.notice}}<li>{{.}}</li>{{end}}
+      </ol>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  {{end}}
+</div>
+{{end}}

@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	_ "github.com/chonglou/arche/plugins/blog"
 	_ "github.com/chonglou/arche/plugins/calendar"
 	_ "github.com/chonglou/arche/plugins/cbeta"
 	_ "github.com/chonglou/arche/plugins/dict"

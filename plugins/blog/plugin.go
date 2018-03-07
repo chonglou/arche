@@ -1,4 +1,4 @@
-package dict
+package blog
 
 import (
 	"github.com/chonglou/arche/plugins/nut"
@@ -14,7 +14,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-// Plugin plugin
+// Plugin plugin(task manager)
 type Plugin struct {
 	I18n     *i18n.I18n         `inject:""`
 	Cache    cache.Cache        `inject:""`
@@ -42,12 +42,11 @@ func (p *Plugin) Shell() []cli.Command {
 
 // Mount register
 func (p *Plugin) Mount() error {
-	rt := p.Router.Group("/dict")
-	rt.GET("/search", p.Layout.HTML("dict/search", p.search))
+	rt := p.Router.Group("/blog")
+	rt.GET("/*name", p.show)
 
-	api := p.Router.Group("/api/dict")
+	api := p.Router.Group("/api/blog")
 	api.GET("/", p.Layout.JSON(p.index))
-
 	return nil
 }
 
