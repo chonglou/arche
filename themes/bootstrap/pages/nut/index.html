@@ -1,9 +1,14 @@
 {{define "main"}}
-  <h1>home body </h1>
+  <div class="container">
+    <br/>
+    <h1>{{t .locale "site.title"}}</h1>
+    <hr/>
+    <p>{{t .locale "site.description"}}</p>
+  </div>
 {{end}}
 
 {{define "title"}}
-home
+{{t .locale "nut.home.title"}}
 {{end}}
 
 {{define "meta"}}

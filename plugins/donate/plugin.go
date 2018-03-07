@@ -31,6 +31,7 @@ type Plugin struct {
 	DB       *pg.DB             `inject:""`
 	Router   *gin.Engine        `inject:""`
 	Layout   *nut.Layout        `inject:""`
+	HomePage *nut.HomePage      `inject:""`
 }
 
 // Init init beans
@@ -68,6 +69,7 @@ func (p *Plugin) sitemap() ([]stm.URL, error) {
 // Mount register
 func (p *Plugin) Mount() error {
 	p.Sitemap.Register(p.sitemap)
+	p.HomePage.Register("donate/projects/index", p.getProjects)
 	// ------------
 	rt := p.Router.Group("/donate")
 	rt.GET("/projects", p.Layout.HTML("donate/projects/index", p.getProjects))

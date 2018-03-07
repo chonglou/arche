@@ -5,26 +5,29 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (p *Plugin) getHome(l string, d gin.H, c *gin.Context) error {
-	var googleVerifyCode string
-	p.Settings.Get(p.DB, googleSiteVerification, &googleVerifyCode)
-	d["googleVerifyCode"] = googleVerifyCode
+func (p *Plugin) getHome(ctx *gin.Context) {
+	wrap := func(f HTMLHandlerFunc) HTMLHandlerFunc {
+		return func(l string, d gin.H, c *gin.Context) error {
+			// google site verify code
+			var googleVerifyCode string
+			p.Settings.Get(p.DB, googleSiteVerification, &googleVerifyCode)
+			d["googleVerifyCode"] = googleVerifyCode
+			if f == nil {
+				return nil
+			}
+			return f(l, d, c)
+		}
+	}
 
 	var home string
-	if err := p.Settings.Get(p.DB, "site.home", &home); err != nil {
-		return err
-	}
-	hnd := p.HomePage.Get(home)
-	if hnd == nil {
-		return p.I18n.E(l, "errors.bad-action")
-	}
-	body, err := hnd(l)
-	if err != nil {
-		return err
+	if err := p.Settings.Get(p.DB, "site.home", &home); err == nil {
+		if hnd := p.HomePage.Get(home); hnd != nil {
+			p.Layout.HTML(home, wrap(hnd))(ctx)
+			return
+		}
 	}
 
-	d[body] = body
-	return nil
+	p.Layout.HTML("nut/index", wrap(nil))(ctx)
 }
 
 func (p *Plugin) getLayout(l string, c *gin.Context) (interface{}, error) {

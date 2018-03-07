@@ -4,23 +4,20 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// HomePageHandlerFunc home-page handler func
-type HomePageHandlerFunc func(string) (string, error)
-
 // NewHomePage new home page
 func NewHomePage() *HomePage {
 	return &HomePage{
-		handlers: make(map[string]HomePageHandlerFunc),
+		handlers: make(map[string]HTMLHandlerFunc),
 	}
 }
 
 // HomePage home page
 type HomePage struct {
-	handlers map[string]HomePageHandlerFunc
+	handlers map[string]HTMLHandlerFunc
 }
 
 // Register register handler
-func (p *HomePage) Register(n string, v HomePageHandlerFunc) {
+func (p *HomePage) Register(n string, v HTMLHandlerFunc) {
 	if _, ok := p.handlers[n]; ok {
 		log.Warnf("handle %s already exist, will override it", n)
 	}
@@ -28,7 +25,7 @@ func (p *HomePage) Register(n string, v HomePageHandlerFunc) {
 }
 
 // Get get handler
-func (p *HomePage) Get(name string) HomePageHandlerFunc {
+func (p *HomePage) Get(name string) HTMLHandlerFunc {
 	return p.handlers[name]
 }
 

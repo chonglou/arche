@@ -8,7 +8,7 @@
   <meta name="keywords" content="{{t .locale "site.keywords"}}"/>
   <meta name="author" content="{{.site.author.name}}"/>
   {{block "meta" .}}{{end}}
-  <title>{{block "title" .}}default title{{end}}|{{t .locale "site.subhead"}}|{{t .locale "site.title"}}</title>
+  <title>{{block "title" .}}{{end}}|{{t .locale "site.subhead"}}|{{t .locale "site.title"}}</title>
   <link rel="icon" type="image/png" href="{{.site.favicon}}"/>
   {{assets_css "/3rd/bootstrap/dist/css/bootstrap.min.css"}}
   {{assets_css "/3rd/quill/dist/quill.snow.css"}}

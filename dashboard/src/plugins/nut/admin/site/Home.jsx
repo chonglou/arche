@@ -1,6 +1,13 @@
 import React, {Component} from 'react'
 import PropTypes from 'prop-types'
-import {Form, Row, Col, Input, message} from 'antd'
+import {
+  Form,
+  Row,
+  Col,
+  Input,
+  Select,
+  message
+} from 'antd'
 import {injectIntl, intlShape, FormattedMessage} from 'react-intl'
 import {connect} from 'react-redux'
 import {push} from 'react-router-redux'
@@ -8,9 +15,10 @@ import {push} from 'react-router-redux'
 import Layout from '../../../../layouts/dashboard'
 import {post, get} from '../../../../ajax'
 import {ADMIN} from '../../../../auth'
-import {Submit, Quill, formItemLayout} from '../../../../components/form'
+import {Submit, formItemLayout} from '../../../../components/form'
 
 const FormItem = Form.Item
+const Option = Select.Option
 
 class Widget extends Component {
   state = {
@@ -28,17 +36,11 @@ class Widget extends Component {
     e.preventDefault();
     this.props.form.validateFields((err, values) => {
       if (!err) {
-        post('/admin/site/home', Object.assign({}, values, {
-          type: 'html',
-          body: this.state.body
-        })).then(() => {
+        post('/admin/site/home', values).then(() => {
           message.success(formatMessage({id: "flash.success"}))
         }).catch(message.error);
       }
     });
-  }
-  handleBodyChange = (value) => {
-    this.setState({body: value})
   }
   render() {
     const {formatMessage} = this.props.intl
@@ -70,7 +72,11 @@ class Widget extends Component {
               }
             </FormItem>
             <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.body" />}>
-              <Quill value={this.state.body} onChange={this.handleBodyChange}/>
+              {
+                getFieldDecorator('home')(<Select>
+                  {this.state.options.map((it) => (<Option key={it} value={it}>{it}</Option>))}
+                </Select>)
+              }
             </FormItem>
             <Submit/>
           </Form>

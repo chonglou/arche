@@ -17,6 +17,16 @@ func (p *Plugin) root() string {
 	return filepath.Join("tmp", "blog")
 }
 
+func (p *Plugin) home(l string, d gin.H, c *gin.Context) error {
+	title, body, err := p.readMD("README-" + l + ".md")
+	if err != nil {
+		return err
+	}
+	d["title"] = title
+	d["body"] = body
+	return nil
+}
+
 func (p *Plugin) index(l string, c *gin.Context) (interface{}, error) {
 	rt := p.root()
 	items := make(map[string]string)
