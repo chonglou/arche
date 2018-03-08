@@ -1,6 +1,7 @@
 package forum
 
 import (
+	"github.com/chonglou/arche/plugins/nut"
 	"github.com/chonglou/arche/web"
 	"github.com/chonglou/arche/web/cache"
 	"github.com/chonglou/arche/web/i18n"
@@ -8,6 +9,7 @@ import (
 	"github.com/chonglou/arche/web/settings"
 	"github.com/chonglou/arche/web/storage"
 	"github.com/facebookgo/inject"
+	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg"
 	"github.com/urfave/cli"
 )
@@ -24,6 +26,9 @@ type Plugin struct {
 	Sitemap  *web.Sitemap       `inject:""`
 	RSS      *web.RSS           `inject:""`
 	DB       *pg.DB             `inject:""`
+	Router   *gin.Engine        `inject:""`
+	Layout   *nut.Layout        `inject:""`
+	HomePage *nut.HomePage      `inject:""`
 }
 
 // Init init beans
@@ -34,11 +39,6 @@ func (p *Plugin) Init(*inject.Graph) error {
 // Shell console commands
 func (p *Plugin) Shell() []cli.Command {
 	return []cli.Command{}
-}
-
-// Mount register
-func (p *Plugin) Mount() error {
-	return nil
 }
 
 func init() {
