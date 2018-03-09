@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	validator "gopkg.in/go-playground/validator.v8"
 )
 
@@ -30,7 +31,7 @@ const (
 )
 
 // HTMLHandlerFunc html handler func
-type HTMLHandlerFunc func(string, gin.H, *gin.Context) error
+type HTMLHandlerFunc func(string, *gin.Context) error
 
 // RedirectHandlerFunc redirect handle func
 type RedirectHandlerFunc func(string, *gin.Context) error
@@ -121,7 +122,6 @@ func (p *Layout) JSON(fn ObjectHandlerFunc) gin.HandlerFunc {
 // HTML render html
 func (p *Layout) HTML(tpl string, fn HTMLHandlerFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		data := gin.H{}
 
 		site := gin.H{}
 		// author
@@ -132,11 +132,10 @@ func (p *Layout) HTML(tpl string, fn HTMLHandlerFunc) gin.HandlerFunc {
 		var favicon string
 		p.Settings.Get(p.DB, "site.favicon", &favicon)
 		site["favicon"] = favicon
-		data["site"] = site
+		c.Set("site", site)
 
 		// i18n
-		data[i18n.LOCALE] = c.MustGet(i18n.LOCALE)
-		data["languages"], _ = p.I18n.Languages()
+		c.Set("languages", viper.GetStringSlice("languages"))
 
 		// flash message
 		ss := sessions.Default(c)
@@ -145,15 +144,15 @@ func (p *Layout) HTML(tpl string, fn HTMLHandlerFunc) gin.HandlerFunc {
 			flashes[k] = ss.Flashes(k)
 		}
 		ss.Save()
-		data["flashes"] = flashes
+		c.Set("flashes", flashes)
 
-		if err := fn(c.MustGet(i18n.LOCALE).(string), data, c); err == nil {
-			c.HTML(http.StatusOK, tpl, data)
+		if err := fn(c.MustGet(i18n.LOCALE).(string), c); err == nil {
+			c.HTML(http.StatusOK, tpl, c.Keys)
 		} else {
 			log.Error(err)
 			status, body := p.detectError(err)
-			data["reason"] = body
-			c.HTML(status, "nut/error", data)
+			c.Set("reason", body)
+			c.HTML(status, "nut/error", c.Keys)
 		}
 	}
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/kapmahc/stardict"
 )
 
-func (p *Plugin) search(_ string, d gin.H, c *gin.Context) error {
+func (p *Plugin) search(_ string, c *gin.Context) error {
 	var items []interface{}
 	if err := p.dict(func(dt *stardict.Dictionary) error {
 		senses := dt.Translate(c.Query("keywords"))
@@ -27,7 +27,7 @@ func (p *Plugin) search(_ string, d gin.H, c *gin.Context) error {
 	}); err != nil {
 		return err
 	}
-	d["results"] = items
+	c.Set("results", items)
 	return nil
 }
 

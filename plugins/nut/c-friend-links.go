@@ -7,13 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (p *Plugin) getFriendLinks(l string, d gin.H, c *gin.Context) error {
+func (p *Plugin) getFriendLinks(l string, c *gin.Context) error {
 	var items []FriendLink
 	if err := p.DB.Model(&items).Column("logo", "title", "home").
 		Order("sort ASC").Select(); err != nil {
 		return err
 	}
-	d["links"] = items
+	c.Set("links", items)
 	return nil
 }
 

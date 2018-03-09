@@ -3,19 +3,20 @@ package nut
 import (
 	"github.com/chonglou/arche/web/i18n"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 )
 
 func (p *Plugin) getHome(ctx *gin.Context) {
 	wrap := func(f HTMLHandlerFunc) HTMLHandlerFunc {
-		return func(l string, d gin.H, c *gin.Context) error {
+		return func(l string, c *gin.Context) error {
 			// google site verify code
 			var googleVerifyCode string
 			p.Settings.Get(p.DB, googleSiteVerification, &googleVerifyCode)
-			d["googleVerifyCode"] = googleVerifyCode
+			c.Set("googleVerifyCode", googleVerifyCode)
 			if f == nil {
 				return nil
 			}
-			return f(l, d, c)
+			return f(l, c)
 		}
 	}
 
@@ -47,7 +48,7 @@ func (p *Plugin) getLayout(l string, c *gin.Context) (interface{}, error) {
 
 	// i18n
 	site[i18n.LOCALE] = l
-	site["languages"], _ = p.I18n.Languages()
+	site["languages"] = viper.GetStringSlice("languages")
 
 	// current-user
 	user, ok := c.Get(CurrentUser)

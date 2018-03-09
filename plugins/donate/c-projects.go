@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (p *Plugin) getProjects(l string, d gin.H, c *gin.Context) error {
+func (p *Plugin) getProjects(l string, c *gin.Context) error {
 	var items []Project
 	if err := p.DB.Model(&items).
 		Column("id", "title").
@@ -15,18 +15,18 @@ func (p *Plugin) getProjects(l string, d gin.H, c *gin.Context) error {
 		Select(); err != nil {
 		return err
 	}
-	d["projects"] = items
+	c.Set("projects", items)
 	return nil
 }
 
-func (p *Plugin) getProject(l string, d gin.H, c *gin.Context) error {
+func (p *Plugin) getProject(l string, c *gin.Context) error {
 	var it Project
 	if err := p.DB.Model(&it).
 		Where("id = ?", c.Param("id")).
 		Select(); err != nil {
 		return err
 	}
-	d["project"] = it
+	c.Set("project", it)
 	return nil
 }
 

@@ -14,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg"
 	"github.com/spf13/viper"
+	"golang.org/x/text/language"
 )
 
 // Plugin plugin
@@ -36,6 +37,11 @@ type Plugin struct {
 }
 
 func init() {
+	viper.SetDefault("languages", []string{
+		language.AmericanEnglish.String(),
+		language.SimplifiedChinese.String(),
+		language.TraditionalChinese.String(),
+	})
 
 	viper.SetDefault("aws", map[string]interface{}{
 		"access_key_id":     "change-me",

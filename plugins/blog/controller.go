@@ -17,13 +17,13 @@ func (p *Plugin) root() string {
 	return filepath.Join("tmp", "blog")
 }
 
-func (p *Plugin) home(l string, d gin.H, c *gin.Context) error {
+func (p *Plugin) home(l string, c *gin.Context) error {
 	title, body, err := p.readMD("README-" + l + ".md")
 	if err != nil {
 		return err
 	}
-	d["title"] = title
-	d["body"] = body
+	c.Set("title", title)
+	c.Set("body", body)
 	return nil
 }
 
@@ -48,33 +48,33 @@ func (p *Plugin) index(l string, c *gin.Context) (interface{}, error) {
 	return items, nil
 }
 
-func (p *Plugin) show(c *gin.Context) {
-	name := c.Param("name")
+func (p *Plugin) show(ctx *gin.Context) {
+	name := ctx.Param("name")
 	if len(name) <= 1 {
 		name = "README.md"
 	} else {
 		name = name[1:]
 	}
 	if filepath.Ext(name) == ext {
-		p.Layout.HTML("blog/show", func(_ string, data gin.H, _ *gin.Context) error {
+		p.Layout.HTML("blog/show", func(_ string, c *gin.Context) error {
 			title, body, err := p.readMD(name)
 			if err != nil {
 				return err
 			}
-			data["title"] = title
-			data["body"] = body
+			c.Set("title", title)
+			c.Set("body", body)
 			return nil
-		})(c)
+		})(ctx)
 		return
 	}
 
 	buf, err := ioutil.ReadFile(filepath.Join(p.root(), name))
 	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 	typ := http.DetectContentType(buf)
-	c.Data(http.StatusOK, typ, buf)
+	ctx.Data(http.StatusOK, typ, buf)
 }
 
 func (p *Plugin) readMD(f string) (string, string, error) {
