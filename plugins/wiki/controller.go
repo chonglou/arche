@@ -1,4 +1,4 @@
-package blog
+package wiki
 
 import (
 	"io/ioutil"
@@ -14,7 +14,7 @@ const (
 )
 
 func (p *Plugin) root() string {
-	return filepath.Join("tmp", "blog")
+	return filepath.Join("tmp", "wiki")
 }
 
 func (p *Plugin) home(l string, c *gin.Context) error {
@@ -40,7 +40,7 @@ func (p *Plugin) index(l string, c *gin.Context) (interface{}, error) {
 		if filepath.Ext(info.Name()) != ext {
 			return nil
 		}
-		items["/blog"+path[len(rt):]] = path[len(rt)+1 : len(path)-len(ext)]
+		items["/wiki"+path[len(rt):]] = path[len(rt)+1 : len(path)-len(ext)]
 		return nil
 	}); err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func (p *Plugin) show(ctx *gin.Context) {
 		name = name[1:]
 	}
 	if filepath.Ext(name) == ext {
-		p.Layout.HTML("blog/show", func(_ string, c *gin.Context) error {
+		p.Layout.HTML("wiki/show", func(_ string, c *gin.Context) error {
 			title, body, err := p.readMD(name)
 			if err != nil {
 				return err
