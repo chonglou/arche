@@ -16,7 +16,6 @@ import (
 	_ "github.com/chonglou/arche/plugins/ops/vpn"
 	_ "github.com/chonglou/arche/plugins/shop"
 	_ "github.com/chonglou/arche/plugins/survey"
-	_ "github.com/chonglou/arche/plugins/wiki"
 	"github.com/chonglou/arche/web"
 )
 

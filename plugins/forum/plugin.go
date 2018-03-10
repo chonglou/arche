@@ -1,5 +1,7 @@
 package forum
 
+// inspired by NodeBB
+
 import (
 	"github.com/chonglou/arche/plugins/nut"
 	"github.com/chonglou/arche/web"

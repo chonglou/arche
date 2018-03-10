@@ -15,6 +15,8 @@ type Tag struct {
 	Color     string    `json:"color"`
 	UpdatedAt time.Time `json:"updatedAt"`
 	CreatedAt time.Time `json:"createdAt"`
+
+	Topics []*Topic `pg:",many2many:forum_topics_tags,joinFK:topic_id"`
 }
 
 // Catalog catalog
@@ -28,6 +30,8 @@ type Catalog struct {
 	Color     string    `json:"color"`
 	UpdatedAt time.Time `json:"updatedAt"`
 	CreatedAt time.Time `json:"createdAt"`
+
+	Posts []*Post
 }
 
 // Post post
@@ -58,8 +62,11 @@ type Topic struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 	CreatedAt time.Time `json:"createdAt"`
 
-	UserID    uint `json:"userId"`
-	User      *nut.User
-	CatalogID uint `json:"catalogId"`
-	Catalog   *Catalog
+	UserID    uint      `json:"userId"`
+	User      *nut.User `json:"user"`
+	CatalogID uint      `json:"catalogId"`
+	Catalog   *Catalog  `json:"catalog"`
+	Posts     []*Post   `json:"posts"`
+
+	Tags []*Tag `pg:",many2many:forum_topics_tags,joinFK:tag_id"`
 }
