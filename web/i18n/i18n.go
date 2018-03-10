@@ -3,20 +3,33 @@ package i18n
 import (
 	"github.com/chonglou/arche/web/cache"
 	"github.com/go-pg/pg"
+	"golang.org/x/text/language"
 )
 
 // New load from database and filesystem
-func New(db *pg.DB, c cache.Cache) *I18n {
-	return &I18n{
-		db:    db,
-		cache: c,
+func New(db *pg.DB, c cache.Cache, langs ...string) (*I18n, error) {
+	var tags []language.Tag
+	for _, l := range langs {
+		t, e := language.Parse(l)
+		if e != nil {
+			return nil, e
+		}
+		tags = append(tags, t)
 	}
+
+	matcher := language.NewMatcher(tags)
+	return &I18n{
+		db:      db,
+		cache:   c,
+		matcher: matcher,
+	}, nil
 }
 
 // I18n i18n
 type I18n struct {
-	db    *pg.DB
-	cache cache.Cache
+	db      *pg.DB
+	cache   cache.Cache
+	matcher language.Matcher
 }
 
 // Languages all available languages
