@@ -2,9 +2,12 @@ package mux
 
 import (
 	"encoding/json"
+	"math"
 	"mime/multipart"
 	"net"
 	"net/http"
+	"reflect"
+	"runtime"
 	"strings"
 
 	"github.com/go-playground/form"
@@ -25,7 +28,31 @@ type Context struct {
 	decoder  *form.Decoder
 	render   *render.Render
 	matcher  language.Matcher
+	handlers []HandlerFunc
 	params   map[string]string
+	payload  H
+	index    uint8
+}
+
+// Get value by key
+func (p *Context) Get(k string) interface{} {
+	return p.payload[k]
+}
+
+// Set value by key
+func (p *Context) Set(k string, v interface{}) {
+	p.payload[k] = v
+}
+
+// Next should be used only inside middleware.
+// It executes the pending handlers in the chain inside the calling handler.
+func (p *Context) Next() {
+	for s := uint8(len(p.handlers)); p.index < s; {
+		f := p.handlers[p.index]
+		p.index++
+		log.Debugf("call %s", runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name())
+		f(p)
+	}
 }
 
 // Home home url
@@ -101,6 +128,11 @@ func (p *Context) Cookie(n string) string {
 	return ""
 }
 
+// SetCookie set cookie
+func (p *Context) SetCookie(ck *http.Cookie) {
+	http.SetCookie(p.Writer, ck)
+}
+
 // Query get query param
 func (p *Context) Query(n string) string {
 	return p.Request.URL.Query().Get(n)
@@ -108,6 +140,7 @@ func (p *Context) Query(n string) string {
 
 // Abort abort
 func (p *Context) Abort(s int, e error) {
+	p.index = math.MaxUint8
 	log.Error(e.Error())
 	p.render.Text(p.Writer, s, e.Error())
 }

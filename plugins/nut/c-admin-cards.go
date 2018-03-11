@@ -9,11 +9,7 @@ import (
 )
 
 func (p *Plugin) indexAdminCards(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
-	l := c.Locale()
+	l := c.Get(mux.LOCALE).(string)
 	var items []Card
 	if err := p.DB.Model(&items).Column("id", "loc", "sort", "title", "href").
 		Where("lang = ?", l).
@@ -37,11 +33,7 @@ type fmCard struct {
 }
 
 func (p *Plugin) createAdminCard(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
-	l := c.Locale()
+	l := c.Get(mux.LOCALE).(string)
 	var fm fmCard
 	if err := c.BindJSON(&fm); err != nil {
 		c.Abort(http.StatusBadRequest, err)
@@ -67,10 +59,6 @@ func (p *Plugin) createAdminCard(c *mux.Context) {
 }
 
 func (p *Plugin) showAdminCard(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	var it = Card{}
 	if err := p.DB.Model(&it).
 		Where("id = ?", c.Param("id")).
@@ -82,10 +70,6 @@ func (p *Plugin) showAdminCard(c *mux.Context) {
 }
 
 func (p *Plugin) updateAdminCard(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.Abort(http.StatusInternalServerError, err)
@@ -126,10 +110,6 @@ func (p *Plugin) updateAdminCard(c *mux.Context) {
 }
 
 func (p *Plugin) destroyAdminCard(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	if _, err := p.DB.Model(new(Card)).
 		Where("id = ?", c.Param("id")).
 		Delete(); err != nil {

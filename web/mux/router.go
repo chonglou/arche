@@ -13,18 +13,17 @@ import (
 	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 	"github.com/unrolled/render"
-	"golang.org/x/text/language"
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
 // NewRouter new router
-func NewRouter(o render.Options, m language.Matcher) *Router {
+func NewRouter(o render.Options) *Router {
 	return &Router{
 		router:   mux.NewRouter(),
 		validate: validator.New(),
 		decoder:  form.NewDecoder(),
 		render:   render.New(o),
-		matcher:  m,
+		handlers: make([]HandlerFunc, 0),
 	}
 }
 
@@ -34,59 +33,68 @@ type Router struct {
 	validate *validator.Validate
 	decoder  *form.Decoder
 	render   *render.Render
-	matcher  language.Matcher
+	handlers []HandlerFunc
+}
+
+// Use using middleware
+func (p *Router) Use(args ...HandlerFunc) {
+	p.handlers = append(p.handlers, args...)
 }
 
 // GET http GET
-func (p *Router) GET(pat string, hnd HandlerFunc) {
-	p.add(http.MethodGet, pat, hnd)
+func (p *Router) GET(pat string, args ...HandlerFunc) {
+	p.add(http.MethodGet, pat, args...)
 }
 
 // POST http POST
-func (p *Router) POST(pat string, hnd HandlerFunc) {
-	p.add(http.MethodPost, pat, hnd)
+func (p *Router) POST(pat string, args ...HandlerFunc) {
+	p.add(http.MethodPost, pat, args...)
 }
 
 // PATCH http PATCH
-func (p *Router) PATCH(pat string, hnd HandlerFunc) {
-	p.add(http.MethodPatch, pat, hnd)
+func (p *Router) PATCH(pat string, args ...HandlerFunc) {
+	p.add(http.MethodPatch, pat, args...)
 }
 
 // PUT http PUT
-func (p *Router) PUT(pat string, hnd HandlerFunc) {
-	p.add(http.MethodPut, pat, hnd)
+func (p *Router) PUT(pat string, args ...HandlerFunc) {
+	p.add(http.MethodPut, pat, args...)
 }
 
 // DELETE http DELETE
-func (p *Router) DELETE(pat string, hnd HandlerFunc) {
-	p.add(http.MethodDelete, pat, hnd)
+func (p *Router) DELETE(pat string, args ...HandlerFunc) {
+	p.add(http.MethodDelete, pat, args...)
 }
 
 // Group sub-router
-func (p *Router) Group(pat string) *Router {
+func (p *Router) Group(pat string, args ...HandlerFunc) *Router {
 	rt := p.router.PathPrefix(pat).Subrouter().StrictSlash(true)
 	return &Router{
 		router:   rt,
 		validate: p.validate,
 		decoder:  p.decoder,
 		render:   p.render,
-		matcher:  p.matcher,
+		handlers: append(p.handlers, args...),
 	}
 }
 
-func (p *Router) add(mat, pat string, hnd HandlerFunc) {
+func (p *Router) add(mat, pat string, args ...HandlerFunc) {
+	handlers := append(p.handlers, args...)
 	p.router.HandleFunc(pat, func(wrt http.ResponseWriter, req *http.Request) {
 		begin := time.Now()
 		log.Infof("%s %s %s %s", req.Proto, req.Method, req.RemoteAddr, req.RequestURI)
-		hnd(&Context{
+		ctx := &Context{
 			Request:  req,
 			Writer:   wrt,
 			validate: p.validate,
 			decoder:  p.decoder,
 			render:   p.render,
-			matcher:  p.matcher,
 			params:   mux.Vars(req),
-		})
+			payload:  H{},
+			handlers: handlers,
+			index:    0,
+		}
+		ctx.Next()
 		log.Info(time.Now().Sub(begin))
 	}).Methods(mat)
 }

@@ -8,11 +8,7 @@ import (
 )
 
 func (p *Plugin) indexAdminLocales(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
-	l := c.Locale()
+	l := c.Get(mux.LOCALE).(string)
 	var items []i18n.Model
 	if err := p.DB.Model(&items).Column("id", "code", "message").
 		Where("lang = ?", l).
@@ -30,16 +26,12 @@ type fmLocale struct {
 }
 
 func (p *Plugin) createAdminLocale(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	var fm fmLocale
 	if err := c.BindJSON(&fm); err != nil {
 		c.Abort(http.StatusBadRequest, err)
 		return
 	}
-	l := c.Locale()
+	l := c.Get(mux.LOCALE).(string)
 	if err := p.I18n.Set(p.DB, l, fm.Code, fm.Message); err != nil {
 		c.Abort(http.StatusInternalServerError, err)
 		return
@@ -48,10 +40,6 @@ func (p *Plugin) createAdminLocale(c *mux.Context) {
 }
 
 func (p *Plugin) showAdminLocale(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	var it i18n.Model
 	if err := p.DB.Model(&it).
 		Where("id = ?", c.Param("id")).
@@ -63,10 +51,6 @@ func (p *Plugin) showAdminLocale(c *mux.Context) {
 }
 
 func (p *Plugin) destroyAdminLocale(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	if _, err := p.DB.Model(new(i18n.Model)).
 		Where("id = ?", c.Param("id")).Delete(); err != nil {
 		c.Abort(http.StatusInternalServerError, err)

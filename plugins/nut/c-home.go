@@ -8,7 +8,7 @@ import (
 )
 
 func (p *Plugin) getLayout(c *mux.Context) {
-	l := c.Locale()
+	l := c.Get(mux.LOCALE).(string)
 	// site info
 	site := mux.H{}
 	for _, k := range []string{"title", "subhead", "keywords", "description", "copyright"} {
@@ -28,9 +28,9 @@ func (p *Plugin) getLayout(c *mux.Context) {
 	site["languages"] = viper.GetStringSlice("languages")
 
 	// current-user
-	user, err := p.Layout.CurrentUser(c)
+	user, ok := c.Get(CurrentUser).(*User)
 	// nav
-	if err == nil {
+	if ok {
 		site["user"] = mux.H{
 			"name":  user.Name,
 			"type":  user.ProviderType,

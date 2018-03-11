@@ -24,10 +24,6 @@ func (p *Plugin) createLeaveWord(c *mux.Context) {
 }
 
 func (p *Plugin) indexAdminLeaveWords(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	var items []LeaveWord
 	if err := p.DB.Model(&items).Order("created_at DESC").Select(); err != nil {
 		c.Abort(http.StatusInternalServerError, err)
@@ -42,10 +38,6 @@ type fmLeaveWord struct {
 }
 
 func (p *Plugin) destroyAdminLeaveWord(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	if _, err := p.DB.Model(new(LeaveWord)).
 		Where("id = ?", c.Param("id")).
 		Delete(); err != nil {

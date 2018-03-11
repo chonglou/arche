@@ -1,57 +1,38 @@
 package nut
 
 import (
-	"fmt"
-
 	"github.com/chonglou/arche/web/queue"
-	"github.com/ikeikeikeike/go-sitemap-generator/stm"
-	"github.com/spf13/viper"
 )
-
-func (p *Plugin) sitemap() ([]stm.URL, error) {
-	var items []stm.URL
-	for _, l := range viper.GetStringSlice("languages") {
-		items = append(
-			items,
-			stm.URL{
-				"loc": fmt.Sprintf("/?locale=%s", l),
-			},
-			stm.URL{
-				"loc": fmt.Sprintf("/rss/%s", l),
-			},
-		)
-	}
-	items = append(items, stm.URL{"loc": "/friend-links"})
-	return items, nil
-}
 
 // Mount register
 func (p *Plugin) Mount() error {
+	p.Router.Use(p.Layout.CurrentUserMiddleware)
 	p.Router.GET("/locales/{lang}", p.getLocales)
 	p.Router.GET("/layout", p.getLayout)
 	p.Router.POST("/leave-words", p.createLeaveWord)
 
-	ug := p.Router.Group("/users")
-	ug.POST("/sign-in", p.postUsersSignIn)
-	ug.POST("/sign-up", p.postUsersSignUp)
-	ug.POST("/confirm", p.postUsersConfirm)
-	ug.POST("/unlock", p.postUsersUnlock)
-	ug.POST("/forgot-password", p.postUsersForgotPassword)
-	ug.POST("/reset-password", p.postUsersResetPassword)
-	ug.GET("/confirm/{token}", p.getUsersConfirmToken)
-	ug.GET("/unlock/{token}", p.getUsersUnlockToken)
-	ug.GET("/logs", p.getUsersLogs)
-	ug.GET("/profile", p.getUsersProfile)
-	ug.POST("/profile", p.postUsersProfile)
-	ug.POST("/change-password", p.postUsersChangePassword)
-	ug.DELETE("/sign-out", p.deleteUsersSignOut)
+	ung := p.Router.Group("/users")
+	ung.POST("/sign-in", p.postUsersSignIn)
+	ung.POST("/sign-up", p.postUsersSignUp)
+	ung.POST("/confirm", p.postUsersConfirm)
+	ung.POST("/unlock", p.postUsersUnlock)
+	ung.POST("/forgot-password", p.postUsersForgotPassword)
+	ung.POST("/reset-password", p.postUsersResetPassword)
+	ung.GET("/confirm/{token}", p.getUsersConfirmToken)
+	ung.GET("/unlock/{token}", p.getUsersUnlockToken)
+	umg := p.Router.Group("/users", p.Layout.MustSignInMiddleware)
+	umg.GET("/logs", p.getUsersLogs)
+	umg.GET("/profile", p.getUsersProfile)
+	umg.POST("/profile", p.postUsersProfile)
+	umg.POST("/change-password", p.postUsersChangePassword)
+	umg.DELETE("/sign-out", p.deleteUsersSignOut)
 
-	atg := p.Router.Group("/attachments")
+	atg := p.Router.Group("/attachments", p.Layout.MustSignInMiddleware)
 	atg.GET("/", p.indexAttachments)
 	atg.POST("/attachments", p.createAttachments)
 	atg.DELETE("/attachments/{id}", p.destroyAttachments)
 
-	ag := p.Router.Group("/admin")
+	ag := p.Router.Group("/admin", p.Layout.MustAdminMiddleware)
 	ag.GET("/site/status", p.getAdminSiteStatus)
 	ag.DELETE("/site/clear-cache", p.deleteAdminSiteClearCache)
 	ag.POST("/site/info", p.postAdminSiteInfo)

@@ -17,12 +17,8 @@ import (
 )
 
 func (p *Plugin) deleteUsersSignOut(c *mux.Context) {
-	user, err := p.Layout.CurrentUser(c)
-	if err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
-	l := c.Locale()
+	user := c.Get(CurrentUser).(*User)
+	l := c.Get(mux.LOCALE).(string)
 	if err := p.Dao.AddLog(p.DB, user.ID, c.ClientIP(), l, "nut.logs.user.sign-out"); err != nil {
 		c.Abort(http.StatusInternalServerError, err)
 		return
@@ -31,11 +27,7 @@ func (p *Plugin) deleteUsersSignOut(c *mux.Context) {
 }
 
 func (p *Plugin) getUsersProfile(c *mux.Context) {
-	user, err := p.Layout.CurrentUser(c)
-	if err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
+	user := c.Get(CurrentUser).(*User)
 	c.JSON(http.StatusOK, mux.H{
 		"name":  user.Name,
 		"email": user.Email,
@@ -49,11 +41,7 @@ type fmUserProfile struct {
 }
 
 func (p *Plugin) postUsersProfile(c *mux.Context) {
-	user, err := p.Layout.CurrentUser(c)
-	if err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
+	user := c.Get(CurrentUser).(*User)
 	var fm fmUserProfile
 	if err := c.BindJSON(&fm); err != nil {
 		c.Abort(http.StatusBadRequest, err)
@@ -78,18 +66,14 @@ type fmUserChangePassword struct {
 }
 
 func (p *Plugin) postUsersChangePassword(c *mux.Context) {
-	user, err := p.Layout.CurrentUser(c)
-	if err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
+	user := c.Get(CurrentUser).(*User)
 	var fm fmUserChangePassword
 	if err := c.BindJSON(&fm); err != nil {
 		c.Abort(http.StatusBadRequest, err)
 		return
 	}
 	ip := c.ClientIP()
-	l := c.Locale()
+	l := c.Get(mux.LOCALE).(string)
 	if !p.Security.Check(user.Password, []byte(fm.CurrentPassword)) {
 		c.Abort(http.StatusBadRequest, p.I18n.E(l, "nut.errors.user.email-password-not-match"))
 		return
@@ -118,11 +102,7 @@ func (p *Plugin) postUsersChangePassword(c *mux.Context) {
 }
 
 func (p *Plugin) getUsersLogs(c *mux.Context) {
-	user, err := p.Layout.CurrentUser(c)
-	if err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
+	user := c.Get(CurrentUser).(*User)
 	var items []Log
 	if err := p.DB.Model(&items).
 		Where("user_id = ?", user.ID).
@@ -145,7 +125,7 @@ func (p *Plugin) postUsersSignIn(c *mux.Context) {
 		return
 	}
 	cm := make(jws.Claims)
-	l := c.Locale()
+	l := c.Get(mux.LOCALE).(string)
 	if err := p.DB.RunInTransaction(func(db *pg.Tx) error {
 		user, err := p.Dao.SignIn(db, l, c.ClientIP(), fm.Email, fm.Password)
 		if err != nil {
@@ -183,7 +163,7 @@ func (p *Plugin) postUsersSignUp(c *mux.Context) {
 	}
 
 	ip := c.ClientIP()
-	l := c.Locale()
+	l := c.Get(mux.LOCALE).(string)
 	if err := p.DB.RunInTransaction(func(db *pg.Tx) error {
 		user, err := p.Dao.AddEmailUser(db, l, ip, fm.Name, fm.Email, fm.Password)
 		if err != nil {
@@ -217,7 +197,7 @@ func (p *Plugin) postUsersConfirm(c *mux.Context) {
 		c.Abort(http.StatusInternalServerError, err)
 		return
 	}
-	l := c.Locale()
+	l := c.Get(mux.LOCALE).(string)
 	if user.IsConfirm() {
 		c.Abort(http.StatusForbidden, p.I18n.E(l, "nut.errors.user-already-confirm"))
 		return
@@ -241,7 +221,7 @@ func (p *Plugin) postUsersUnlock(c *mux.Context) {
 		c.Abort(http.StatusInternalServerError, err)
 		return
 	}
-	l := c.Locale()
+	l := c.Get(mux.LOCALE).(string)
 	if !user.IsLock() {
 		c.Abort(http.StatusInternalServerError, p.I18n.E(l, "nut.errors.user.not-lock"))
 		return
@@ -265,7 +245,7 @@ func (p *Plugin) postUsersForgotPassword(c *mux.Context) {
 		c.Abort(http.StatusInternalServerError, err)
 		return
 	}
-	l := c.Locale()
+	l := c.Get(mux.LOCALE).(string)
 	if err := p.sendEmail(c, l, user, actResetPassword); err != nil {
 		log.Error(err)
 	}
@@ -290,7 +270,7 @@ func (p *Plugin) postUsersResetPassword(c *mux.Context) {
 		c.Abort(http.StatusBadRequest, err)
 		return
 	}
-	l := c.Locale()
+	l := c.Get(mux.LOCALE).(string)
 	if cm.Get("act").(string) != actResetPassword {
 		c.Abort(http.StatusInternalServerError, p.I18n.E(l, "errors.bad-action"))
 		return
@@ -329,7 +309,7 @@ func (p *Plugin) getUsersConfirmToken(c *mux.Context) {
 		c.Abort(http.StatusBadRequest, err)
 		return
 	}
-	l := c.Locale()
+	l := c.Get(mux.LOCALE).(string)
 	if cm.Get("act").(string) != actConfirm {
 		c.Abort(http.StatusBadRequest, p.I18n.E(l, "errors.bad-action"))
 		return
@@ -369,7 +349,7 @@ func (p *Plugin) getUsersUnlockToken(c *mux.Context) {
 		c.Abort(http.StatusBadRequest, err)
 		return
 	}
-	l := c.Locale()
+	l := c.Get(mux.LOCALE).(string)
 	if cm.Get("act").(string) != actUnlock {
 		c.Abort(http.StatusBadRequest, p.I18n.E(l, "errors.bad-action"))
 		return

@@ -9,11 +9,7 @@ import (
 )
 
 func (p *Plugin) indexAdminLinks(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
-	l := c.Locale()
+	l := c.Get(mux.LOCALE).(string)
 	var items []Link
 	if err := p.DB.Model(&items).Column("id", "label", "href", "loc", "x", "y").
 		Where("lang = ?", l).
@@ -34,16 +30,12 @@ type fmLink struct {
 }
 
 func (p *Plugin) createAdminLink(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	var fm fmLink
 	if err := c.BindJSON(&fm); err != nil {
 		c.Abort(http.StatusBadRequest, err)
 		return
 	}
-	l := c.Locale()
+	l := c.Get(mux.LOCALE).(string)
 	it := Link{
 		Href:      fm.Href,
 		Label:     fm.Label,
@@ -61,10 +53,6 @@ func (p *Plugin) createAdminLink(c *mux.Context) {
 }
 
 func (p *Plugin) showAdminLink(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	var it = Link{}
 	if err := p.DB.Model(&it).
 		Where("id = ?", c.Param("id")).
@@ -76,10 +64,6 @@ func (p *Plugin) showAdminLink(c *mux.Context) {
 }
 
 func (p *Plugin) updateAdminLink(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.Abort(http.StatusBadRequest, err)
@@ -111,10 +95,6 @@ func (p *Plugin) updateAdminLink(c *mux.Context) {
 }
 
 func (p *Plugin) destroyAdminLink(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	if _, err := p.DB.Model(new(Link)).
 		Where("id = ?", c.Param("id")).
 		Delete(); err != nil {

@@ -9,18 +9,11 @@ import (
 )
 
 func (p *Plugin) indexAttachments(c *mux.Context) {
-	user, err := p.Layout.CurrentUser(c)
-	if err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
-
 	var items []Attachment
-	db := p.DB.Model(&items).Column("id", "title", "url", "media_type")
-	if !p.Dao.Is(p.DB, user.ID, RoleAdmin) {
-		db = db.Where("user_id = ?", user.ID)
-	}
-	if err := db.Order("updated_at DESC").Select(); err != nil {
+	if err := p.DB.Model(&items).
+		Column("id", "title", "url", "media_type", "user_id").
+		Order("updated_at DESC").
+		Select(); err != nil {
 		c.Abort(http.StatusInternalServerError, err)
 		return
 	}
@@ -28,11 +21,7 @@ func (p *Plugin) indexAttachments(c *mux.Context) {
 }
 
 func (p *Plugin) createAttachments(c *mux.Context) {
-	user, err := p.Layout.CurrentUser(c)
-	if err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
+	user := c.Get(CurrentUser).(*User)
 	file, err := c.FormFile("file")
 	if err != nil {
 		c.Abort(http.StatusBadRequest, err)
@@ -72,18 +61,15 @@ func (p *Plugin) createAttachments(c *mux.Context) {
 }
 
 func (p *Plugin) destroyAttachments(c *mux.Context) {
-	user, err := p.Layout.CurrentUser(c)
-	if err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
+	user := c.Get(CurrentUser).(*User)
+	admin := c.Get(IsAdmin).(bool)
 	var it Attachment
 	if err := p.DB.Model(&it).Where("id = ?", c.Param("id")).Select(); err != nil {
 		c.Abort(http.StatusInternalServerError, err)
 		return
 	}
-	l := c.Locale()
-	if it.UserID != user.ID && !p.Dao.Is(p.DB, user.ID, RoleAdmin) {
+	l := c.Get(mux.LOCALE).(string)
+	if it.UserID != user.ID && !admin {
 		c.Abort(http.StatusForbidden, p.I18n.E(l, "nut.errors.not-allow"))
 		return
 	}

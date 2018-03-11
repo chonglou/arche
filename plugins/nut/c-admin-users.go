@@ -7,10 +7,6 @@ import (
 )
 
 func (p *Plugin) indexAdminUsers(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	var items []User
 	if err := p.DB.Model(&items).Column(
 		"id", "email", "name", "provider_type", "logo",

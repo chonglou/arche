@@ -20,10 +20,6 @@ import (
 )
 
 func (p *Plugin) deleteAdminSiteClearCache(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	if err := p.Cache.Clear(); err != nil {
 		c.Abort(http.StatusInternalServerError, err)
 		return
@@ -32,10 +28,6 @@ func (p *Plugin) deleteAdminSiteClearCache(c *mux.Context) {
 }
 
 func (p *Plugin) getAdminSiteHome(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	var favicon string
 	p.Settings.Get(p.DB, "site.favicon", &favicon)
 	var theme string
@@ -52,10 +44,6 @@ type fmSiteHome struct {
 }
 
 func (p *Plugin) postAdminSiteHome(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	var fm fmSiteHome
 	if err := c.BindJSON(&fm); err != nil {
 		c.Abort(http.StatusBadRequest, err)
@@ -80,10 +68,6 @@ func (p *Plugin) postAdminSiteHome(c *mux.Context) {
 }
 
 func (p *Plugin) getAdminSiteSMTP(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	var smtp map[string]interface{}
 	if err := p.Settings.Get(p.DB, "site.smtp", &smtp); err == nil {
 		delete(smtp, "password")
@@ -106,10 +90,6 @@ type fmSiteSMTP struct {
 }
 
 func (p *Plugin) postAdminSiteSMTP(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	var fm fmSiteSMTP
 	if err := c.BindJSON(&fm); err != nil {
 		c.Abort(http.StatusBadRequest, err)
@@ -128,16 +108,12 @@ func (p *Plugin) postAdminSiteSMTP(c *mux.Context) {
 }
 
 func (p *Plugin) patchAdminSiteSMTP(c *mux.Context) {
-	user, err := p.Layout.IsAdmin(c)
-	if err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	var fm fmSiteSMTP
 	if err := c.BindJSON(&fm); err != nil {
 		c.Abort(http.StatusBadRequest, err)
 		return
 	}
+	user := c.Get(CurrentUser).(*User)
 
 	msg := gomail.NewMessage()
 	msg.SetHeader("From", fm.Username)
@@ -164,10 +140,6 @@ const (
 )
 
 func (p *Plugin) getAdminSiteSeo(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	var googleVerifyCode string
 	p.Settings.Get(p.DB, googleSiteVerification, &googleVerifyCode)
 	c.JSON(http.StatusOK, mux.H{
@@ -180,10 +152,6 @@ type fmSiteSeo struct {
 }
 
 func (p *Plugin) postAdminSiteSeo(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	var fm fmSiteSeo
 	if err := c.BindJSON(&fm); err != nil {
 		c.Abort(http.StatusBadRequest, err)
@@ -211,10 +179,6 @@ type fmSiteAuthor struct {
 }
 
 func (p *Plugin) postAdminSiteAuthor(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	var fm fmSiteAuthor
 	if err := c.BindJSON(&fm); err != nil {
 		c.Abort(http.StatusBadRequest, err)
@@ -239,16 +203,12 @@ type fmSiteInfo struct {
 }
 
 func (p *Plugin) postAdminSiteInfo(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	var fm fmSiteInfo
 	if err := c.BindJSON(&fm); err != nil {
 		c.Abort(http.StatusBadRequest, err)
 		return
 	}
-	l := c.Locale()
+	l := c.Get(mux.LOCALE).(string)
 	if err := p.DB.RunInTransaction(func(db *pg.Tx) error {
 		for k, v := range map[string]string{
 			"title":       fm.Title,
@@ -270,10 +230,6 @@ func (p *Plugin) postAdminSiteInfo(c *mux.Context) {
 }
 
 func (p *Plugin) getAdminSiteStatus(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	ret := mux.H{
 		"queue":  queue.Handlers(),
 		"routes": p._routes(),

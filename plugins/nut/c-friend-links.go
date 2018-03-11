@@ -9,10 +9,6 @@ import (
 )
 
 func (p *Plugin) indexAdminFriendLinks(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	var items []FriendLink
 	if err := p.DB.Model(&items).Order("sort ASC").Select(); err != nil {
 		c.Abort(http.StatusInternalServerError, err)
@@ -29,10 +25,6 @@ type fmFriendLink struct {
 }
 
 func (p *Plugin) createAdminFriendLink(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	var fm fmFriendLink
 	if err := c.BindJSON(&fm); err != nil {
 		c.Abort(http.StatusBadRequest, err)
@@ -53,10 +45,6 @@ func (p *Plugin) createAdminFriendLink(c *mux.Context) {
 }
 
 func (p *Plugin) showAdminFriendLink(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	var it = FriendLink{}
 	if err := p.DB.Model(&it).Where("id = ?", c.Param("id")).Select(); err != nil {
 		c.Abort(http.StatusInternalServerError, err)
@@ -66,10 +54,6 @@ func (p *Plugin) showAdminFriendLink(c *mux.Context) {
 }
 
 func (p *Plugin) updateAdminFriendLink(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.Abort(http.StatusBadRequest, err)
@@ -99,10 +83,6 @@ func (p *Plugin) updateAdminFriendLink(c *mux.Context) {
 }
 
 func (p *Plugin) destroyAdminFriendLink(c *mux.Context) {
-	if _, err := p.Layout.IsAdmin(c); err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
 	if _, err := p.DB.Model(new(FriendLink)).
 		Where("id = ?", c.Param("id")).
 		Delete(); err != nil {

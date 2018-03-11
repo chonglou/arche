@@ -111,9 +111,11 @@ func (p *Plugin) openRouter() (*mux.Router, error) {
 		langs = append(langs, t)
 	}
 
-	return mux.NewRouter(render.Options{
+	rt := mux.NewRouter(render.Options{
 		IsDevelopment: false,
-	}, language.NewMatcher(langs)), nil
+	})
+	rt.Use(mux.LocaleMiddleware(language.NewMatcher(langs)))
+	return rt, nil
 }
 
 // Init init beans
