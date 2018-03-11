@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-playground/form"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 	"github.com/unrolled/render"
 	"golang.org/x/text/language"
@@ -97,11 +98,9 @@ func (p *Router) Walk(f func(methods []string, pattern string) error) error {
 		if err != nil {
 			return err
 		}
+
 		mtd, err := route.GetMethods()
-		if err != nil {
-			return err
-		}
-		if len(mtd) == 0 {
+		if err != nil || len(mtd) == 0 {
 			return nil
 		}
 		return f(mtd, pat)
@@ -109,32 +108,32 @@ func (p *Router) Walk(f func(methods []string, pattern string) error) error {
 }
 
 // Listen listen
-func (p *Router) Listen(port int, grace bool) error {
+func (p *Router) Listen(port int, debug bool, origins ...string) error {
 	log.Infof(
 		"application starting on http://localhost:%d",
 		port,
 	)
 	var hnd http.Handler = p.router
 
-	// hnd = cors.New(cors.Options{
-	// 	AllowedOrigins: viper.GetStringSlice("server.origins"),
-	// 	AllowedMethods: []string{
-	// 		http.MethodGet,
-	// 		http.MethodPost,
-	// 		http.MethodPatch,
-	// 		http.MethodPut,
-	// 		http.MethodDelete,
-	// 	},
-	// 	AllowedHeaders:   []string{"Authorization", "X-Requested-With"},
-	// 	AllowCredentials: true,
-	// 	Debug:            true,
-	// }).Handler(hnd)
+	hnd = cors.New(cors.Options{
+		AllowedOrigins: origins,
+		AllowedMethods: []string{
+			http.MethodGet,
+			http.MethodPost,
+			http.MethodPatch,
+			http.MethodPut,
+			http.MethodDelete,
+		},
+		AllowedHeaders:   []string{"Authorization", "X-Requested-With"},
+		AllowCredentials: true,
+		Debug:            debug,
+	}).Handler(hnd)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
 		Handler: hnd,
 	}
-	if !grace {
+	if debug {
 		return srv.ListenAndServe()
 	}
 

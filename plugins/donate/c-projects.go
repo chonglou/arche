@@ -1,49 +1,24 @@
 package donate
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/chonglou/arche/plugins/nut"
-	"github.com/gin-gonic/gin"
+	"github.com/chonglou/arche/web/mux"
 )
 
-func (p *Plugin) getProjects(l string, c *gin.Context) error {
+func (p *Plugin) indexProjects(c *mux.Context) {
 	var items []Project
+
 	if err := p.DB.Model(&items).
 		Column("id", "title").
 		Order("updated_at DESC").
 		Select(); err != nil {
-		return err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	c.Set("projects", items)
-	return nil
-}
-
-func (p *Plugin) getProject(l string, c *gin.Context) error {
-	var it Project
-	if err := p.DB.Model(&it).
-		Where("id = ?", c.Param("id")).
-		Select(); err != nil {
-		return err
-	}
-	c.Set("project", it)
-	return nil
-}
-
-// -----------------------------------------------------------------------------
-
-func (p *Plugin) indexProjects(l string, c *gin.Context) (interface{}, error) {
-	user := c.MustGet(nut.CurrentUser).(*nut.User)
-	admin := c.MustGet(nut.IsAdmin).(bool)
-	var items []Project
-	qry := p.DB.Model(&items).Column("id", "title")
-	if !admin {
-		qry = qry.Where("user_id", user.ID)
-	}
-	if err := qry.Order("updated_at DESC").Select(); err != nil {
-		return nil, err
-	}
-	return items, nil
+	c.JSON(http.StatusOK, items)
 }
 
 type fmProject struct {
@@ -53,11 +28,16 @@ type fmProject struct {
 	Methods string `json:"methods" binding:"required"`
 }
 
-func (p *Plugin) createProject(l string, c *gin.Context) (interface{}, error) {
-	user := c.MustGet(nut.CurrentUser).(*nut.User)
+func (p *Plugin) createProject(c *mux.Context) {
+	user, err := p.Layout.CurrentUser(c)
+	if err != nil {
+		c.Abort(http.StatusInternalServerError, err)
+		return
+	}
 	var fm fmProject
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
 	it := Project{
 		Title:     fm.Title,
@@ -68,24 +48,32 @@ func (p *Plugin) createProject(l string, c *gin.Context) (interface{}, error) {
 		UpdatedAt: time.Now(),
 	}
 	if err := p.DB.Insert(&it); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return it, nil
+	c.JSON(http.StatusOK, it)
 }
 
-func (p *Plugin) showProject(l string, c *gin.Context) (interface{}, error) {
-	it, err := p.canEditProject(l, c)
-	return it, err
+func (p *Plugin) showProject(c *mux.Context) {
+	var it Project
+	if err := p.DB.Model(&it).Where("id = ?", c.Param("id")).
+		Select(); err != nil {
+		c.Abort(http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, it)
 }
 
-func (p *Plugin) updateProject(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) updateProject(c *mux.Context) {
 	var fm fmProject
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
-	it, err := p.canEditProject(l, c)
+	it, err := p.canEditProject(c)
 	if err != nil {
-		return nil, err
+		c.Abort(http.StatusForbidden, err)
+		return
 	}
 
 	it.Title = fm.Title
@@ -97,32 +85,38 @@ func (p *Plugin) updateProject(l string, c *gin.Context) (interface{}, error) {
 	if _, err := p.DB.Model(it).
 		Column("title", "body", "type", "methods", "updated_at").
 		Update(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }
 
-func (p *Plugin) destroyProject(l string, c *gin.Context) (interface{}, error) {
-	it, err := p.canEditProject(l, c)
+func (p *Plugin) destroyProject(c *mux.Context) {
+	it, err := p.canEditProject(c)
 	if err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
 	if err := p.DB.Delete(it); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
 	}
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }
 
-func (p *Plugin) canEditProject(l string, c *gin.Context) (*Project, error) {
+func (p *Plugin) canEditProject(c *mux.Context) (*Project, error) {
 	var it Project
 	if err := p.DB.Model(&it).Where("id = ?", c.Param("id")).
 		Select(); err != nil {
 		return nil, err
 	}
-	user := c.MustGet(nut.CurrentUser).(*nut.User)
-	admin := c.MustGet(nut.IsAdmin).(bool)
-	if it.UserID == user.ID || admin {
-		return &it, nil
+	l := c.Locale()
+	user, err := p.Layout.CurrentUser(c)
+	if err != nil {
+		return nil, err
 	}
-	return nil, p.I18n.E(l, "errors.not-allow")
+
+	if it.UserID != user.ID && p.Dao.Is(p.DB, user.ID, nut.RoleAdmin) {
+		return nil, p.I18n.E(l, "errors.not-allow")
+	}
+	return &it, nil
 }

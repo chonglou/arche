@@ -27,8 +27,6 @@ type Plugin struct {
 	Settings *settings.Settings `inject:""`
 	Security *web.Security      `inject:""`
 	Storage  storage.Storage    `inject:""`
-	Sitemap  *web.Sitemap       `inject:""`
-	RSS      *web.RSS           `inject:""`
 	DB       *pg.DB             `inject:""`
 }
 

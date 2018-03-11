@@ -8,7 +8,7 @@ import (
 	_ "github.com/chonglou/arche/plugins/cbeta"
 	_ "github.com/chonglou/arche/plugins/dict"
 	_ "github.com/chonglou/arche/plugins/donate"
-	_ "github.com/chonglou/arche/plugins/forum"
+	// _ "github.com/chonglou/arche/plugins/forum"
 	_ "github.com/chonglou/arche/plugins/hotel"
 	_ "github.com/chonglou/arche/plugins/library"
 	_ "github.com/chonglou/arche/plugins/nut"

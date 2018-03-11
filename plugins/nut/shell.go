@@ -165,6 +165,10 @@ func (p *Plugin) Shell() []cli.Command {
 							Name:  "https, s",
 							Usage: "enable HTTP secure?",
 						},
+						cli.StringFlag{
+							Name:  "name, n",
+							Usage: "hostname, like: change-me.com",
+						},
 					},
 					Action: web.ConfigAction(p.generateNginxConf),
 				},
@@ -326,9 +330,11 @@ func (p *Plugin) Shell() []cli.Command {
 					}
 				}()
 				// -------
+				origins := viper.GetStringSlice("server.origins")
 				return p.Router.Listen(
 					viper.GetInt("server.port"),
-					viper.GetString("env") == web.PRODUCTION,
+					viper.GetString("env") != web.PRODUCTION,
+					origins...,
 				)
 			}),
 		},
@@ -339,11 +345,10 @@ func (p *Plugin) Shell() []cli.Command {
 			Action: web.InjectAction(func(_ *cli.Context) error {
 				tpl := "%-16s %s\n"
 				fmt.Printf(tpl, "METHODS", "PATH")
-				p.Router.Walk(func(methods []string, pattern string) error {
+				return p.Router.Walk(func(methods []string, pattern string) error {
 					fmt.Printf(tpl, strings.Join(methods, ","), pattern)
 					return nil
 				})
-				return nil
 			}),
 		},
 		{
@@ -370,7 +375,11 @@ func (p *Plugin) generateNginxConf(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	name := viper.GetString("server.name")
+	name := c.String("name")
+	if name == "" {
+		cli.ShowSubcommandHelp(c)
+		return nil
+	}
 
 	fn := path.Join("tmp", "etc", "nginx", "sites-enabled", name+".conf")
 	if err = os.MkdirAll(path.Dir(fn), 0700); err != nil {
@@ -389,17 +398,15 @@ func (p *Plugin) generateNginxConf(c *cli.Context) error {
 	}
 
 	return tpl.Execute(fd, struct {
-		Port  int
-		Root  string
-		Name  string
-		Theme string
-		Ssl   bool
+		Port int
+		Root string
+		Name string
+		Ssl  bool
 	}{
-		Name:  name,
-		Port:  viper.GetInt("server.port"),
-		Theme: viper.GetString("server.theme"),
-		Root:  pwd,
-		Ssl:   c.Bool("https"),
+		Name: name,
+		Port: viper.GetInt("server.port"),
+		Root: pwd,
+		Ssl:  c.Bool("https"),
 	})
 }
 func (p *Plugin) generateSsl(c *cli.Context) error {

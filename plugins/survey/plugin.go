@@ -6,7 +6,6 @@ import (
 	"github.com/chonglou/arche/web/i18n"
 	"github.com/chonglou/arche/web/queue"
 	"github.com/chonglou/arche/web/settings"
-	"github.com/chonglou/arche/web/storage"
 	"github.com/facebookgo/inject"
 	"github.com/go-pg/pg"
 	"github.com/urfave/cli"
@@ -20,9 +19,6 @@ type Plugin struct {
 	Queue    queue.Queue        `inject:""`
 	Settings *settings.Settings `inject:""`
 	Security *web.Security      `inject:""`
-	Storage  storage.Storage    `inject:""`
-	Sitemap  *web.Sitemap       `inject:""`
-	RSS      *web.RSS           `inject:""`
 	DB       *pg.DB             `inject:""`
 }
 

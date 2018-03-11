@@ -2,6 +2,7 @@ package web
 
 import (
 	"encoding/base64"
+	"fmt"
 	"log/syslog"
 
 	"github.com/facebookgo/inject"
@@ -49,7 +50,10 @@ func ConfigAction(f cli.ActionFunc) cli.ActionFunc {
 		if MODE() == PRODUCTION {
 			// ----------
 			log.SetLevel(log.InfoLevel)
-			wrt, err := syslog.New(syslog.LOG_INFO, viper.GetString("server.name"))
+			wrt, err := syslog.New(
+				syslog.LOG_INFO,
+				fmt.Sprintf(":%d", viper.GetInt("server.port")),
+			)
 			if err != nil {
 				return err
 			}
