@@ -1,0 +1,12 @@
+[submodule "themes/ananke"]
+	path = themes/ananke
+	url = https://github.com/budparr/gohugo-theme-ananke.git
+[submodule "themes/even"]
+	path = themes/even
+	url = https://github.com/olOwOlo/hugo-theme-even
+[submodule "themes/kube"]
+	path = themes/kube
+	url = https://github.com/jeblister/kube.git
+[submodule "themes/initio"]
+	path = themes/initio
+	url = https://github.com/miguelsimoni/hugo-initio.git

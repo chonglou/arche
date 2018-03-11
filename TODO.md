@@ -5,3 +5,5 @@
 -   Markdown preview
 -   cron build site
 -   React 管理资源
+
+-   自定制 exampleSite/config.toml

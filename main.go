@@ -17,6 +17,10 @@ import (
 	// _ "github.com/chonglou/arche/plugins/shop"
 	// _ "github.com/chonglou/arche/plugins/survey"
 	"github.com/chonglou/arche/web"
+	_ "github.com/chonglou/arche/web/hugo/ananke"
+	_ "github.com/chonglou/arche/web/hugo/even"
+	_ "github.com/chonglou/arche/web/hugo/initio"
+	_ "github.com/chonglou/arche/web/hugo/kube"
 )
 
 func main() {
