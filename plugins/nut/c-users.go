@@ -3,34 +3,44 @@ package nut
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/SermoDigital/jose/jws"
 	"github.com/chonglou/arche/web"
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-gonic/gin"
+	"github.com/chonglou/arche/web/mux"
+	"github.com/chonglou/arche/web/queue"
 	"github.com/go-pg/pg"
-	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	gomail "gopkg.in/gomail.v2"
 )
 
-func (p *Plugin) deleteUsersSignOut(l string, c *gin.Context) (interface{}, error) {
-	user := c.MustGet(CurrentUser).(*User)
-	if err := p.Dao.AddLog(p.DB, user.ID, c.ClientIP(), l, "nut.logs.user.sign-out"); err != nil {
-		return nil, err
+func (p *Plugin) deleteUsersSignOut(c *mux.Context) {
+	user, err := p.Layout.CurrentUser(c)
+	if err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
 	}
-	return gin.H{}, nil
+	l := c.Locale()
+	if err := p.Dao.AddLog(p.DB, user.ID, c.ClientIP(), l, "nut.logs.user.sign-out"); err != nil {
+		c.Abort(http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, mux.H{})
 }
 
-func (p *Plugin) getUsersProfile(l string, c *gin.Context) (interface{}, error) {
-	user := c.MustGet(CurrentUser).(*User)
-	return gin.H{
+func (p *Plugin) getUsersProfile(c *mux.Context) {
+	user, err := p.Layout.CurrentUser(c)
+	if err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
+	c.JSON(http.StatusOK, mux.H{
 		"name":  user.Name,
 		"email": user.Email,
 		"logo":  user.Logo,
-	}, nil
+	})
 }
 
 type fmUserProfile struct {
@@ -38,21 +48,27 @@ type fmUserProfile struct {
 	Logo string `json:"logo" binding:"required"`
 }
 
-func (p *Plugin) postUsersProfile(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) postUsersProfile(c *mux.Context) {
+	user, err := p.Layout.CurrentUser(c)
+	if err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	var fm fmUserProfile
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
-	user := c.MustGet(CurrentUser).(*User)
 	user.Name = fm.Name
 	user.Logo = fm.Logo
 	user.UpdatedAt = time.Now()
 	if _, err := p.DB.Model(user).
 		Column("name", "logo", "updated_at").
 		Update(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }
 
 type fmUserChangePassword struct {
@@ -61,19 +77,27 @@ type fmUserChangePassword struct {
 	PasswordConfirmation string `json:"passwordConfirmation" binding:"eqfield=NewPassword"`
 }
 
-func (p *Plugin) postUsersChangePassword(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) postUsersChangePassword(c *mux.Context) {
+	user, err := p.Layout.CurrentUser(c)
+	if err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	var fm fmUserChangePassword
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
-	user := c.MustGet(CurrentUser).(*User)
 	ip := c.ClientIP()
+	l := c.Locale()
 	if !p.Security.Check(user.Password, []byte(fm.CurrentPassword)) {
-		return nil, p.I18n.E(l, "nut.errors.user.email-password-not-match")
+		c.Abort(http.StatusBadRequest, p.I18n.E(l, "nut.errors.user.email-password-not-match"))
+		return
 	}
 	pwd, err := p.Security.Hash([]byte(fm.NewPassword))
 	if err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
 	user.Password = pwd
 	user.UpdatedAt = time.Now()
@@ -86,21 +110,27 @@ func (p *Plugin) postUsersChangePassword(l string, c *gin.Context) (interface{},
 		}
 		return nil
 	}); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
 
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }
 
-func (p *Plugin) getUsersLogs(l string, c *gin.Context) (interface{}, error) {
-	user := c.MustGet(CurrentUser).(*User)
+func (p *Plugin) getUsersLogs(c *mux.Context) {
+	user, err := p.Layout.CurrentUser(c)
+	if err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	var items []Log
 	if err := p.DB.Model(&items).
 		Where("user_id = ?", user.ID).
 		Order("created_at DESC").Select(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return items, nil
+	c.JSON(http.StatusOK, items)
 }
 
 type fmUserSignIn struct {
@@ -108,30 +138,34 @@ type fmUserSignIn struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func (p *Plugin) postUsersSignIn(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) postUsersSignIn(c *mux.Context) {
 	var fm fmUserSignIn
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
 	cm := make(jws.Claims)
+	l := c.Locale()
 	if err := p.DB.RunInTransaction(func(db *pg.Tx) error {
 		user, err := p.Dao.SignIn(db, l, c.ClientIP(), fm.Email, fm.Password)
 		if err != nil {
 			return err
 		}
-		cm.Set(UID, user.UID)
+		cm.Set("uid", user.UID)
 		cm.Set(RoleAdmin, p.Dao.Is(p.DB, user.ID, RoleAdmin))
 		return nil
 	}); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
 
 	// cm.Set("roles", roles)
 	tkn, err := p.Jwt.Sum(cm, time.Hour*24)
 	if err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return gin.H{"token": string(tkn)}, nil
+	c.JSON(http.StatusOK, mux.H{"token": string(tkn)})
 }
 
 type fmUserSignUp struct {
@@ -141,13 +175,15 @@ type fmUserSignUp struct {
 	PasswordConfirmation string `json:"passwordConfirmation" binding:"eqfield=Password"`
 }
 
-func (p *Plugin) postUsersSignUp(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) postUsersSignUp(c *mux.Context) {
 	var fm fmUserSignUp
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
 
 	ip := c.ClientIP()
+	l := c.Locale()
 	if err := p.DB.RunInTransaction(func(db *pg.Tx) error {
 		user, err := p.Dao.AddEmailUser(db, l, ip, fm.Name, fm.Email, fm.Password)
 		if err != nil {
@@ -158,71 +194,83 @@ func (p *Plugin) postUsersSignUp(l string, c *gin.Context) (interface{}, error) 
 		}
 		return nil
 	}); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
 
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }
 
 type fmUserEmail struct {
 	Email string `json:"email" binding:"email"`
 }
 
-func (p *Plugin) postUsersConfirm(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) postUsersConfirm(c *mux.Context) {
 	var fm fmUserEmail
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
 
 	user, err := p.Dao.GetUserByEmail(p.DB, fm.Email)
 	if err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
+	l := c.Locale()
 	if user.IsConfirm() {
-		return nil, p.I18n.E(l, "nut.errors.user-already-confirm")
+		c.Abort(http.StatusForbidden, p.I18n.E(l, "nut.errors.user-already-confirm"))
+		return
 	}
 	if err := p.sendEmail(c, l, user, actConfirm); err != nil {
 		log.Error(err)
 	}
 
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }
 
-func (p *Plugin) postUsersUnlock(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) postUsersUnlock(c *mux.Context) {
 	var fm fmUserEmail
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
 
 	user, err := p.Dao.GetUserByEmail(p.DB, fm.Email)
 	if err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
+	l := c.Locale()
 	if !user.IsLock() {
-		return nil, p.I18n.E(l, "nut.errors.user.not-lock")
+		c.Abort(http.StatusInternalServerError, p.I18n.E(l, "nut.errors.user.not-lock"))
+		return
 	}
 	if err := p.sendEmail(c, l, user, actUnlock); err != nil {
 		log.Error(err)
 	}
 
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }
 
-func (p *Plugin) postUsersForgotPassword(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) postUsersForgotPassword(c *mux.Context) {
 	var fm fmUserEmail
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
 
 	user, err := p.Dao.GetUserByEmail(p.DB, fm.Email)
 	if err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
+	l := c.Locale()
 	if err := p.sendEmail(c, l, user, actResetPassword); err != nil {
 		log.Error(err)
 	}
 
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }
 
 type fmUserResetPassword struct {
@@ -231,25 +279,31 @@ type fmUserResetPassword struct {
 	PasswordConfirmation string `json:"passwordConfirmation" binding:"eqfield=Password"`
 }
 
-func (p *Plugin) postUsersResetPassword(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) postUsersResetPassword(c *mux.Context) {
 	var fm fmUserResetPassword
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
 	cm, err := p.Jwt.Validate([]byte(fm.Token))
 	if err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
+	l := c.Locale()
 	if cm.Get("act").(string) != actResetPassword {
-		return nil, p.I18n.E(l, "errors.bad-action")
+		c.Abort(http.StatusInternalServerError, p.I18n.E(l, "errors.bad-action"))
+		return
 	}
 	user, err := p.Dao.GetUserByUID(p.DB, cm.Get("uid").(string))
 	if err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
 	pwd, err := p.Security.Hash([]byte(fm.Password))
 	if err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
 	user.Password = pwd
 	user.UpdatedAt = time.Now()
@@ -262,32 +316,38 @@ func (p *Plugin) postUsersResetPassword(l string, c *gin.Context) (interface{}, 
 		}
 		return nil
 	}); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
 
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }
 
-func (p *Plugin) getUsersConfirmToken(l string, c *gin.Context) error {
+func (p *Plugin) getUsersConfirmToken(c *mux.Context) {
 	cm, err := p.Jwt.Validate([]byte(c.Param("token")))
 	if err != nil {
-		return err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
+	l := c.Locale()
 	if cm.Get("act").(string) != actConfirm {
-		return p.I18n.E(l, "errors.bad-action")
+		c.Abort(http.StatusBadRequest, p.I18n.E(l, "errors.bad-action"))
+		return
 	}
 	user, err := p.Dao.GetUserByUID(p.DB, cm.Get("uid").(string))
 	if err != nil {
-		return err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
 	if user.IsConfirm() {
-		return p.I18n.E(l, "nut.errors.user-already-confirm")
+		c.Abort(http.StatusInternalServerError, p.I18n.E(l, "nut.errors.user-already-confirm"))
+		return
 	}
 
 	now := time.Now()
 	user.UpdatedAt = now
 	user.ConfirmedAt = &now
-	err = p.DB.RunInTransaction(func(db *pg.Tx) error {
+	if err = p.DB.RunInTransaction(func(db *pg.Tx) error {
 		if _, err = db.Model(user).Column("confirmed_at", "updated_at").Update(); err != nil {
 			return err
 		}
@@ -295,33 +355,37 @@ func (p *Plugin) getUsersConfirmToken(l string, c *gin.Context) error {
 			return err
 		}
 		return nil
-	})
-	if err == nil {
-		ss := sessions.Default(c)
-		ss.AddFlash(p.I18n.T(l, "flash.success"), NOTICE)
-		ss.Save()
+	}); err != nil {
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return err
+
+	c.JSON(http.StatusOK, mux.H{})
 }
 
-func (p *Plugin) getUsersUnlockToken(l string, c *gin.Context) error {
+func (p *Plugin) getUsersUnlockToken(c *mux.Context) {
 	cm, err := p.Jwt.Validate([]byte(c.Param("token")))
 	if err != nil {
-		return err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
+	l := c.Locale()
 	if cm.Get("act").(string) != actUnlock {
-		return p.I18n.E(l, "errors.bad-action")
+		c.Abort(http.StatusBadRequest, p.I18n.E(l, "errors.bad-action"))
+		return
 	}
 	user, err := p.Dao.GetUserByUID(p.DB, cm.Get("uid").(string))
 	if err != nil {
-		return err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
 	if !user.IsLock() {
-		return p.I18n.E(l, "nut.errors.user.not-lock")
+		c.Abort(http.StatusInternalServerError, p.I18n.E(l, "nut.errors.user.not-lock"))
+		return
 	}
 	user.LockedAt = nil
 	user.UpdatedAt = time.Now()
-	err = p.DB.RunInTransaction(func(db *pg.Tx) error {
+	if err = p.DB.RunInTransaction(func(db *pg.Tx) error {
 		if _, err = db.Model(user).Column("locked_at", "updated_at").Update(); err != nil {
 			return err
 		}
@@ -329,13 +393,11 @@ func (p *Plugin) getUsersUnlockToken(l string, c *gin.Context) error {
 			return err
 		}
 		return nil
-	})
-	if err == nil {
-		ss := sessions.Default(c)
-		ss.AddFlash(p.I18n.T(l, "flash.success"), NOTICE)
-		ss.Save()
+	}); err != nil {
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return err
+	c.JSON(http.StatusOK, mux.H{})
 }
 
 const (
@@ -347,7 +409,7 @@ const (
 	SendEmailJob = "send.email"
 )
 
-func (p *Plugin) sendEmail(c *gin.Context, lang string, user *User, act string) error {
+func (p *Plugin) sendEmail(c *mux.Context, lang string, user *User, act string) error {
 	cm := jws.Claims{}
 	cm.Set("act", act)
 	cm.Set("uid", user.UID)
@@ -356,8 +418,8 @@ func (p *Plugin) sendEmail(c *gin.Context, lang string, user *User, act string) 
 		return err
 	}
 
-	obj := gin.H{
-		"home":  p.Layout.Home(c),
+	obj := mux.H{
+		"home":  c.Home(),
 		"token": string(tkn),
 	}
 
@@ -378,7 +440,7 @@ func (p *Plugin) sendEmail(c *gin.Context, lang string, user *User, act string) 
 	if err != nil {
 		return err
 	}
-	return p.Queue.Put(SendEmailJob, uuid.New().String(), 0, buf)
+	return p.Queue.Put(queue.NewTask(SendEmailJob, 0, buf))
 }
 
 func (p *Plugin) doSendEmail(id string, payload []byte) error {

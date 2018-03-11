@@ -1,39 +1,16 @@
 package nut
 
 import (
-	"github.com/chonglou/arche/web/i18n"
-	"github.com/gin-gonic/gin"
+	"net/http"
+
+	"github.com/chonglou/arche/web/mux"
 	"github.com/spf13/viper"
 )
 
-func (p *Plugin) getHome(ctx *gin.Context) {
-	wrap := func(f HTMLHandlerFunc) HTMLHandlerFunc {
-		return func(l string, c *gin.Context) error {
-			// google site verify code
-			var googleVerifyCode string
-			p.Settings.Get(p.DB, googleSiteVerification, &googleVerifyCode)
-			c.Set("googleVerifyCode", googleVerifyCode)
-			if f == nil {
-				return nil
-			}
-			return f(l, c)
-		}
-	}
-
-	var home string
-	if err := p.Settings.Get(p.DB, "site.home", &home); err == nil {
-		if hnd := p.HomePage.Get(home); hnd != nil {
-			p.Layout.HTML(home, wrap(hnd))(ctx)
-			return
-		}
-	}
-
-	p.Layout.HTML("nut/index", wrap(nil))(ctx)
-}
-
-func (p *Plugin) getLayout(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) getLayout(c *mux.Context) {
+	l := c.Locale()
 	// site info
-	site := gin.H{}
+	site := mux.H{}
 	for _, k := range []string{"title", "subhead", "keywords", "description", "copyright"} {
 		site[k] = p.I18n.T(l, "site."+k)
 	}
@@ -47,21 +24,20 @@ func (p *Plugin) getLayout(l string, c *gin.Context) (interface{}, error) {
 	site["favicon"] = favicon
 
 	// i18n
-	site[i18n.LOCALE] = l
+	site["locale"] = l
 	site["languages"] = viper.GetStringSlice("languages")
 
 	// current-user
-	user, ok := c.Get(CurrentUser)
+	user, err := p.Layout.CurrentUser(c)
 	// nav
-	if ok {
-		user := user.(*User)
-		site["user"] = gin.H{
+	if err == nil {
+		site["user"] = mux.H{
 			"name":  user.Name,
 			"type":  user.ProviderType,
 			"logo":  user.Logo,
-			"admin": c.MustGet(IsAdmin).(bool),
+			"admin": p.Dao.Is(p.DB, user.ID, RoleAdmin),
 		}
 	}
 
-	return site, nil
+	c.JSON(http.StatusOK, site)
 }

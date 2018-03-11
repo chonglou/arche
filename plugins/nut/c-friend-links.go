@@ -1,28 +1,24 @@
 package nut
 
 import (
+	"net/http"
 	"strconv"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/chonglou/arche/web/mux"
 )
 
-func (p *Plugin) getFriendLinks(l string, c *gin.Context) error {
-	var items []FriendLink
-	if err := p.DB.Model(&items).Column("logo", "title", "home").
-		Order("sort ASC").Select(); err != nil {
-		return err
+func (p *Plugin) indexAdminFriendLinks(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
 	}
-	c.Set("links", items)
-	return nil
-}
-
-func (p *Plugin) indexAdminFriendLinks(l string, c *gin.Context) (interface{}, error) {
 	var items []FriendLink
 	if err := p.DB.Model(&items).Order("sort ASC").Select(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return items, nil
+	c.JSON(http.StatusOK, items)
 }
 
 type fmFriendLink struct {
@@ -32,10 +28,15 @@ type fmFriendLink struct {
 	Sort  int    `json:"sort"`
 }
 
-func (p *Plugin) createAdminFriendLink(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) createAdminFriendLink(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	var fm fmFriendLink
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
 	it := FriendLink{
 		Title:     fm.Title,
@@ -45,27 +46,39 @@ func (p *Plugin) createAdminFriendLink(l string, c *gin.Context) (interface{}, e
 		UpdatedAt: time.Now(),
 	}
 	if err := p.DB.Insert(&it); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return it, nil
+	c.JSON(http.StatusOK, it)
 }
 
-func (p *Plugin) showAdminFriendLink(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) showAdminFriendLink(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	var it = FriendLink{}
 	if err := p.DB.Model(&it).Where("id = ?", c.Param("id")).Select(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return it, nil
+	c.JSON(http.StatusOK, it)
 }
 
-func (p *Plugin) updateAdminFriendLink(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) updateAdminFriendLink(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
 	var fm fmFriendLink
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
 	it := FriendLink{
 		ID:        uint(id),
@@ -79,16 +92,22 @@ func (p *Plugin) updateAdminFriendLink(l string, c *gin.Context) (interface{}, e
 	if _, err := p.DB.Model(&it).
 		Column("title", "home", "logo", "sort", "updated_at").
 		Update(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }
 
-func (p *Plugin) destroyAdminFriendLink(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) destroyAdminFriendLink(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	if _, err := p.DB.Model(new(FriendLink)).
 		Where("id = ?", c.Param("id")).
 		Delete(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }

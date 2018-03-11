@@ -1,8 +1,16 @@
 package nut
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
 
-func (p *Plugin) indexAdminUsers(l string, c *gin.Context) (interface{}, error) {
+	"github.com/chonglou/arche/web/mux"
+)
+
+func (p *Plugin) indexAdminUsers(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	var items []User
 	if err := p.DB.Model(&items).Column(
 		"id", "email", "name", "provider_type", "logo",
@@ -10,7 +18,8 @@ func (p *Plugin) indexAdminUsers(l string, c *gin.Context) (interface{}, error) 
 	).
 		Order("last_sign_in_at ASC").
 		Select(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return items, nil
+	c.JSON(http.StatusOK, items)
 }

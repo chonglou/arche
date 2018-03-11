@@ -11,7 +11,7 @@ import (
 	// _ "github.com/chonglou/arche/plugins/forum"
 	// _ "github.com/chonglou/arche/plugins/hotel"
 	// _ "github.com/chonglou/arche/plugins/library"
-	// _ "github.com/chonglou/arche/plugins/nut"
+	_ "github.com/chonglou/arche/plugins/nut"
 	// _ "github.com/chonglou/arche/plugins/ops/mail"
 	// _ "github.com/chonglou/arche/plugins/ops/vpn"
 	// _ "github.com/chonglou/arche/plugins/shop"

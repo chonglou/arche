@@ -1,28 +1,39 @@
 package nut
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
 
-func (p *Plugin) createLeaveWord(l string, c *gin.Context) (interface{}, error) {
+	"github.com/chonglou/arche/web/mux"
+)
+
+func (p *Plugin) createLeaveWord(c *mux.Context) {
 	var fm fmLeaveWord
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
 	it := LeaveWord{
 		Body: fm.Body,
 		Type: fm.Type,
 	}
 	if err := p.DB.Insert(&it); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return it, nil
+	c.JSON(http.StatusOK, mux.H{})
 }
 
-func (p *Plugin) indexAdminLeaveWords(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) indexAdminLeaveWords(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	var items []LeaveWord
 	if err := p.DB.Model(&items).Order("created_at DESC").Select(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return items, nil
+	c.JSON(http.StatusOK, items)
 }
 
 type fmLeaveWord struct {
@@ -30,11 +41,16 @@ type fmLeaveWord struct {
 	Type string `json:"type" binding:"required"`
 }
 
-func (p *Plugin) destroyAdminLeaveWord(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) destroyAdminLeaveWord(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	if _, err := p.DB.Model(new(LeaveWord)).
 		Where("id = ?", c.Param("id")).
 		Delete(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }

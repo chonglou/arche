@@ -3,52 +3,68 @@ package nut
 import (
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"os/user"
 	"runtime"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/chonglou/arche/web"
+	"github.com/chonglou/arche/web/mux"
+	"github.com/chonglou/arche/web/queue"
 	"github.com/garyburd/redigo/redis"
-	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg"
 	gomail "gopkg.in/gomail.v2"
 )
 
-func (p *Plugin) deleteAdminSiteClearCache(l string, c *gin.Context) (interface{}, error) {
-	if err := p.Cache.Clear(); err != nil {
-		return nil, err
+func (p *Plugin) deleteAdminSiteClearCache(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
 	}
-	return gin.H{}, nil
+	if err := p.Cache.Clear(); err != nil {
+		c.Abort(http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, mux.H{})
 }
 
-func (p *Plugin) getAdminSiteHome(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) getAdminSiteHome(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	var favicon string
 	p.Settings.Get(p.DB, "site.favicon", &favicon)
-	var home string
-	p.Settings.Get(p.DB, "site.home", &home)
-	return gin.H{
+	var theme string
+	p.Settings.Get(p.DB, "site.theme", &theme)
+	c.JSON(http.StatusOK, mux.H{
 		"favicon": favicon,
-		"home":    home,
-		"options": p.HomePage.Options(),
-	}, nil
+		"theme":   theme,
+	})
 }
 
 type fmSiteHome struct {
 	Favicon string `json:"favicon" binding:"required"`
-	Home    string `json:"home" binding:"required"`
+	Theme   string `json:"theme" binding:"required"`
 }
 
-func (p *Plugin) postAdminSiteHome(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) postAdminSiteHome(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	var fm fmSiteHome
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
 	if err := p.DB.RunInTransaction(func(db *pg.Tx) error {
 		for k, v := range map[string]interface{}{
 			"site.favicon": fm.Favicon,
-			"site.home":    fm.Home,
+			"site.theme":   fm.Theme,
 		} {
 			if err := p.Settings.Set(db, k, v, false); err != nil {
 				return err
@@ -56,13 +72,18 @@ func (p *Plugin) postAdminSiteHome(l string, c *gin.Context) (interface{}, error
 		}
 		return nil
 	}); err != nil {
-		return nil, err
+		c.Abort(http.StatusInsufficientStorage, err)
+		return
 	}
 
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }
 
-func (p *Plugin) getAdminSiteSMTP(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) getAdminSiteSMTP(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	var smtp map[string]interface{}
 	if err := p.Settings.Get(p.DB, "site.smtp", &smtp); err == nil {
 		delete(smtp, "password")
@@ -73,7 +94,7 @@ func (p *Plugin) getAdminSiteSMTP(l string, c *gin.Context) (interface{}, error)
 			"username": "whoami@change-me.com",
 		}
 	}
-	return smtp, nil
+	c.JSON(http.StatusOK, smtp)
 }
 
 type fmSiteSMTP struct {
@@ -84,10 +105,15 @@ type fmSiteSMTP struct {
 	PasswordConfirmation string `json:"passwordConfirmation" binding:"eqfield=Password"`
 }
 
-func (p *Plugin) postAdminSiteSMTP(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) postAdminSiteSMTP(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	var fm fmSiteSMTP
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
 	if err := p.Settings.Set(p.DB, "site.smtp", map[string]interface{}{
 		"host":     fm.Host,
@@ -95,17 +121,24 @@ func (p *Plugin) postAdminSiteSMTP(l string, c *gin.Context) (interface{}, error
 		"username": fm.Username,
 		"password": fm.Password,
 	}, true); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }
 
-func (p *Plugin) patchAdminSiteSMTP(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) patchAdminSiteSMTP(c *mux.Context) {
+	user, err := p.Layout.IsAdmin(c)
+	if err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	var fm fmSiteSMTP
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
-	user := c.MustGet(CurrentUser).(*User)
+
 	msg := gomail.NewMessage()
 	msg.SetHeader("From", fm.Username)
 	msg.SetHeader("To", user.Email)
@@ -120,31 +153,41 @@ func (p *Plugin) patchAdminSiteSMTP(l string, c *gin.Context) (interface{}, erro
 	)
 
 	if err := dia.DialAndSend(msg); err != nil {
-		return nil, err
+		c.Abort(http.StatusInsufficientStorage, err)
+		return
 	}
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }
 
 const (
 	googleSiteVerification = "google-site-verification"
 )
 
-func (p *Plugin) getAdminSiteSeo(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) getAdminSiteSeo(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	var googleVerifyCode string
 	p.Settings.Get(p.DB, googleSiteVerification, &googleVerifyCode)
-	return gin.H{
+	c.JSON(http.StatusOK, mux.H{
 		"googleVerifyCode": googleVerifyCode,
-	}, nil
+	})
 }
 
 type fmSiteSeo struct {
 	GoogleVerifyCode string `json:"googleVerifyCode"`
 }
 
-func (p *Plugin) postAdminSiteSeo(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) postAdminSiteSeo(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	var fm fmSiteSeo
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
 	if err := p.DB.RunInTransaction(func(db *pg.Tx) error {
 		for k, v := range map[string]string{
@@ -156,9 +199,10 @@ func (p *Plugin) postAdminSiteSeo(l string, c *gin.Context) (interface{}, error)
 		}
 		return nil
 	}); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }
 
 type fmSiteAuthor struct {
@@ -166,18 +210,24 @@ type fmSiteAuthor struct {
 	Name  string `json:"name" binding:"required"`
 }
 
-func (p *Plugin) postAdminSiteAuthor(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) postAdminSiteAuthor(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	var fm fmSiteAuthor
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
 	if err := p.Settings.Set(p.DB, "site.author", map[string]string{
 		"email": fm.Email,
 		"name":  fm.Name,
 	}, false); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }
 
 type fmSiteInfo struct {
@@ -188,12 +238,17 @@ type fmSiteInfo struct {
 	Copyright   string `json:"copyright" binding:"required"`
 }
 
-func (p *Plugin) postAdminSiteInfo(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) postAdminSiteInfo(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	var fm fmSiteInfo
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
-
+	l := c.Locale()
 	if err := p.DB.RunInTransaction(func(db *pg.Tx) error {
 		for k, v := range map[string]string{
 			"title":       fm.Title,
@@ -208,34 +263,42 @@ func (p *Plugin) postAdminSiteInfo(l string, c *gin.Context) (interface{}, error
 		}
 		return nil
 	}); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }
 
-func (p *Plugin) getAdminSiteStatus(l string, c *gin.Context) (interface{}, error) {
-	ret := gin.H{
-		"routes": p.Router.Routes(),
+func (p *Plugin) getAdminSiteStatus(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
+	ret := mux.H{
+		"queue":  queue.Handlers(),
+		"routes": p._routes(),
 	}
 	var err error
-	if ret["queue"], err = p.Queue.Status(); err != nil {
-		return nil, err
-	}
+
 	if ret["os"], err = p._osStatus(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
 	if ret["network"], err = p._networkStatus(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
 	if ret["postgresql"], err = p._databaseStatus(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
 	if ret["redis"], err = p._redisStatus(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return ret, nil
+	c.JSON(http.StatusOK, ret)
 }
-func (p *Plugin) _osStatus() (gin.H, error) {
+func (p *Plugin) _osStatus() (mux.H, error) {
 	var mem runtime.MemStats
 	runtime.ReadMemStats(&mem)
 	hn, err := os.Hostname()
@@ -254,7 +317,7 @@ func (p *Plugin) _osStatus() (gin.H, error) {
 	if err := syscall.Sysinfo(&ifo); err != nil {
 		return nil, err
 	}
-	return gin.H{
+	return mux.H{
 		"app author":           fmt.Sprintf("%s <%s>", web.AuthorName, web.AuthorEmail),
 		"app licence":          web.Copyright,
 		"app version":          fmt.Sprintf("%s(%s)", web.Version, web.BuildTime),
@@ -275,8 +338,19 @@ func (p *Plugin) _osStatus() (gin.H, error) {
 		"os procs":             ifo.Procs,
 	}, nil
 }
-func (p *Plugin) _networkStatus() (gin.H, error) {
-	sts := gin.H{}
+func (p *Plugin) _routes() []mux.H {
+	var items []mux.H
+	p.Router.Walk(func(methods []string, pattern string) error {
+		items = append(items, mux.H{
+			"methods": strings.Join(methods, ","),
+			"path":    pattern,
+		})
+		return nil
+	})
+	return items
+}
+func (p *Plugin) _networkStatus() (mux.H, error) {
+	sts := mux.H{}
 	ifs, err := net.Interfaces()
 	if err != nil {
 		return nil, err
@@ -295,8 +369,8 @@ func (p *Plugin) _networkStatus() (gin.H, error) {
 	return sts, nil
 }
 
-func (p *Plugin) _databaseStatus() (gin.H, error) {
-	val := gin.H{
+func (p *Plugin) _databaseStatus() (mux.H, error) {
+	val := mux.H{
 		"pool": p.DB.PoolStats(),
 		"url":  p.DB.String(),
 	}

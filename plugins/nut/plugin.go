@@ -7,11 +7,11 @@ import (
 	"github.com/chonglou/arche/web"
 	"github.com/chonglou/arche/web/cache"
 	"github.com/chonglou/arche/web/i18n"
+	"github.com/chonglou/arche/web/mux"
 	"github.com/chonglou/arche/web/queue"
 	"github.com/chonglou/arche/web/settings"
 	"github.com/chonglou/arche/web/storage"
 	"github.com/garyburd/redigo/redis"
-	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg"
 	"github.com/spf13/viper"
 	"golang.org/x/text/language"
@@ -27,13 +27,10 @@ type Plugin struct {
 	Settings *settings.Settings `inject:""`
 	Security *web.Security      `inject:""`
 	Storage  storage.Storage    `inject:""`
-	Sitemap  *web.Sitemap       `inject:""`
-	RSS      *web.RSS           `inject:""`
-	Router   *gin.Engine        `inject:""`
+	Router   *mux.Router        `inject:""`
 	DB       *pg.DB             `inject:""`
 	Dao      *Dao               `inject:""`
 	Layout   *Layout            `inject:""`
-	HomePage *HomePage          `inject:""`
 }
 
 func init() {
@@ -83,9 +80,8 @@ func init() {
 	})
 
 	viper.SetDefault("server", map[string]interface{}{
-		"port":  8080,
-		"name":  "www.change-me.com",
-		"theme": "bootstrap",
+		"port": 8080,
+		"name": "www.change-me.com",
 	})
 
 	secret, _ := web.RandomBytes(32)

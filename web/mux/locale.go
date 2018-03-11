@@ -1,38 +1,27 @@
-package i18n
+package mux
 
 import (
-	"math"
-	"net/http"
-
 	"golang.org/x/text/language"
 )
 
-// Detect detect locale from http.Request, order by [query, cookie, header]
-func (p *I18n) Detect(w http.ResponseWriter, r *http.Request) string {
+// Locale detect locale from http.Request, order by [query, cookie, header]
+func (p *Context) Locale() string {
 	const key = "locale"
-	var write bool
 
 	// 1. Check URL arguments.
-	lang := r.URL.Query().Get(key)
+	lang := p.Query(key)
 
 	// 2. Get language information from cookies.
 	if len(lang) == 0 {
-		if ck, err := r.Cookie(key); err == nil {
-			lang = ck.Value
-		} else {
-			write = true
-		}
-	} else {
-		write = true
+		lang = p.Cookie(key)
 	}
 
 	// 3. Get language information from 'Accept-Language'.
 	if len(lang) == 0 {
-		al := r.Header.Get("Accept-Language")
+		al := p.Header("Accept-Language")
 		if len(al) > 4 {
 			lang = al[:5] // Only compare first 5 letters.
 		}
-		write = true
 	}
 
 	// 4. Default language is English.
@@ -45,19 +34,18 @@ func (p *I18n) Detect(w http.ResponseWriter, r *http.Request) string {
 	tag, _, _ = p.matcher.Match(tag)
 	if lang != tag.String() {
 		lang = tag.String()
-		write = true
 	}
 
 	// Save language information in cookies.
-	if write {
-		http.SetCookie(w, &http.Cookie{
-			Name:     key,
-			Value:    lang,
-			Path:     "/",
-			MaxAge:   math.MaxUint32,
-			HttpOnly: false,
-			Secure:   false,
-		})
-	}
+	// if write {
+	// 	http.SetCookie(p.Writer, &http.Cookie{
+	// 		Name:     key,
+	// 		Value:    lang,
+	// 		Path:     "/",
+	// 		MaxAge:   math.MaxUint32,
+	// 		HttpOnly: false,
+	// 		Secure:   false,
+	// 	})
+	// }
 	return lang
 }

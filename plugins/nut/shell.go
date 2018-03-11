@@ -1,15 +1,12 @@
 package nut
 
 import (
-	"context"
 	"crypto/x509/pkix"
 	"errors"
 	"fmt"
 	"html/template"
 	"io/ioutil"
-	"net/http"
 	"os"
-	"os/signal"
 	"path"
 	"path/filepath"
 	"strconv"
@@ -329,7 +326,7 @@ func (p *Plugin) Shell() []cli.Command {
 					}
 				}()
 				// -------
-				return p.listen(
+				return p.Router.Listen(
 					viper.GetInt("server.port"),
 					viper.GetString("env") != web.PRODUCTION,
 				)
@@ -342,9 +339,10 @@ func (p *Plugin) Shell() []cli.Command {
 			Action: web.InjectAction(func(_ *cli.Context) error {
 				tpl := "%-16s %s\n"
 				fmt.Printf(tpl, "METHODS", "PATH")
-				for _, rt := range p.Router.Routes() {
-					fmt.Printf(tpl, rt.Method, rt.Path)
-				}
+				p.Router.Walk(func(methods []string, pattern string) error {
+					fmt.Printf(tpl, strings.Join(methods, ","), pattern)
+					return nil
+				})
 				return nil
 			}),
 		},
@@ -366,58 +364,6 @@ func (p *Plugin) Shell() []cli.Command {
 }
 
 // --------------------------------------------
-
-func (p *Plugin) listen(port int, debug bool) error {
-	log.Infof(
-		"application starting on http://localhost:%d",
-		port,
-	)
-	var hnd http.Handler = p.Router
-
-	// hnd = cors.New(cors.Options{
-	// 	AllowedOrigins: viper.GetStringSlice("server.origins"),
-	// 	AllowedMethods: []string{
-	// 		http.MethodGet,
-	// 		http.MethodPost,
-	// 		http.MethodPatch,
-	// 		http.MethodPut,
-	// 		http.MethodDelete,
-	// 	},
-	// 	AllowedHeaders:   []string{"Authorization", "X-Requested-With"},
-	// 	AllowCredentials: true,
-	// 	Debug:            true,
-	// }).Handler(hnd)
-
-	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", port),
-		Handler: hnd,
-	}
-	if debug {
-		return srv.ListenAndServe()
-	}
-
-	go func() {
-		// service connections
-		if err := srv.ListenAndServe(); err != nil {
-			log.Printf("listen: %s\n", err)
-		}
-	}()
-
-	// Wait for interrupt signal to gracefully shutdown the server with
-	// a timeout of 5 seconds.
-	quit := make(chan os.Signal)
-	signal.Notify(quit, os.Interrupt)
-	<-quit
-	log.Warn("shutdown Server ...")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Error("server Shutdown:", err)
-	}
-	log.Warn("server exiting")
-	return nil
-}
 
 func (p *Plugin) generateNginxConf(c *cli.Context) error {
 	pwd, err := os.Getwd()

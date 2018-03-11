@@ -1,19 +1,27 @@
 package nut
 
 import (
+	"net/http"
+
 	"github.com/chonglou/arche/web/i18n"
-	"github.com/gin-gonic/gin"
+	"github.com/chonglou/arche/web/mux"
 )
 
-func (p *Plugin) indexAdminLocales(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) indexAdminLocales(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
+	l := c.Locale()
 	var items []i18n.Model
 	if err := p.DB.Model(&items).Column("id", "code", "message").
 		Where("lang = ?", l).
 		Order("code ASC").
 		Select(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return items, nil
+	c.JSON(http.StatusOK, items)
 }
 
 type fmLocale struct {
@@ -21,31 +29,48 @@ type fmLocale struct {
 	Message string `json:"message" binding:"required"`
 }
 
-func (p *Plugin) createAdminLocale(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) createAdminLocale(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	var fm fmLocale
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
+	l := c.Locale()
 	if err := p.I18n.Set(p.DB, l, fm.Code, fm.Message); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }
 
-func (p *Plugin) showAdminLocale(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) showAdminLocale(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	var it i18n.Model
 	if err := p.DB.Model(&it).
 		Where("id = ?", c.Param("id")).
 		Select(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return it, nil
+	c.JSON(http.StatusOK, it)
 }
 
-func (p *Plugin) destroyAdminLocale(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) destroyAdminLocale(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	if _, err := p.DB.Model(new(i18n.Model)).
 		Where("id = ?", c.Param("id")).Delete(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }

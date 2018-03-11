@@ -9,6 +9,7 @@ import (
 	"github.com/chonglou/arche/web"
 	r_c "github.com/chonglou/arche/web/cache/redis"
 	"github.com/chonglou/arche/web/i18n"
+	"github.com/chonglou/arche/web/mux"
 	"github.com/chonglou/arche/web/queue"
 	"github.com/chonglou/arche/web/queue/amqp"
 	"github.com/chonglou/arche/web/settings"
@@ -17,10 +18,11 @@ import (
 	"github.com/chonglou/arche/web/storage/s3"
 	"github.com/facebookgo/inject"
 	"github.com/garyburd/redigo/redis"
-	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"github.com/unrolled/render"
+	"golang.org/x/text/language"
 )
 
 func (p *Plugin) openDB() (*pg.DB, error) {
@@ -99,8 +101,24 @@ func (p *Plugin) secretKey() ([]byte, error) {
 	return base64.StdEncoding.DecodeString(viper.GetString("secret"))
 }
 
+func (p *Plugin) openRouter() (*mux.Router, error) {
+	var langs []language.Tag
+	for _, l := range viper.GetStringSlice("languages") {
+		t, e := language.Parse(l)
+		if e != nil {
+			return nil, e
+		}
+		langs = append(langs, t)
+	}
+
+	return mux.NewRouter(render.Options{
+		IsDevelopment: false,
+	}, language.NewMatcher(langs)), nil
+}
+
 // Init init beans
 func (p *Plugin) Init(g *inject.Graph) error {
+
 	db, err := p.openDB()
 	if err != nil {
 		return err
@@ -131,19 +149,21 @@ func (p *Plugin) Init(g *inject.Graph) error {
 	// i18n
 	i18n := i18n.New(db, cache)
 
+	router, err := p.openRouter()
+	if err != nil {
+		return err
+	}
+
 	return g.Provide(
 		&inject.Object{Value: db},
 		&inject.Object{Value: redis},
 		&inject.Object{Value: security},
 		&inject.Object{Value: kvs},
 		&inject.Object{Value: p.openQueue()},
-		&inject.Object{Value: NewHomePage()},
 		&inject.Object{Value: st},
-		&inject.Object{Value: web.NewSitemap()},
-		&inject.Object{Value: web.NewRSS()},
 		&inject.Object{Value: cache},
 		&inject.Object{Value: web.NewJwt(secret, crypto.SigningMethodHS512)},
 		&inject.Object{Value: i18n},
-		&inject.Object{Value: gin.Default()},
+		&inject.Object{Value: router},
 	)
 }

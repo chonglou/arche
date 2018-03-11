@@ -1,21 +1,28 @@
 package nut
 
 import (
+	"net/http"
 	"strconv"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/chonglou/arche/web/mux"
 )
 
-func (p *Plugin) indexAdminCards(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) indexAdminCards(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
+	l := c.Locale()
 	var items []Card
 	if err := p.DB.Model(&items).Column("id", "loc", "sort", "title", "href").
 		Where("lang = ?", l).
 		Order("loc ASC").Order("sort ASC").
 		Select(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return items, nil
+	c.JSON(http.StatusOK, items)
 }
 
 type fmCard struct {
@@ -29,10 +36,16 @@ type fmCard struct {
 	Sort    int    `json:"sort"`
 }
 
-func (p *Plugin) createAdminCard(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) createAdminCard(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
+	l := c.Locale()
 	var fm fmCard
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
 	it := Card{
 		Href:      fm.Href,
@@ -47,29 +60,41 @@ func (p *Plugin) createAdminCard(l string, c *gin.Context) (interface{}, error) 
 		UpdatedAt: time.Now(),
 	}
 	if err := p.DB.Insert(&it); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return it, nil
+	c.JSON(http.StatusOK, it)
 }
 
-func (p *Plugin) showAdminCard(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) showAdminCard(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	var it = Card{}
 	if err := p.DB.Model(&it).
 		Where("id = ?", c.Param("id")).
 		Select(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return it, nil
+	c.JSON(http.StatusOK, it)
 }
 
-func (p *Plugin) updateAdminCard(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) updateAdminCard(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
 	var fm fmCard
 	if err := c.BindJSON(&fm); err != nil {
-		return nil, err
+		c.Abort(http.StatusBadRequest, err)
+		return
 	}
 	it := Card{
 		ID:        uint(id),
@@ -94,16 +119,22 @@ func (p *Plugin) updateAdminCard(l string, c *gin.Context) (interface{}, error) 
 		"sort",
 		"updated_at",
 	).Update(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }
 
-func (p *Plugin) destroyAdminCard(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) destroyAdminCard(c *mux.Context) {
+	if _, err := p.Layout.IsAdmin(c); err != nil {
+		c.Abort(http.StatusForbidden, err)
+		return
+	}
 	if _, err := p.DB.Model(new(Card)).
 		Where("id = ?", c.Param("id")).
 		Delete(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return gin.H{}, nil
+	c.JSON(http.StatusOK, mux.H{})
 }

@@ -1,8 +1,16 @@
 package nut
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
 
-func (p *Plugin) getLocales(_ string, c *gin.Context) (interface{}, error) {
+	"github.com/chonglou/arche/web/mux"
+)
+
+func (p *Plugin) getLocales(c *mux.Context) {
 	items, err := p.I18n.All(c.Param("lang"))
-	return items, err
+	if err != nil {
+		c.Abort(http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, items)
 }
