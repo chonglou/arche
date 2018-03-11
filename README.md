@@ -4,73 +4,75 @@ Blog Tool, Publishing Platform, and CMS (By Go and React).
 
 ## Usage
 
-- Install go
+-   Install go
 
-  ```bash
-  export GOPATH=/opt/go
-  export PATH=$GOPATH/bin:$PATH
-  ```
+    ```bash
+    export GOPATH=/opt/go
+    export PATH=$GOPATH/bin:$PATH
+    ```
 
-- npm
+-   npm
 
-  ```bash
-  mkdir ~/.npm-global
-  npm config set prefix '~/.npm-global'
-  export PATH=~/.npm-global/bin:$PATH
-  ```
+    ```bash
+    mkdir ~/.npm-global
+    npm config set prefix '~/.npm-global'
+    export PATH=~/.npm-global/bin:$PATH
+    ```
 
-- Build
+-   Build
 
-  ```bash
-  go get -u github.com/chonglou/arche
-  cd $GOPATH/src/github.com/chonglou/arche
-  make init
-  make clean
-  make
-  ```
+    ```bash
+    go get -u github.com/chonglou/arche
+    cd $GOPATH/src/github.com/chonglou/arche
+    make init
+    make clean
+    make
+    ```
 
-- create database(for postgresql)
+-   create database(for postgresql)
 
-  ```sql
-  CREATE DATABASE db-name WITH ENCODING = 'UTF8';
-  CREATE USER user-name WITH PASSWORD 'change-me';
-  GRANT ALL PRIVILEGES ON DATABASE db-name TO user-name;
-  ```
+    ```sql
+    CREATE DATABASE db-name WITH ENCODING = 'UTF8';
+    CREATE USER user-name WITH PASSWORD 'change-me';
+    GRANT ALL PRIVILEGES ON DATABASE db-name TO user-name;
+    ```
 
-- Generate a random key
+-   Generate a random key
 
-  ```bash
-  openssl rand -base64 32
-  ```
+    ```bash
+    openssl rand -base64 32
+    ```
 
 ## Atom plugins
 
 enable autosave
 
-- go-plus
-- file-icons
-- atom-beautify(enable newline, beautify on save; need python-sqlparse)
-- language-babel
-- language-ini
+-   go-plus
+-   file-icons
+-   atom-beautify(enable newline, beautify on save; need python-sqlparse)
+-   language-babel
+-   language-ini
 
 ## Documents
 
-- [For gmail smtp](http://stackoverflow.com/questions/20337040/gmail-smtp-debug-error-please-log-in-via-your-web-browser)
+-   [For gmail smtp](http://stackoverflow.com/questions/20337040/gmail-smtp-debug-error-please-log-in-via-your-web-browser)
 
-- [favicon.ico](http://icoconvert.com/)
+-   [favicon.ico](http://icoconvert.com/)
 
-- [smver](http://semver.org/)
+-   [smver](http://semver.org/)
 
-- [banner.txt](http://patorjk.com/software/taag/)
+-   [banner.txt](http://patorjk.com/software/taag/)
 
-- [AWS](http://docs.aws.amazon.com/general/latest/gr/rande.html)
+-   [AWS](http://docs.aws.amazon.com/general/latest/gr/rande.html)
 
-- [Bootstrap](http://getbootstrap.com/)
+-   [Hugo](https://gohugo.io/getting-started/)
 
-- [Materialize](http://materializecss.com/getting-started.html)
+-   [Bootstrap](http://getbootstrap.com/)
 
-- [Ant Design](https://ant.design/docs/react/introduce)
+-   [Materialize](http://materializecss.com/getting-started.html)
 
-- [Ant Design Pro](https://pro.ant.design/docs/getting-started)
+-   [Ant Design](https://ant.design/docs/react/introduce)
 
-- [Font Awesome](https://fontawesome.com/how-to-use/js-component-packages)
+-   [Ant Design Pro](https://pro.ant.design/docs/getting-started)
+
+-   [Font Awesome](https://fontawesome.com/how-to-use/js-component-packages)

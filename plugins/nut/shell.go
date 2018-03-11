@@ -328,7 +328,7 @@ func (p *Plugin) Shell() []cli.Command {
 				// -------
 				return p.Router.Listen(
 					viper.GetInt("server.port"),
-					viper.GetString("env") != web.PRODUCTION,
+					viper.GetString("env") == web.PRODUCTION,
 				)
 			}),
 		},

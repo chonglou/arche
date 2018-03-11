@@ -76,7 +76,7 @@ func (p *Router) Group(pat string) *Router {
 func (p *Router) add(mat, pat string, hnd HandlerFunc) {
 	p.router.HandleFunc(pat, func(wrt http.ResponseWriter, req *http.Request) {
 		begin := time.Now()
-		log.Info(req.Proto, req.Method, req.RemoteAddr, req.RequestURI)
+		log.Infof("%s %s %s %s", req.Proto, req.Method, req.RemoteAddr, req.RequestURI)
 		hnd(&Context{
 			Request:  req,
 			Writer:   wrt,

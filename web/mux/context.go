@@ -90,7 +90,7 @@ func (p *Context) Header(n string) string {
 
 // Param get param from url pattern
 func (p *Context) Param(n string) string {
-	return p.Param(n)
+	return p.params[n]
 }
 
 // Cookie get cookie value
