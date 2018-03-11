@@ -5,11 +5,11 @@ import (
 	"github.com/chonglou/arche/web"
 	"github.com/chonglou/arche/web/cache"
 	"github.com/chonglou/arche/web/i18n"
+	"github.com/chonglou/arche/web/mux"
 	"github.com/chonglou/arche/web/queue"
 	"github.com/chonglou/arche/web/settings"
 	"github.com/chonglou/arche/web/storage"
 	"github.com/facebookgo/inject"
-	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg"
 	"github.com/ikeikeikeike/go-sitemap-generator/stm"
 	"github.com/urfave/cli"
@@ -24,10 +24,8 @@ type Plugin struct {
 	Settings *settings.Settings `inject:""`
 	Security *web.Security      `inject:""`
 	Storage  storage.Storage    `inject:""`
-	Sitemap  *web.Sitemap       `inject:""`
-	RSS      *web.RSS           `inject:""`
 	DB       *pg.DB             `inject:""`
-	Router   *gin.Engine        `inject:""`
+	Router   *mux.Router        `inject:""`
 	Layout   *nut.Layout        `inject:""`
 }
 
@@ -49,13 +47,10 @@ func (p *Plugin) sitemap() ([]stm.URL, error) {
 
 // Mount register
 func (p *Plugin) Mount() error {
-	p.Sitemap.Register(p.sitemap)
 	// ---------------
 	rt := p.Router.Group("/dict")
-	rt.GET("/search", p.Layout.HTML("dict/search", p.search))
-
-	api := p.Router.Group("/api/dict")
-	api.GET("/", p.Layout.JSON(p.index))
+	rt.POST("/search", p.postSearch)
+	rt.GET("/", p.index)
 
 	return nil
 }

@@ -1,45 +1,40 @@
 package dict
 
 import (
-	"html/template"
+	"net/http"
 	"path/filepath"
 
-	"github.com/gin-gonic/gin"
+	"github.com/chonglou/arche/web/mux"
 	"github.com/kapmahc/stardict"
 )
 
-func (p *Plugin) search(_ string, c *gin.Context) error {
-	var items []interface{}
+func (p *Plugin) postSearch(c *mux.Context) {
+	var items []mux.H
 	if err := p.dict(func(dt *stardict.Dictionary) error {
 		senses := dt.Translate(c.Query("keywords"))
 		for _, seq := range senses {
-			for _, p := range seq.Parts {
-				switch p.Type {
-				case 'h':
-				case 'g':
-					items = append(items, template.HTML(p.Data))
-				default:
-					items = append(items, string(p.Data))
-				}
+			for _, pat := range seq.Parts {
+				items = append(items, mux.H{"type": string(pat.Type), "data": string(pat.Data)})
 			}
 		}
 		return nil
 	}); err != nil {
-		return err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	c.Set("results", items)
-	return nil
+	c.JSON(http.StatusOK, items)
 }
 
-func (p *Plugin) index(l string, c *gin.Context) (interface{}, error) {
+func (p *Plugin) index(c *mux.Context) {
 	items := make(map[string]uint64)
 	if err := p.dict(func(d *stardict.Dictionary) error {
 		items[d.GetBookName()] = d.GetWordCount()
 		return nil
 	}); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	return items, nil
+	c.JSON(http.StatusOK, items)
 }
 
 func (p *Plugin) dict(fn func(*stardict.Dictionary) error) error {
