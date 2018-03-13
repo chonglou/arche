@@ -19,7 +19,9 @@ class Widget extends Component {
     e.preventDefault();
     this.props.form.validateFields((err, values) => {
       if (!err) {
-        post('/users/sign-up', values).then(() => {
+        post('/users/sign-up', Object.assign({}, values, {
+          next: window.location.href + '/../sign-in'
+        })).then(() => {
           message.info(formatMessage({id: "nut.users.confirm.success"}))
           push('/users/sign-in')
         }).catch(message.error);

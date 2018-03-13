@@ -154,3 +154,13 @@ func (p *Context) JSON(s int, v interface{}) {
 func (p *Context) XML(s int, v interface{}) {
 	p.render.XML(p.Writer, s, v)
 }
+
+// HTML render html
+func (p *Context) HTML(s int, t string, v interface{}, o render.HTMLOptions) {
+	p.render.HTML(p.Writer, s, t, v, o)
+}
+
+// Redirect redirect
+func (p *Context) Redirect(s int, u string) {
+	http.Redirect(p.Writer, p.Request, u, s)
+}

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/SermoDigital/jose/jws"
@@ -89,10 +90,7 @@ func (p *Plugin) postUsersChangePassword(c *mux.Context) {
 		if _, err := db.Model(user).Column("password", "updated_at").Update(); err != nil {
 			return err
 		}
-		if err := p.Dao.AddLog(db, user.ID, ip, l, "nut.logs.user.change-password"); err != nil {
-			return err
-		}
-		return nil
+		return p.Dao.AddLog(db, user.ID, ip, l, "nut.logs.user.change-password")
 	}); err != nil {
 		c.Abort(http.StatusInternalServerError, err)
 		return
@@ -118,6 +116,10 @@ type fmUserSignIn struct {
 	Password string `json:"password" validate:"required"`
 }
 
+func (p *fmUserSignIn) email() string {
+	return strings.ToLower(p.Email)
+}
+
 func (p *Plugin) postUsersSignIn(c *mux.Context) {
 	var fm fmUserSignIn
 	if err := c.BindJSON(&fm); err != nil {
@@ -127,7 +129,7 @@ func (p *Plugin) postUsersSignIn(c *mux.Context) {
 	cm := make(jws.Claims)
 	l := c.Get(mux.LOCALE).(string)
 	if err := p.DB.RunInTransaction(func(db *pg.Tx) error {
-		user, err := p.Dao.SignIn(db, l, c.ClientIP(), fm.Email, fm.Password)
+		user, err := p.Dao.SignIn(db, l, c.ClientIP(), fm.email(), fm.Password)
 		if err != nil {
 			return err
 		}
@@ -155,6 +157,10 @@ type fmUserSignUp struct {
 	PasswordConfirmation string `json:"passwordConfirmation" validate:"eqfield=Password"`
 }
 
+func (p *fmUserSignUp) email() string {
+	return strings.ToLower(p.Email)
+}
+
 func (p *Plugin) postUsersSignUp(c *mux.Context) {
 	var fm fmUserSignUp
 	if err := c.BindJSON(&fm); err != nil {
@@ -165,7 +171,7 @@ func (p *Plugin) postUsersSignUp(c *mux.Context) {
 	ip := c.ClientIP()
 	l := c.Get(mux.LOCALE).(string)
 	if err := p.DB.RunInTransaction(func(db *pg.Tx) error {
-		user, err := p.Dao.AddEmailUser(db, l, ip, fm.Name, fm.Email, fm.Password)
+		user, err := p.Dao.AddEmailUser(db, l, ip, fm.Name, fm.email(), fm.Password)
 		if err != nil {
 			return err
 		}
@@ -185,6 +191,10 @@ type fmUserEmail struct {
 	Email string `json:"email" validate:"email"`
 }
 
+func (p *fmUserEmail) email() string {
+	return strings.ToLower(p.Email)
+}
+
 func (p *Plugin) postUsersConfirm(c *mux.Context) {
 	var fm fmUserEmail
 	if err := c.BindJSON(&fm); err != nil {
@@ -192,7 +202,7 @@ func (p *Plugin) postUsersConfirm(c *mux.Context) {
 		return
 	}
 
-	user, err := p.Dao.GetUserByEmail(p.DB, fm.Email)
+	user, err := p.Dao.GetUserByEmail(p.DB, fm.email())
 	if err != nil {
 		c.Abort(http.StatusInternalServerError, err)
 		return
@@ -216,7 +226,7 @@ func (p *Plugin) postUsersUnlock(c *mux.Context) {
 		return
 	}
 
-	user, err := p.Dao.GetUserByEmail(p.DB, fm.Email)
+	user, err := p.Dao.GetUserByEmail(p.DB, fm.email())
 	if err != nil {
 		c.Abort(http.StatusInternalServerError, err)
 		return
@@ -240,7 +250,7 @@ func (p *Plugin) postUsersForgotPassword(c *mux.Context) {
 		return
 	}
 
-	user, err := p.Dao.GetUserByEmail(p.DB, fm.Email)
+	user, err := p.Dao.GetUserByEmail(p.DB, fm.email())
 	if err != nil {
 		c.Abort(http.StatusInternalServerError, err)
 		return
@@ -291,10 +301,7 @@ func (p *Plugin) postUsersResetPassword(c *mux.Context) {
 		if _, err = db.Model(user).Column("password", "updated_at").Update(); err != nil {
 			return err
 		}
-		if err = p.Dao.AddLog(db, user.ID, c.ClientIP(), l, "nut.logs.user.reset-password"); err != nil {
-			return err
-		}
-		return nil
+		return p.Dao.AddLog(db, user.ID, c.ClientIP(), l, "nut.logs.user.reset-password")
 	}); err != nil {
 		c.Abort(http.StatusInternalServerError, err)
 		return
@@ -331,16 +338,13 @@ func (p *Plugin) getUsersConfirmToken(c *mux.Context) {
 		if _, err = db.Model(user).Column("confirmed_at", "updated_at").Update(); err != nil {
 			return err
 		}
-		if err = p.Dao.AddLog(db, user.ID, c.ClientIP(), l, "nut.logs.user.confirm"); err != nil {
-			return err
-		}
-		return nil
+		return p.Dao.AddLog(db, user.ID, c.ClientIP(), l, "nut.logs.user.confirm")
 	}); err != nil {
 		c.Abort(http.StatusInternalServerError, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, mux.H{})
+	c.Redirect(http.StatusFound, cm.Get("next").(string))
 }
 
 func (p *Plugin) getUsersUnlockToken(c *mux.Context) {
@@ -369,15 +373,12 @@ func (p *Plugin) getUsersUnlockToken(c *mux.Context) {
 		if _, err = db.Model(user).Column("locked_at", "updated_at").Update(); err != nil {
 			return err
 		}
-		if err = p.Dao.AddLog(db, user.ID, c.ClientIP(), l, "nut.logs.unlock"); err != nil {
-			return err
-		}
-		return nil
+		return p.Dao.AddLog(db, user.ID, c.ClientIP(), l, "nut.logs.unlock")
 	}); err != nil {
 		c.Abort(http.StatusInternalServerError, err)
 		return
 	}
-	c.JSON(http.StatusOK, mux.H{})
+	c.Redirect(http.StatusFound, cm.Get("next").(string))
 }
 
 const (
@@ -390,17 +391,20 @@ const (
 )
 
 func (p *Plugin) sendEmail(c *mux.Context, lang string, user *User, act string) error {
+	frontend := c.Header("Origin")
 	cm := jws.Claims{}
 	cm.Set("act", act)
 	cm.Set("uid", user.UID)
+	cm.Set("next", frontend+"/my/users/sign-in")
 	tkn, err := p.Jwt.Sum(cm, time.Hour*6)
 	if err != nil {
 		return err
 	}
 
 	obj := mux.H{
-		"home":  c.Home(),
-		"token": string(tkn),
+		"backend":  c.Home(),
+		"frontend": frontend,
+		"token":    string(tkn),
 	}
 
 	subject, err := p.I18n.H(lang, fmt.Sprintf("nut.users.%s.email-subject", act), obj)
