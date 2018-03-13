@@ -81,7 +81,7 @@ func init() {
 
 	viper.SetDefault("server", map[string]interface{}{
 		"port":    8080,
-		"origins": []string{"www.change-me.com"},
+		"origins": []string{"http://localhost:3000"},
 	})
 
 	secret, _ := web.RandomBytes(32)

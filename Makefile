@@ -18,7 +18,7 @@ api:
 
 www:
 	cd dashboard && npm run build
-	-cp -r dashboard/build $(dist)/public
+	-cp -r dashboard/build $(dist)/dashboard
 
 clean:
 	-rm -r $(dist) $(dist).tar.xz dashboard/build

@@ -7,3 +7,8 @@
 -   React 管理资源
 
 -   自定制 exampleSite/config.toml
+
+### paypal
+
+-   调整支付位置
+-   增加支付选项

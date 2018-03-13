@@ -1,7 +1,7 @@
 import {getToken} from './auth'
 
 export const backend = (path) => {
-  return `/api${path}`
+  return process.env.REACT_APP_BACKEND + path
 }
 
 const parse = (res) => {

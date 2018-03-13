@@ -2,12 +2,7 @@
   "name": "arche",
   "version": "0.1.0",
   "private": true,
-  "homepage": "/",
-  "proxy": {
-    "api": {
-      "target": "http://localhost:8080"
-    }
-  },
+  "homepage": "/my",
   "dependencies": {
     "ant-design-pro": "^1.1.0",
     "antd": "^3.2.3",
