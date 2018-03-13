@@ -6,7 +6,7 @@ import {Menu, Icon, Modal, message} from 'antd'
 import {push} from 'react-router-redux'
 import {Link} from 'react-router-dom'
 
-import {signOut} from '../../actions'
+import {signOut, toggleSideBar} from '../../actions'
 import {_delete} from '../../ajax'
 import {Authorized, USER, ADMIN} from '../../auth'
 
@@ -17,9 +17,11 @@ const MenuItem = Menu.Item
 const confirm = Modal.confirm
 
 class Widget extends Component {
-  handleMenu = ({key}) => {
-    const {push, signOut} = this.props
+  handleMenu = ({key, keyPath}) => {
+    const {push, signOut, toggleSideBar} = this.props
     const {formatMessage} = this.props.intl
+
+    toggleSideBar(keyPath)
 
     switch (key) {
       case "users.sign-out":
@@ -39,7 +41,8 @@ class Widget extends Component {
     }
   };
   render() {
-    return (<Menu theme="dark" mode="inline" onClick={this.handleMenu}>
+    const {bar} = this.props
+    return (<Menu theme="dark" mode="inline" defaultSelectedKeys={bar.selected} defaultOpenKeys={bar.open} onClick={this.handleMenu}>
       {
         plugins.menus.map((it) => Authorized.check(it.roles, (<SubMenu key={it.href} title={(<span >
             <Icon type={it.icon}/>
@@ -70,8 +73,10 @@ Widget.propTypes = {
   intl: intlShape.isRequired,
   push: PropTypes.func.isRequired,
   signOut: PropTypes.func.isRequired,
-  user: PropTypes.object.isRequired
+  toggleSideBar: PropTypes.func.isRequired,
+  user: PropTypes.object.isRequired,
+  bar: PropTypes.object.isRequired
 }
 
 const WidgetI = injectIntl(Widget)
-export default connect(state => ({user: state.currentUser}), {push, signOut})(WidgetI)
+export default connect(state => ({user: state.currentUser, bar: state.sideBar}), {push, signOut, toggleSideBar})(WidgetI)

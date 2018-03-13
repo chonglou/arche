@@ -1,8 +1,23 @@
 import jwtDecode from 'jwt-decode'
 import moment from 'moment'
 
-import {USERS_SIGN_IN, USERS_SIGN_OUT, SITE_REFRESH} from './actions'
+import {USERS_SIGN_IN, USERS_SIGN_OUT, SITE_REFRESH, SIDE_BAR} from './actions'
 import {setToken, reloadAuthorized, ADMIN, USER} from './auth'
+
+const sideBar = (state = {
+  selected: [],
+  open: []
+}, action) => {
+  switch (action.type) {
+    case SIDE_BAR:
+      return {
+        selected: action.target.slice(0, 1),
+        open: action.target.slice(1, 2)
+      }
+    default:
+      return state
+  }
+}
 
 const currentUser = (state = {}, action) => {
   switch (action.type) {
@@ -50,4 +65,4 @@ const siteInfo = (state = {
   }
 }
 
-export default {currentUser, siteInfo}
+export default {currentUser, siteInfo, sideBar}

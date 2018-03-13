@@ -1,6 +1,11 @@
 export const SITE_REFRESH = 'site.refresh'
 export const USERS_SIGN_IN = "users.sign-in"
 export const USERS_SIGN_OUT = "users.sign-out"
+export const SIDE_BAR = "side-bar"
+
+export const toggleSideBar = (target) => {
+  return {type: SIDE_BAR, target}
+}
 
 export const refresh = (info) => {
   return {type: SITE_REFRESH, info}
