@@ -70,7 +70,7 @@ func (p *Plugin) destroyAttachments(c *mux.Context) {
 	}
 	l := c.Get(mux.LOCALE).(string)
 	if it.UserID != user.ID && !admin {
-		c.Abort(http.StatusForbidden, p.I18n.E(l, "nut.errors.not-allow"))
+		c.Abort(http.StatusForbidden, p.I18n.E(l, "nut.errors.forbidden"))
 		return
 	}
 	if err := p.DB.Delete(&it); err != nil {

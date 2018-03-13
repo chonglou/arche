@@ -33,7 +33,7 @@ func (p *Layout) MustAdminMiddleware(c *mux.Context) {
 		return
 	}
 	l := c.Get(mux.LOCALE).(string)
-	c.Abort(http.StatusForbidden, p.I18n.E(l, "errors.not-allow"))
+	c.Abort(http.StatusForbidden, p.I18n.E(l, "errors.forbidden"))
 }
 
 // MustSignInMiddleware must-sign-in
@@ -42,7 +42,7 @@ func (p *Layout) MustSignInMiddleware(c *mux.Context) {
 		return
 	}
 	l := c.Get(mux.LOCALE).(string)
-	c.Abort(http.StatusForbidden, p.I18n.E(l, "errors.not-allow"))
+	c.Abort(http.StatusForbidden, p.I18n.E(l, "errors.forbidden"))
 }
 
 // CurrentUserMiddleware parse user from request

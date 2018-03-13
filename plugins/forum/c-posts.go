@@ -67,7 +67,7 @@ func (p *Plugin) canEditPost(c *gin.Context) {
 	}
 	lang := c.MustGet(i18n.LOCALE).(string)
 	if it.UserID != user.ID && !c.MustGet(nut.IsAdmin).(bool) {
-		c.String(http.StatusForbidden, p.I18n.T(lang, "errors.not-allow"))
+		c.String(http.StatusForbidden, p.I18n.T(lang, "errors.forbidden"))
 		c.Abort()
 		return
 	}

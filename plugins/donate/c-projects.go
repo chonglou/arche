@@ -116,7 +116,7 @@ func (p *Plugin) canEditProject(c *mux.Context) (*Project, error) {
 	}
 
 	if it.UserID != user.ID && p.Dao.Is(p.DB, user.ID, nut.RoleAdmin) {
-		return nil, p.I18n.E(l, "errors.not-allow")
+		return nil, p.I18n.E(l, "errors.forbidden")
 	}
 	return &it, nil
 }
