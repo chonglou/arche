@@ -21,8 +21,8 @@ func (p *Plugin) indexTags(l string, c *gin.Context) (interface{}, error) {
 }
 
 type fmTag struct {
-	Name  string `json:"name" binding:"required"`
-	Color string `json:"color" binding:"required"`
+	Name  string `json:"name" validate:"required"`
+	Color string `json:"color" validate:"required"`
 }
 
 func (p *Plugin) createTag(l string, c *gin.Context) (interface{}, error) {

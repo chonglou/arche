@@ -22,9 +22,9 @@ func (p *Plugin) indexAdminLinks(c *mux.Context) {
 }
 
 type fmLink struct {
-	Href  string `json:"href" binding:"required"`
-	Label string `json:"label" binding:"required"`
-	Loc   string `json:"loc" binding:"required"`
+	Href  string `json:"href" validate:"required"`
+	Label string `json:"label" validate:"required"`
+	Loc   string `json:"loc" validate:"required"`
 	X     int    `json:"x"`
 	Y     int    `json:"y"`
 }

@@ -36,8 +36,8 @@ func (p *Plugin) getUsersProfile(c *mux.Context) {
 }
 
 type fmUserProfile struct {
-	Name string `json:"name" binding:"required"`
-	Logo string `json:"logo" binding:"required"`
+	Name string `json:"name" validate:"required"`
+	Logo string `json:"logo" validate:"required"`
 }
 
 func (p *Plugin) postUsersProfile(c *mux.Context) {
@@ -60,9 +60,9 @@ func (p *Plugin) postUsersProfile(c *mux.Context) {
 }
 
 type fmUserChangePassword struct {
-	CurrentPassword      string `json:"currentPassword" binding:"required"`
-	NewPassword          string `json:"newPassword" binding:"required,min=6"`
-	PasswordConfirmation string `json:"passwordConfirmation" binding:"eqfield=NewPassword"`
+	CurrentPassword      string `json:"currentPassword" validate:"required"`
+	NewPassword          string `json:"newPassword" validate:"required,min=6"`
+	PasswordConfirmation string `json:"passwordConfirmation" validate:"eqfield=NewPassword"`
 }
 
 func (p *Plugin) postUsersChangePassword(c *mux.Context) {
@@ -114,8 +114,8 @@ func (p *Plugin) getUsersLogs(c *mux.Context) {
 }
 
 type fmUserSignIn struct {
-	Email    string `json:"email" binding:"email"`
-	Password string `json:"password" binding:"required"`
+	Email    string `json:"email" validate:"email"`
+	Password string `json:"password" validate:"required"`
 }
 
 func (p *Plugin) postUsersSignIn(c *mux.Context) {
@@ -149,10 +149,10 @@ func (p *Plugin) postUsersSignIn(c *mux.Context) {
 }
 
 type fmUserSignUp struct {
-	Name                 string `json:"name" binding:"required"`
-	Email                string `json:"email" binding:"email"`
-	Password             string `json:"password" binding:"required,min=6"`
-	PasswordConfirmation string `json:"passwordConfirmation" binding:"eqfield=Password"`
+	Name                 string `json:"name" validate:"required"`
+	Email                string `json:"email" validate:"email"`
+	Password             string `json:"password" validate:"required,min=6"`
+	PasswordConfirmation string `json:"passwordConfirmation" validate:"eqfield=Password"`
 }
 
 func (p *Plugin) postUsersSignUp(c *mux.Context) {
@@ -182,7 +182,7 @@ func (p *Plugin) postUsersSignUp(c *mux.Context) {
 }
 
 type fmUserEmail struct {
-	Email string `json:"email" binding:"email"`
+	Email string `json:"email" validate:"email"`
 }
 
 func (p *Plugin) postUsersConfirm(c *mux.Context) {
@@ -254,9 +254,9 @@ func (p *Plugin) postUsersForgotPassword(c *mux.Context) {
 }
 
 type fmUserResetPassword struct {
-	Token                string `json:"token" binding:"required"`
-	Password             string `json:"password" binding:"required,min=6"`
-	PasswordConfirmation string `json:"passwordConfirmation" binding:"eqfield=Password"`
+	Token                string `json:"token" validate:"required"`
+	Password             string `json:"password" validate:"required,min=6"`
+	PasswordConfirmation string `json:"passwordConfirmation" validate:"eqfield=Password"`
 }
 
 func (p *Plugin) postUsersResetPassword(c *mux.Context) {

@@ -20,10 +20,10 @@ func (p *Plugin) indexCatalogs(l string, c *gin.Context) (interface{}, error) {
 }
 
 type fmCatalog struct {
-	Title   string `json:"title" binding:"required"`
-	Summary string `json:"summary" binding:"required"`
-	Icon    string `json:"icon" binding:"required"`
-	Color   string `json:"color" binding:"required"`
+	Title   string `json:"title" validate:"required"`
+	Summary string `json:"summary" validate:"required"`
+	Icon    string `json:"icon" validate:"required"`
+	Color   string `json:"color" validate:"required"`
 }
 
 func (p *Plugin) createCatalog(l string, c *gin.Context) (interface{}, error) {

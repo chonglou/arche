@@ -39,8 +39,8 @@ func (p *Plugin) getAdminSiteHome(c *mux.Context) {
 }
 
 type fmSiteHome struct {
-	Favicon string `json:"favicon" binding:"required"`
-	Theme   string `json:"theme" binding:"required"`
+	Favicon string `json:"favicon" validate:"required"`
+	Theme   string `json:"theme" validate:"required"`
 }
 
 func (p *Plugin) postAdminSiteHome(c *mux.Context) {
@@ -82,11 +82,11 @@ func (p *Plugin) getAdminSiteSMTP(c *mux.Context) {
 }
 
 type fmSiteSMTP struct {
-	Host                 string `json:"host" binding:"required"`
+	Host                 string `json:"host" validate:"required"`
 	Port                 int    `json:"port"`
-	Username             string `json:"username" binding:"email"`
-	Password             string `json:"password" binding:"required,min=6"`
-	PasswordConfirmation string `json:"passwordConfirmation" binding:"eqfield=Password"`
+	Username             string `json:"username" validate:"email"`
+	Password             string `json:"password" validate:"required,min=6"`
+	PasswordConfirmation string `json:"passwordConfirmation" validate:"eqfield=Password"`
 }
 
 func (p *Plugin) postAdminSiteSMTP(c *mux.Context) {
@@ -174,8 +174,8 @@ func (p *Plugin) postAdminSiteSeo(c *mux.Context) {
 }
 
 type fmSiteAuthor struct {
-	Email string `json:"email" binding:"email"`
-	Name  string `json:"name" binding:"required"`
+	Email string `json:"email" validate:"email"`
+	Name  string `json:"name" validate:"required"`
 }
 
 func (p *Plugin) postAdminSiteAuthor(c *mux.Context) {
@@ -195,11 +195,11 @@ func (p *Plugin) postAdminSiteAuthor(c *mux.Context) {
 }
 
 type fmSiteInfo struct {
-	Title       string `json:"title" binding:"required"`
-	Subhead     string `json:"subhead" binding:"required"`
-	Keywords    string `json:"keywords" binding:"required"`
-	Description string `json:"description" binding:"required"`
-	Copyright   string `json:"copyright" binding:"required"`
+	Title       string `json:"title" validate:"required"`
+	Subhead     string `json:"subhead" validate:"required"`
+	Keywords    string `json:"keywords" validate:"required"`
+	Description string `json:"description" validate:"required"`
+	Copyright   string `json:"copyright" validate:"required"`
 }
 
 func (p *Plugin) postAdminSiteInfo(c *mux.Context) {

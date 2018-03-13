@@ -22,13 +22,13 @@ func (p *Plugin) indexAdminCards(c *mux.Context) {
 }
 
 type fmCard struct {
-	Href    string `json:"href" binding:"required"`
-	Title   string `json:"title" binding:"required"`
-	Summary string `json:"summary" binding:"required"`
-	Type    string `json:"type" binding:"required"`
-	Action  string `json:"action" binding:"required"`
-	Logo    string `json:"logo" binding:"required"`
-	Loc     string `json:"loc" binding:"required"`
+	Href    string `json:"href" validate:"required"`
+	Title   string `json:"title" validate:"required"`
+	Summary string `json:"summary" validate:"required"`
+	Type    string `json:"type" validate:"required"`
+	Action  string `json:"action" validate:"required"`
+	Logo    string `json:"logo" validate:"required"`
+	Loc     string `json:"loc" validate:"required"`
 	Sort    int    `json:"sort"`
 }
 

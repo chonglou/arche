@@ -22,10 +22,10 @@ func (p *Plugin) indexProjects(c *mux.Context) {
 }
 
 type fmProject struct {
-	Title   string `json:"title" binding:"required"`
-	Body    string `json:"body" binding:"required"`
-	Type    string `json:"type" binding:"required"`
-	Methods string `json:"methods" binding:"required"`
+	Title   string `json:"title" validate:"required"`
+	Body    string `json:"body" validate:"required"`
+	Type    string `json:"type" validate:"required"`
+	Methods string `json:"methods" validate:"required"`
 }
 
 func (p *Plugin) createProject(c *mux.Context) {

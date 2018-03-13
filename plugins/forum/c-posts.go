@@ -22,8 +22,8 @@ func (p *Plugin) indexPosts(l string, c *gin.Context) (interface{}, error) {
 }
 
 type fmPost struct {
-	Body string `json:"body" binding:"required"`
-	Type string `json:"type" binding:"required"`
+	Body string `json:"body" validate:"required"`
+	Type string `json:"type" validate:"required"`
 }
 
 func (p *Plugin) createPost(l string, c *gin.Context) (interface{}, error) {

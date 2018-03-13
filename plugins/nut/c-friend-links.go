@@ -18,9 +18,9 @@ func (p *Plugin) indexAdminFriendLinks(c *mux.Context) {
 }
 
 type fmFriendLink struct {
-	Title string `json:"title" binding:"required"`
-	Home  string `json:"home" binding:"required"`
-	Logo  string `json:"logo" binding:"required"`
+	Title string `json:"title" validate:"required"`
+	Home  string `json:"home" validate:"required"`
+	Logo  string `json:"logo" validate:"required"`
 	Sort  int    `json:"sort"`
 }
 

@@ -12,3 +12,8 @@
 
 -   调整支付位置
 -   增加支付选项
+
+### 升级检查
+
+-   database timestamp column with time zone
+-   form validator: binding to validate

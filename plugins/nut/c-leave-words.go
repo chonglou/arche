@@ -33,8 +33,8 @@ func (p *Plugin) indexAdminLeaveWords(c *mux.Context) {
 }
 
 type fmLeaveWord struct {
-	Body string `json:"body" binding:"required"`
-	Type string `json:"type" binding:"required"`
+	Body string `json:"body" validate:"required"`
+	Type string `json:"type" validate:"required"`
 }
 
 func (p *Plugin) destroyAdminLeaveWord(c *mux.Context) {

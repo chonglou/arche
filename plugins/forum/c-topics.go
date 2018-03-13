@@ -22,9 +22,9 @@ func (p *Plugin) indexTopics(l string, c *gin.Context) (interface{}, error) {
 }
 
 type fmTopic struct {
-	Title   string `json:"title" binding:"required"`
-	Body    string `json:"body" binding:"required"`
-	Type    string `json:"type" binding:"required"`
+	Title   string `json:"title" validate:"required"`
+	Body    string `json:"body" validate:"required"`
+	Type    string `json:"type" validate:"required"`
 	Tags    []uint `json:"tags"`
 	Catalog uint   `json:"catalog"`
 }

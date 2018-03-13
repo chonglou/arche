@@ -21,8 +21,8 @@ func (p *Plugin) indexAdminLocales(c *mux.Context) {
 }
 
 type fmLocale struct {
-	Code    string `json:"code" binding:"required"`
-	Message string `json:"message" binding:"required"`
+	Code    string `json:"code" validate:"required"`
+	Message string `json:"message" validate:"required"`
 }
 
 func (p *Plugin) createAdminLocale(c *mux.Context) {
