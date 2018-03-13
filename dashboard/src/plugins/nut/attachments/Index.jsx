@@ -46,7 +46,7 @@ class Widget extends Component {
       ]} title={title} roles={[USER, ADMIN]}>
       <Row>
         <Col>
-          <Upload multiple={true} withCredentials={true} name="file" action={backend("/attachments")} headers={{
+          <Upload multiple={true} withCredentials={true} name="file" action={backend("/attachments/")} headers={{
               'Authorization' : `BEARER ${getToken()}`
             }}>
             <Button>

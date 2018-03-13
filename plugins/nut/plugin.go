@@ -58,7 +58,7 @@ func init() {
 	viper.SetDefault("storage", map[string]interface{}{
 		"provider": "local",
 		"endpoint": "/upload",
-		"root":     path.Join("public", "upload"),
+		"root":     path.Join("tmp", "upload"),
 	})
 
 	viper.SetDefault("rabbitmq", map[string]interface{}{

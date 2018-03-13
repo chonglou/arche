@@ -81,7 +81,7 @@ class Widget extends Component {
           }}>
           <Card>
             {
-              ['/robots.txt', '/sitemap.xml.gz'].concat(this.props.site.languages.map(it => `/rss/${it}`)).map((it, id) => (<p key={id}>
+              [`/google${this.state.item.googleVerifyCode}.html`, '/robots.txt', '/sitemap.xml.gz'].concat(this.props.site.languages.map(it => `/rss/${it}`)).map((it, id) => (<p key={id}>
                 <a href={it} target='_blank'>{it}</a>
               </p>))
             }
