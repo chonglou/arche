@@ -107,13 +107,11 @@ class Widget extends Component {
               <SyntaxHighlighter style={docco}>{redis}</SyntaxHighlighter>
             </Panel>
             <Panel header={(<FormattedMessage id='nut.admin.site.status.routes'/>)} key="routes">
-              <Table rowKey="id" dataSource={routes.map((v, k) => {
-                  return {id: k, method: v.Method, path: v.Path}
-                })} columns={[
+              <Table rowKey={(r) => `${r.methods}-${r.path}`} dataSource={routes} columns={[
                   {
-                    title: 'METHOD',
-                    key: 'method',
-                    dataIndex: 'method'
+                    title: 'METHODS',
+                    key: 'methods',
+                    dataIndex: 'methods'
                   }, {
                     title: 'PATH',
                     key: 'path',
