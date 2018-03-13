@@ -134,14 +134,13 @@ func (p *Plugin) postUsersSignIn(c *mux.Context) {
 			return err
 		}
 		cm.Set("uid", user.UID)
-		cm.Set(RoleAdmin, p.Dao.Is(p.DB, user.ID, RoleAdmin))
+		cm.Set(RoleAdmin, p.Dao.Is(db, user.ID, RoleAdmin))
 		return nil
 	}); err != nil {
 		c.Abort(http.StatusInternalServerError, err)
 		return
 	}
 
-	// cm.Set("roles", roles)
 	tkn, err := p.Jwt.Sum(cm, time.Hour*24)
 	if err != nil {
 		c.Abort(http.StatusInternalServerError, err)

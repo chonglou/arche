@@ -18,6 +18,8 @@ type Dao struct {
 // SignIn set sign-in info
 func (p *Dao) SignIn(db orm.DB, lang, ip, email, password string) (*User, error) {
 	var it User
+	now := time.Now()
+
 	if err := db.Model(&it).
 		Where("provider_id = ?", email).
 		Where("provider_type = ?", UserTypeEmail).
@@ -39,14 +41,13 @@ func (p *Dao) SignIn(db orm.DB, lang, ip, email, password string) (*User, error)
 	}
 
 	p.AddLog(db, it.ID, ip, lang, "nut.logs.user.sign-in.success")
+
 	it.SignInCount++
 	it.LastSignInAt = it.CurrentSignInAt
 	it.LastSignInIP = it.CurrentSignInIP
-	now := time.Now()
 	it.CurrentSignInAt = &now
 	it.CurrentSignInIP = ip
 	it.UpdatedAt = now
-
 	if _, err := db.Model(&it).
 		Column(
 			"last_sign_in_at", "last_sign_in_ip",

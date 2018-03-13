@@ -16,6 +16,7 @@ govendor fetch github.com/elastic/go-elasticsearch/client
 govendor fetch github.com/garyburd/redigo/redis
 govendor fetch github.com/streadway/amqp
 govendor fetch golang.org/x/crypto/bcrypt
+govendor fetch golang.org/x/crypto/blowfish
 govendor fetch golang.org/x/text/language
 govendor fetch github.com/SermoDigital/jose/jwt
 govendor fetch github.com/SermoDigital/jose/jws

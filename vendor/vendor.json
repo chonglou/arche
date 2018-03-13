@@ -611,8 +611,8 @@
 		{
 			"checksumSHA1": "oVPHWesOmZ02vLq2fglGvf+AMgk=",
 			"path": "golang.org/x/crypto/blowfish",
-			"revision": "c7dcf104e3a7a1417abc0230cb0d5240d764159d",
-			"revisionTime": "2018-03-01T17:15:02Z"
+			"revision": "c4a91bd4f524f10d064139674cf55852e055ad01",
+			"revisionTime": "2018-03-13T19:10:02Z"
 		},
 		{
 			"checksumSHA1": "BGm8lKZmvJbf/YOJLeL1rw2WVjA=",

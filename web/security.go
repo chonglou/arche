@@ -24,7 +24,7 @@ type Security struct {
 
 // Hash ont-way encrypt
 func (p *Security) Hash(plain []byte) ([]byte, error) {
-	return bcrypt.GenerateFromPassword(plain, 16)
+	return bcrypt.GenerateFromPassword(plain, bcrypt.DefaultCost)
 }
 
 // Check check hash
