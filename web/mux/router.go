@@ -68,9 +68,8 @@ func (p *Router) DELETE(pat string, args ...HandlerFunc) {
 
 // Group sub-router
 func (p *Router) Group(pat string, args ...HandlerFunc) *Router {
-	rt := p.router.PathPrefix(pat).Subrouter().StrictSlash(true)
 	return &Router{
-		router:   rt,
+		router:   p.router.PathPrefix(pat).Subrouter().StrictSlash(true),
 		validate: p.validate,
 		decoder:  p.decoder,
 		render:   p.render,
@@ -79,9 +78,9 @@ func (p *Router) Group(pat string, args ...HandlerFunc) *Router {
 }
 
 func (p *Router) add(mat, pat string, args ...HandlerFunc) {
-	handlers := append(p.handlers, args...)
 	p.router.HandleFunc(pat, func(wrt http.ResponseWriter, req *http.Request) {
 		begin := time.Now()
+		handlers := append(p.handlers, args...)
 		log.Infof("%s %s %s %s", req.Proto, req.Method, req.RemoteAddr, req.RequestURI)
 		ctx := &Context{
 			Request:  req,

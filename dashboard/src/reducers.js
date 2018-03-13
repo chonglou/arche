@@ -1,7 +1,7 @@
 import jwtDecode from 'jwt-decode'
 import moment from 'moment'
 
-import {USERS_SIGN_IN, USERS_SIGN_OUT, SITE_REFRESH, SIDE_BAR} from './actions'
+import {USERS_SIGN_IN, USERS_SIGN_OUT, SITE_REFRESH, SIDE_BAR_TOGGLE, SIDE_BAR_SELECT} from './actions'
 import {setToken, reloadAuthorized, ADMIN, USER} from './auth'
 
 const sideBar = (state = {
@@ -9,11 +9,12 @@ const sideBar = (state = {
   open: []
 }, action) => {
   switch (action.type) {
-    case SIDE_BAR:
-      return {
-        selected: action.target.slice(0, 1),
-        open: action.target.slice(1, 2)
-      }
+    case SIDE_BAR_SELECT:
+      return Object.assign({}, state, {
+        selected: [action.item]
+      })
+    case SIDE_BAR_TOGGLE:
+      return Object.assign({}, state, {open: action.items})
     default:
       return state
   }

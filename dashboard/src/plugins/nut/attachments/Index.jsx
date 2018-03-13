@@ -23,7 +23,7 @@ class Widget extends Component {
     items: []
   }
   componentDidMount() {
-    get('/attachments').then((rst) => {
+    get('/attachments/').then((rst) => {
       this.setState({items: rst})
     }).catch(message.error);
   }
