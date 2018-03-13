@@ -3,8 +3,8 @@ CREATE TABLE votes (
   resource_type VARCHAR(255)                NOT NULL,
   resource_id   BIGINT                      NOT NULL,
   point         INT                         NOT NULL DEFAULT 0,
-  created_at    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
-  updated_at    TIMESTAMP WITHOUT TIME ZONE NOT NULL
+  created_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMP WITH TIME ZONE NOT NULL
 );
 CREATE UNIQUE INDEX idx_votes_resources
   ON votes (resource_type, resource_id);
@@ -21,8 +21,8 @@ CREATE TABLE attachments (
   resource_type VARCHAR(255)                NOT NULL,
   resource_id   BIGINT                      NOT NULL,
   user_id       BIGINT                      NOT NULL REFERENCES users,
-  created_at    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
-  updated_at    TIMESTAMP WITHOUT TIME ZONE NOT NULL
+  created_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMP WITH TIME ZONE NOT NULL
 );
 CREATE UNIQUE INDEX idx_attachments_url
   ON attachments (url);
@@ -37,7 +37,7 @@ CREATE TABLE leave_words (
   id         BIGSERIAL PRIMARY KEY,
   body       TEXT                        NOT NULL,
   type       VARCHAR(8)                  NOT NULL DEFAULT 'markdown',
-  created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE links (
@@ -48,8 +48,8 @@ CREATE TABLE links (
   lang VARCHAR(8) NOT NULL,
   x INT NOT NULL DEFAULT 0,
   y INT NOT NULL DEFAULT 0,
-  created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 CREATE INDEX idx_links_loc_lang ON links (loc, lang);
 CREATE INDEX idx_links_lang ON links (lang);
@@ -65,8 +65,8 @@ CREATE TABLE cards (
   loc VARCHAR(16) NOT NULL,
   lang VARCHAR(8) NOT NULL,
   sort INT NOT NULL DEFAULT 0,
-  created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 CREATE INDEX idx_cards_loc_lang ON cards (loc, lang);
 CREATE INDEX idx_cards_lang ON cards (lang);
@@ -77,6 +77,6 @@ CREATE TABLE friend_links (
   home VARCHAR(255) NOT NULL,
   logo VARCHAR(255) NOT NULL,
   sort INT NOT NULL DEFAULT 0,
-  created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL
 );

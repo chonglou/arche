@@ -3,10 +3,10 @@ import PropTypes from 'prop-types'
 import {Row, Col, Table, message} from 'antd'
 import {injectIntl, intlShape, FormattedMessage} from 'react-intl'
 import {connect} from 'react-redux'
-import Moment from 'react-moment'
 
 import Layout from '../../../layouts/dashboard'
 import {get} from '../../../ajax'
+import TimeAgo from '../../../components/TimeAgo'
 import {USER, ADMIN} from '../../../auth'
 
 class Widget extends Component {
@@ -36,7 +36,7 @@ class Widget extends Component {
               {
                 title: <FormattedMessage id="attributes.created-at"/>,
                 key: 'createdAt',
-                render: (text, record) => (<Moment fromNow={true}>{record.createdAt}</Moment>)
+                render: (text, record) => (<TimeAgo value={record.createdAt}/>)
               }, {
                 title: <FormattedMessage id="attributes.ip"/>,
                 dataIndex: 'ip',

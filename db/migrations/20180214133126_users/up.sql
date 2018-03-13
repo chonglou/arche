@@ -8,14 +8,14 @@ CREATE TABLE users (
   provider_type      VARCHAR(32)                 NOT NULL,
   logo               VARCHAR(255),
   sign_in_count      INT                         NOT NULL DEFAULT 0,
-  current_sign_in_at TIMESTAMP WITHOUT TIME ZONE,
+  current_sign_in_at TIMESTAMP WITH TIME ZONE,
   current_sign_in_ip INET,
-  last_sign_in_at    TIMESTAMP WITHOUT TIME ZONE,
+  last_sign_in_at    TIMESTAMP WITH TIME ZONE,
   last_sign_in_ip    INET,
-  confirmed_at       TIMESTAMP WITHOUT TIME ZONE,
-  locked_at          TIMESTAMP WITHOUT TIME ZONE,
-  created_at         TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
-  updated_at         TIMESTAMP WITHOUT TIME ZONE NOT NULL
+  confirmed_at       TIMESTAMP WITH TIME ZONE,
+  locked_at          TIMESTAMP WITH TIME ZONE,
+  created_at         TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  updated_at         TIMESTAMP WITH TIME ZONE NOT NULL
 );
 CREATE UNIQUE INDEX idx_users_uid
   ON users (uid);
@@ -36,7 +36,7 @@ CREATE TABLE logs (
   user_id    BIGINT                      NOT NULL REFERENCES users,
   ip         INET                        NOT NULL,
   message    VARCHAR(255)                NOT NULL,
-  created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE roles (
@@ -44,8 +44,8 @@ CREATE TABLE roles (
   name          VARCHAR(32)                 NOT NULL,
   resource_id   BIGINT NOT NULL,
   resource_type VARCHAR(255) NOT NULL,
-  created_at    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
-  updated_at    TIMESTAMP WITHOUT TIME ZONE NOT NULL
+  created_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMP WITH TIME ZONE NOT NULL
 );
 CREATE UNIQUE INDEX idx_roles_name_resource_type_id
   ON roles (name, resource_type, resource_id);
@@ -60,8 +60,8 @@ CREATE TABLE policies (
   role_id    BIGINT                      NOT NULL REFERENCES roles,
   nbf        DATE                        NOT NULL DEFAULT current_date,
   exp        DATE                        NOT NULL,
-  created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 CREATE UNIQUE INDEX idx_policies
   ON policies (user_id, role_id);

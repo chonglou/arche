@@ -5,8 +5,8 @@ CREATE TABLE donate_projects (
   type VARCHAR(8) NOT NULL,
   methods TEXT NOT NULL,
   user_id BIGINT NOT NULL REFERENCES users,
-  created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 CREATE INDEX idx_donate_projects_title ON donate_projects (title);
 CREATE INDEX idx_donate_projects_type ON donate_projects (type);
