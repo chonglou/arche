@@ -36,7 +36,7 @@ func (p *Queue) Put(t *queue.Task) error {
 
 // Launch launch a worker
 func (p *Queue) Launch(name string) error {
-	res, err := _redis.Strings(p.pool.Get().Do("BRPOP", p.name))
+	res, err := _redis.Strings(p.pool.Get().Do("BRPOP", p.name, 0))
 	if err != nil {
 		return err
 	}

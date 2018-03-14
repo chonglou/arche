@@ -40,6 +40,10 @@ func init() {
 		language.TraditionalChinese.String(),
 	})
 
+	viper.SetDefault("queue", map[string]interface{}{
+		"provider": "redis",
+	})
+
 	viper.SetDefault("aws", map[string]interface{}{
 		"access_key_id":     "change-me",
 		"secret_access_key": "change-me",

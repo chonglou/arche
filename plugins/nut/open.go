@@ -12,6 +12,7 @@ import (
 	"github.com/chonglou/arche/web/mux"
 	"github.com/chonglou/arche/web/queue"
 	"github.com/chonglou/arche/web/queue/amqp"
+	r_p "github.com/chonglou/arche/web/queue/redis"
 	"github.com/chonglou/arche/web/settings"
 	"github.com/chonglou/arche/web/storage"
 	"github.com/chonglou/arche/web/storage/fs"
@@ -66,16 +67,24 @@ func (p *Plugin) openStorage() (storage.Storage, error) {
 
 }
 
-func (p *Plugin) openQueue() queue.Queue {
-	args := viper.GetStringMap("rabbitmq")
-	return amqp.New(fmt.Sprintf(
-		"amqp://%s:%s@%s:%d/%s",
-		args["user"],
-		args["password"],
-		args["host"],
-		args["port"],
-		args["virtual"],
-	), args["queue"].(string))
+func (p *Plugin) openQueue(rp *redis.Pool) (queue.Queue, error) {
+	typ := viper.GetString("queue.provider")
+	switch typ {
+	case "rabbitmq":
+		args := viper.GetStringMap("rabbitmq")
+		return amqp.New(fmt.Sprintf(
+			"amqp://%s:%s@%s:%d/%s",
+			args["user"],
+			args["password"],
+			args["host"],
+			args["port"],
+			args["virtual"],
+		), args["queue"].(string)), nil
+	case "redis":
+		return r_p.New("tasks", rp), nil
+	default:
+		return nil, fmt.Errorf("bad queue provider %s", typ)
+	}
 }
 
 func (p *Plugin) openRedis() *redis.Pool {
@@ -155,13 +164,17 @@ func (p *Plugin) Init(g *inject.Graph) error {
 	if err != nil {
 		return err
 	}
+	queue, err := p.openQueue(redis)
+	if err != nil {
+		return err
+	}
 
 	return g.Provide(
 		&inject.Object{Value: db},
 		&inject.Object{Value: redis},
 		&inject.Object{Value: security},
 		&inject.Object{Value: kvs},
-		&inject.Object{Value: p.openQueue()},
+		&inject.Object{Value: queue},
 		&inject.Object{Value: st},
 		&inject.Object{Value: cache},
 		&inject.Object{Value: web.NewJwt(secret, crypto.SigningMethodHS512)},
