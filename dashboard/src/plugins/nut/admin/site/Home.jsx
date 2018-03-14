@@ -6,6 +6,7 @@ import {
   Col,
   Input,
   Select,
+  Card,
   message
 } from 'antd'
 import {injectIntl, intlShape, FormattedMessage} from 'react-intl'
@@ -22,13 +23,13 @@ const Option = Select.Option
 
 class Widget extends Component {
   state = {
-    options: []
+    themes: []
   }
   componentDidMount() {
     const {setFieldsValue} = this.props.form
     get('/admin/site/home').then((rst) => {
-      setFieldsValue({favicon: rst.favicon, home: rst.home})
-      this.setState({options: rst.options})
+      setFieldsValue({favicon: rst.favicon, theme: rst.theme})
+      this.setState({themes: rst.themes})
     }).catch(message.error)
   }
   handleSubmit = (e) => {
@@ -71,15 +72,40 @@ class Widget extends Component {
                 })(<Input/>)
               }
             </FormItem>
-            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.body" />}>
+            <FormItem {...formItemLayout} label={<FormattedMessage id = "attributes.theme" />}>
               {
-                getFieldDecorator('home')(<Select>
-                  {this.state.options.map((it) => (<Option key={it} value={it}>{it}</Option>))}
+                getFieldDecorator('theme', {
+                  rules: [
+                    {
+                      required: true,
+                      message: formatMessage({id: "validator.required"})
+                    }
+                  ]
+                })(<Select>
+                  {
+                    this.state.themes.map((it, id) => (<Option key={id} value={it.name}>
+                      {it.name}
+                    </Option>))
+                  }
                 </Select>)
               }
             </FormItem>
             <Submit/>
           </Form>
+        </Col>
+      </Row>
+      <Row>
+        <Col md={{
+            span: 6,
+            offset: 4
+          }}>
+          <Card>
+            {
+              this.state.themes.map((it, id) => (<p key={id}>
+                <a href={it.demo} target='_blank'>{it.name}</a>
+              </p>))
+            }
+          </Card>
         </Col>
       </Row>
     </Layout>);

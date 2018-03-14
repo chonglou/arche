@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/chonglou/arche/web"
+	"github.com/chonglou/arche/web/hugo"
 	"github.com/chonglou/arche/web/mux"
 	"github.com/chonglou/arche/web/queue"
 	"github.com/garyburd/redigo/redis"
@@ -32,9 +33,15 @@ func (p *Plugin) getAdminSiteHome(c *mux.Context) {
 	p.Settings.Get(p.DB, "site.favicon", &favicon)
 	var theme string
 	p.Settings.Get(p.DB, "site.theme", &theme)
+	var themes []mux.H
+	hugo.Walk(func(n string, t hugo.Template) error {
+		themes = append(themes, mux.H{"name": n, "demo": t.Demo()})
+		return nil
+	})
 	c.JSON(http.StatusOK, mux.H{
 		"favicon": favicon,
 		"theme":   theme,
+		"themes":  themes,
 	})
 }
 
@@ -60,7 +67,7 @@ func (p *Plugin) postAdminSiteHome(c *mux.Context) {
 		}
 		return nil
 	}); err != nil {
-		c.Abort(http.StatusInsufficientStorage, err)
+		c.Abort(http.StatusInternalServerError, err)
 		return
 	}
 
@@ -129,7 +136,7 @@ func (p *Plugin) patchAdminSiteSMTP(c *mux.Context) {
 	)
 
 	if err := dia.DialAndSend(msg); err != nil {
-		c.Abort(http.StatusInsufficientStorage, err)
+		c.Abort(http.StatusInternalServerError, err)
 		return
 	}
 	c.JSON(http.StatusOK, mux.H{})

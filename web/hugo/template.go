@@ -16,3 +16,13 @@ func Register(n string, t Template) {
 	}
 	drivers[n] = t
 }
+
+// Walk walk templates
+func Walk(f func(string, Template) error) error {
+	for n, t := range drivers {
+		if e := f(n, t); e != nil {
+			return e
+		}
+	}
+	return nil
+}
