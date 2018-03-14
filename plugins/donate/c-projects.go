@@ -29,11 +29,7 @@ type fmProject struct {
 }
 
 func (p *Plugin) createProject(c *mux.Context) {
-	user, err := p.Layout.CurrentUser(c)
-	if err != nil {
-		c.Abort(http.StatusInternalServerError, err)
-		return
-	}
+	user := c.Get(nut.CurrentUser).(*nut.User)
 	var fm fmProject
 	if err := c.BindJSON(&fm); err != nil {
 		c.Abort(http.StatusBadRequest, err)
@@ -70,11 +66,8 @@ func (p *Plugin) updateProject(c *mux.Context) {
 		c.Abort(http.StatusBadRequest, err)
 		return
 	}
-	it, err := p.canEditProject(c)
-	if err != nil {
-		c.Abort(http.StatusForbidden, err)
-		return
-	}
+
+	it := c.Get("item").(*Project)
 
 	it.Title = fm.Title
 	it.Body = fm.Body
@@ -92,31 +85,26 @@ func (p *Plugin) updateProject(c *mux.Context) {
 }
 
 func (p *Plugin) destroyProject(c *mux.Context) {
-	it, err := p.canEditProject(c)
-	if err != nil {
-		c.Abort(http.StatusInternalServerError, err)
-		return
-	}
+	it := c.Get("item").(*Project)
 	if err := p.DB.Delete(it); err != nil {
 		c.Abort(http.StatusInternalServerError, err)
 	}
 	c.JSON(http.StatusOK, mux.H{})
 }
 
-func (p *Plugin) canEditProject(c *mux.Context) (*Project, error) {
+func (p *Plugin) canEditProject(c *mux.Context) {
 	var it Project
 	if err := p.DB.Model(&it).Where("id = ?", c.Param("id")).
 		Select(); err != nil {
-		return nil, err
+		c.Abort(http.StatusInternalServerError, err)
+		return
 	}
-	l := c.Locale()
-	user, err := p.Layout.CurrentUser(c)
-	if err != nil {
-		return nil, err
-	}
+	l := c.Get(mux.LOCALE).(string)
+	user := c.Get(nut.CurrentUser).(*nut.User)
 
 	if it.UserID != user.ID && p.Dao.Is(p.DB, user.ID, nut.RoleAdmin) {
-		return nil, p.I18n.E(l, "errors.forbidden")
+		c.Abort(http.StatusForbidden, p.I18n.E(l, "errors.forbidden"))
+		return
 	}
-	return &it, nil
+	c.Set("item", &it)
 }

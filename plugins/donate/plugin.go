@@ -66,12 +66,12 @@ func (p *Plugin) sitemap() ([]stm.URL, error) {
 
 // Mount register
 func (p *Plugin) Mount() error {
-	rt := p.Router.Group("/donate")
+	rt := p.Router.Group("/donate", p.Layout.MustSignInMiddleware)
 	rt.GET("/projects", p.indexProjects)
 	rt.POST("/projects", p.createProject)
 	rt.GET("/projects/{id}", p.showProject)
-	rt.POST("/projects/{id}", p.updateProject)
-	rt.DELETE("/projects/{id}", p.destroyProject)
+	rt.POST("/projects/{id}", p.canEditProject, p.updateProject)
+	rt.DELETE("/projects/{id}", p.canEditProject, p.destroyProject)
 	return nil
 }
 
