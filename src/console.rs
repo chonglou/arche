@@ -3,6 +3,29 @@ use docopt::Docopt;
 use super::result::Result;
 use super::{app, env};
 
+pub fn run() -> Result<()> {
+    let matches = App::new(env::NAME)
+        .version(env::VERSION)
+        .author(env::AUTHORS)
+        .about(env::DESCRIPTION)
+        .args_from_usage(
+            "-c, --config=[FILE] 'Sets a custom config file'
+                              <INPUT>              'Sets the input file to use'
+                              -v...                'Sets the level of verbosity'",
+        )
+        .subcommand(
+            SubCommand::with_name("test")
+                .about("controls testing features")
+                .version("1.3")
+                .author("Someone E. <someone_else@other.com>")
+                .arg_from_usage("-d, --debug 'Print debug information'"),
+        )
+        .get_matches();
+    return Ok(());
+}
+
+// ---------
+
 #[derive(Debug, Deserialize)]
 struct Args {
     flag_version: bool,
@@ -24,7 +47,7 @@ struct Args {
     cmd_status: bool,
 }
 
-pub fn run() -> Result<()> {
+pub fn run1() -> Result<()> {
     let usage = format!(
         "
 {title} - {description}
