@@ -14,7 +14,7 @@ import SyntaxHighlighter from 'react-syntax-highlighter'
 import {docco} from 'react-syntax-highlighter/styles/hljs'
 
 import Layout from '../../../../layouts/dashboard'
-import {get, _delete} from '../../../../ajax'
+import {get, put, _delete} from '../../../../ajax'
 import {ADMIN} from '../../../../auth'
 
 const Panel = Collapse.Panel
@@ -57,6 +57,12 @@ class Widget extends Component {
       message.success(formatMessage({id: 'flash.success'}))
     }).catch(message.error)
   }
+  handleGeneratePages = () => {
+    const {formatMessage} = this.props.intl
+    put('/admin/site/generate-pages').then((rst) => {
+      message.success(formatMessage({id: 'flash.success'}))
+    }).catch(message.error)
+  }
   render() {
     const {
       redis,
@@ -83,6 +89,11 @@ class Widget extends Component {
           <Popconfirm title={<FormattedMessage id = "helpers.are-you-sure" />} onConfirm={this.handleClearCache}>
             <Button type="danger" icon="delete">
               <FormattedMessage id="nut.admin.site.status.clear-cache"/>
+            </Button>
+          </Popconfirm>
+          <Popconfirm title={<FormattedMessage id = "helpers.are-you-sure" />} onConfirm={this.handleGeneratePages}>
+            <Button type="dashed" icon="retweet">
+              <FormattedMessage id="nut.admin.site.status.generate-pages"/>
             </Button>
           </Popconfirm>
         </Col>

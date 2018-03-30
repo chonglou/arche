@@ -44,3 +44,9 @@ export const patch = (path, body) => {
   data.body = JSON.stringify(body)
   return fetch(backend(path), data).then(parse)
 }
+
+export const put = (path, body) => {
+  var data = options('PUT')
+  data.body = JSON.stringify(body)
+  return fetch(backend(path), data).then(parse)
+}
